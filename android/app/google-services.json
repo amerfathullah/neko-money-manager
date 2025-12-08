@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "307615014332",
+    "project_id": "neko-money-manager",
+    "storage_bucket": "neko-money-manager.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:307615014332:android:a3e44226b209b952c19fb9",
+        "android_client_info": {
+          "package_name": "com.amerfathullah.neko_money_manager"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "307615014332-nkf04q12o30jho122vuhvchs7rv1ir6b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyARXLoJUJG75Ss9gWARLC_nMlKepR0WWn8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "307615014332-nkf04q12o30jho122vuhvchs7rv1ir6b.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "307615014332-4gvcmgeo96sbaovbj7s69o6177c5fmlj.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.neko.manager.nekoMoneyManager"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
