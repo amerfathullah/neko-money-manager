@@ -47,15 +47,19 @@ class _MainScaffoldState extends State<MainScaffold> {
         currentIndex: _currentIndex,
         onTap: _onTabTapped,
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => const TransactionPage()),
-          );
-        },
-        backgroundColor: AppColors.pastelOrange,
-        child: const Icon(Icons.add, color: AppColors.textDark),
-      ),
+      floatingActionButton: _currentIndex == 0
+          ? FloatingActionButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const TransactionPage(),
+                  ),
+                );
+              },
+              backgroundColor: AppColors.pastelOrange,
+              child: const Icon(Icons.add, color: AppColors.textDark),
+            )
+          : null,
       // Adjust floating action button location to not overlap with bottom nav if needed
       // With extendBody, it might overlap. Standard layout usually puts FAB above or docked.
       // Since CustomBottomNav has margin bottom 24, we might want FAB higher up or standard.

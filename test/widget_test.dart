@@ -182,6 +182,9 @@ void main() {
     // Settings State
     expect(find.text('PREFERENCES'), findsOneWidget);
 
+    // Verify FAB is GONE
+    expect(find.byIcon(Icons.add), findsNothing);
+
     // Verify Bottom Nav 'Setting' label is visible (selected)
     expect(find.text('Setting'), findsOneWidget);
     // 'Record' label should disappear (unselected) - or fade out
