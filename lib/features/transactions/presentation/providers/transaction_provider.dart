@@ -44,6 +44,24 @@ class TransactionNotifier extends StreamNotifier<List<TransactionModel>> {
         .read(transactionRepositoryProvider)
         .updateTransaction(userId, oldTransaction, newTransaction);
   }
+
+  Future<void> toggleBookmark(TransactionModel transaction) async {
+    final updatedTransaction = TransactionModel(
+      id: transaction.id,
+      ledgerId: transaction.ledgerId,
+      categoryId: transaction.categoryId,
+      categoryName: transaction.categoryName,
+      ledgerName: transaction.ledgerName,
+      amount: transaction.amount,
+      date: transaction.date,
+      note: transaction.note,
+      type: transaction.type,
+      destinationLedgerId: transaction.destinationLedgerId,
+      destinationLedgerName: transaction.destinationLedgerName,
+      isBookmarked: !transaction.isBookmarked,
+    );
+    await updateTransaction(transaction, updatedTransaction);
+  }
 }
 
 final transactionProvider =

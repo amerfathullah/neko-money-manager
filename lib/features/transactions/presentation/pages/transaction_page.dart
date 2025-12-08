@@ -9,6 +9,7 @@ import '../../data/models/transaction_model.dart';
 import '../providers/transaction_provider.dart';
 import '../../../settings/presentation/providers/currency_provider.dart';
 import '../../../../core/widgets/banner_ad_widget.dart';
+import '../../../assets/presentation/providers/asset_provider.dart';
 
 class TransactionPage extends ConsumerStatefulWidget {
   final TransactionModel? transaction;
@@ -27,6 +28,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
   Category? _selectedCategory;
   String? _selectedLedgerId;
   String? _selectedDestinationLedgerId;
+  String? _selectedAssetId;
   bool _isInitialLoad = true;
 
   @override
@@ -60,6 +62,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
           break;
       }
       _tabController.index = index;
+      _selectedAssetId = t.assetId;
     }
   }
 
@@ -165,6 +168,16 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
       } catch (_) {}
     }
 
+    String? assetName;
+    if (_selectedAssetId != null) {
+      final assets = ref.read(assetProvider).value;
+      if (assets != null) {
+        try {
+          assetName = assets.firstWhere((a) => a.id == _selectedAssetId).name;
+        } catch (_) {}
+      }
+    }
+
     final transaction = TransactionModel(
       id:
           widget.transaction?.id ??
@@ -180,6 +193,8 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
       type: type,
       destinationLedgerId: _selectedDestinationLedgerId,
       destinationLedgerName: destName,
+      assetId: _selectedAssetId,
+      assetName: assetName,
     );
 
     try {
@@ -215,6 +230,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
     final categoriesAsync = ref.watch(categoryProvider);
     final ledgersAsync = ref.watch(ledgerProvider);
     final currencyAsync = ref.watch(currencyProvider);
+    final assetsAsync = ref.watch(assetProvider);
     final currencySymbol = currencyAsync.asData?.value ?? '\$';
 
     return Scaffold(
@@ -341,10 +357,6 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
                                 (l) => l.id == _selectedDestinationLedgerId,
                               )) {
                                 // Reset if not found
-                                // But cannot call setState during build.
-                                // We'll just rely on the dropdown value being null effectively or handle it gracefully.
-                                // If we pass a value not in items, it crashes.
-                                // So we must pass null or a valid value.
                               }
                             }
 
@@ -434,6 +446,54 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
                           error: (err, stack) => const SizedBox.shrink(),
                         ),
                         const SizedBox(height: 16),
+
+                        // Asset Selector (Category/Tag)
+                        assetsAsync.when(
+                          data: (assets) {
+                            if (assets.isEmpty) return const SizedBox.shrink();
+
+                            return Column(
+                              children: [
+                                InputDecorator(
+                                  decoration: const InputDecoration(
+                                    labelText: 'Asset Category (Optional)',
+                                    border: OutlineInputBorder(),
+                                    contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 8,
+                                    ),
+                                  ),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      value: _selectedAssetId,
+                                      hint: const Text('Select Asset Category'),
+                                      isDense: true,
+                                      isExpanded: true,
+                                      items: [
+                                        const DropdownMenuItem<String>(
+                                          value: null,
+                                          child: Text('None'),
+                                        ),
+                                        ...assets.map((asset) {
+                                          return DropdownMenuItem<String>(
+                                            value: asset.id,
+                                            child: Text(asset.name),
+                                          );
+                                        }),
+                                      ],
+                                      onChanged: (val) {
+                                        setState(() => _selectedAssetId = val);
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                              ],
+                            );
+                          },
+                          loading: () => const SizedBox.shrink(),
+                          error: (err, stack) => const SizedBox.shrink(),
+                        ),
 
                         // Category Selector
                         if (_tabController.index != 2)

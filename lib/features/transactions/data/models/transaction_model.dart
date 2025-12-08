@@ -14,6 +14,9 @@ class TransactionModel {
   final TransactionType type;
   final String? destinationLedgerId;
   final String? destinationLedgerName; // Denormalized
+  final bool isBookmarked;
+  final String? assetId;
+  final String? assetName; // Denormalized
 
   const TransactionModel({
     required this.id,
@@ -27,6 +30,9 @@ class TransactionModel {
     required this.type,
     this.destinationLedgerId,
     this.destinationLedgerName,
+    this.isBookmarked = false,
+    this.assetId,
+    this.assetName,
   });
 
   factory TransactionModel.fromJson(Map<String, dynamic> json) {
@@ -42,6 +48,9 @@ class TransactionModel {
       type: TransactionType.values.byName(json['type'] as String),
       destinationLedgerId: json['destinationLedgerId'] as String?,
       destinationLedgerName: json['destinationLedgerName'] as String?,
+      isBookmarked: json['isBookmarked'] as bool? ?? false,
+      assetId: json['assetId'] as String?,
+      assetName: json['assetName'] as String?,
     );
   }
 
@@ -58,6 +67,9 @@ class TransactionModel {
       'type': type.name,
       'destinationLedgerId': destinationLedgerId,
       'destinationLedgerName': destinationLedgerName,
+      'isBookmarked': isBookmarked,
+      'assetId': assetId,
+      'assetName': assetName,
     };
   }
 }

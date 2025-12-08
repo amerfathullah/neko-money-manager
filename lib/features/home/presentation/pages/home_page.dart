@@ -7,6 +7,7 @@ import '../../../transactions/data/models/transaction_model.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../settings/presentation/providers/currency_provider.dart';
 import '../providers/ledger_provider.dart';
+import '../../../transactions/presentation/pages/transaction_page.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -515,107 +516,132 @@ class _HomePageState extends ConsumerState<HomePage> {
                                             }
                                           }
 
-                                          return Container(
-                                            margin: const EdgeInsets.symmetric(
-                                              horizontal: 16,
-                                              vertical: 6,
-                                            ),
-                                            padding: const EdgeInsets.all(16),
-                                            decoration: BoxDecoration(
-                                              color: const Color(
-                                                0xFFFFF8E1,
-                                              ), // Light cream card
-                                              borderRadius:
-                                                  BorderRadius.circular(20),
-                                            ),
-                                            child: Row(
-                                              children: [
-                                                // Icon
-                                                Container(
-                                                  padding: const EdgeInsets.all(
-                                                    8,
-                                                  ),
-                                                  decoration: BoxDecoration(
-                                                    color: Colors
-                                                        .amber[100], // Placeholder color
-                                                    // color: Color(categoryColor).withValues(alpha: 0.2),
-                                                    shape: BoxShape.circle,
-                                                  ),
-                                                  child: Icon(
-                                                    // t.categoryIcon ??
-                                                    isExpense
-                                                        ? Icons.lunch_dining
-                                                        : Icons.attach_money,
-                                                    color: Colors
-                                                        .brown, // Placeholder
-                                                    size: 20,
-                                                  ),
+                                          return InkWell(
+                                            onTap: () =>
+                                                _showTransactionDetails(
+                                                  context,
+                                                  t,
                                                 ),
-                                                const SizedBox(width: 16),
-                                                Expanded(
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text(
-                                                        t.categoryName ??
-                                                            (isTransfer
-                                                                ? 'Transfer'
-                                                                : 'Uncategorized'),
-                                                        style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 16,
-                                                          color: AppColors
-                                                              .textDark,
+                                            child: Container(
+                                              margin:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 16,
+                                                    vertical: 6,
+                                                  ),
+                                              padding: const EdgeInsets.all(16),
+                                              decoration: BoxDecoration(
+                                                color: const Color(
+                                                  0xFFFFF8E1,
+                                                ), // Light cream card
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                              ),
+                                              child: Row(
+                                                children: [
+                                                  // Icon
+                                                  Container(
+                                                    padding:
+                                                        const EdgeInsets.all(8),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors
+                                                          .amber[100], // Placeholder color
+                                                      // color: Color(categoryColor).withValues(alpha: 0.2),
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                    child: Icon(
+                                                      // t.categoryIcon ??
+                                                      isExpense
+                                                          ? Icons.lunch_dining
+                                                          : Icons.attach_money,
+                                                      color: Colors
+                                                          .brown, // Placeholder
+                                                      size: 20,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(width: 16),
+                                                  Expanded(
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          t.categoryName ??
+                                                              (isTransfer
+                                                                  ? 'Transfer'
+                                                                  : 'Uncategorized'),
+                                                          style:
+                                                              const TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                fontSize: 16,
+                                                                color: AppColors
+                                                                    .textDark,
+                                                              ),
                                                         ),
-                                                      ),
-                                                      const SizedBox(height: 4),
-                                                      Row(
-                                                        children: [
-                                                          Text(
-                                                            DateFormat(
-                                                              'HH:mm',
-                                                            ).format(t.date),
-                                                            style: TextStyle(
-                                                              color: Colors
-                                                                  .grey[600],
-                                                              fontSize: 12,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
+                                                        const SizedBox(
+                                                          height: 4,
+                                                        ),
+                                                        Row(
+                                                          children: [
+                                                            Text(
+                                                              DateFormat(
+                                                                'HH:mm',
+                                                              ).format(t.date),
+                                                              style: TextStyle(
+                                                                color: Colors
+                                                                    .grey[600],
+                                                                fontSize: 12,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                              ),
                                                             ),
-                                                          ),
-                                                          if (t.note != null &&
-                                                              t
-                                                                  .note!
-                                                                  .isNotEmpty) ...[
-                                                            const SizedBox(
-                                                              width: 8,
-                                                            ),
-                                                            Icon(
-                                                              Icons
-                                                                  .sticky_note_2,
-                                                              size: 14,
-                                                              color: Colors
-                                                                  .blue[300],
-                                                            ),
+                                                            if (t.note !=
+                                                                    null &&
+                                                                t
+                                                                    .note!
+                                                                    .isNotEmpty) ...[
+                                                              const SizedBox(
+                                                                width: 8,
+                                                              ),
+                                                              Icon(
+                                                                Icons
+                                                                    .sticky_note_2,
+                                                                size: 14,
+                                                                color: Colors
+                                                                    .blue[300],
+                                                              ),
+                                                            ],
+                                                            if (t
+                                                                .isBookmarked) ...[
+                                                              const SizedBox(
+                                                                width: 8,
+                                                              ),
+                                                              const Icon(
+                                                                Icons.star,
+                                                                size: 14,
+                                                                color: AppColors
+                                                                    .pastelOrange,
+                                                              ),
+                                                            ],
                                                           ],
-                                                        ],
-                                                      ),
-                                                    ],
+                                                        ),
+                                                      ],
+                                                    ),
                                                   ),
-                                                ),
-                                                Text(
-                                                  '$prefix${CurrencyFormatter.format(t.amount, symbol: '')}',
-                                                  style: TextStyle(
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: color,
+                                                  Text(
+                                                    '$prefix${CurrencyFormatter.format(t.amount, symbol: '')}',
+                                                    style: TextStyle(
+                                                      fontSize: 18,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: color,
+                                                    ),
                                                   ),
-                                                ),
-                                              ],
+                                                ],
+                                              ),
                                             ),
                                           );
                                         }),
@@ -656,9 +682,253 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
               ],
             ),
+            // Positioned( // If there were other background elements, they'd be here.
+            //   top: 0,
+            //   right: 0,
+            //   child: Image.asset('assets/images/cat_top_right.png', width: 100),
+            // ),
           ],
         ),
       ),
+    );
+  }
+
+  void _showTransactionDetails(
+    BuildContext context,
+    TransactionModel transaction,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final dateStr = DateFormat('MMM dd yyyy').format(transaction.date);
+        final timeStr = DateFormat('HH:mm').format(transaction.date);
+        final isExpense = transaction.type == TransactionType.expense;
+        final isIncome = transaction.type == TransactionType.income;
+
+        Color amountColor = AppColors.textDark;
+        String prefix = '';
+        if (isExpense) {
+          amountColor = AppColors.pastelRed;
+          prefix = '-';
+        } else if (isIncome) {
+          amountColor = AppColors.income;
+          prefix = '+';
+        }
+
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          backgroundColor: const Color(0xFFFFFDF5),
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header: Icon + Name + Amount
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.pastelOrange.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Icon(
+                        isExpense
+                            ? Icons.lunch_dining
+                            : (isIncome
+                                  ? Icons.attach_money
+                                  : Icons.swap_horiz),
+                        color: AppColors.textDark,
+                        size: 32,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            transaction.type == TransactionType.transfer
+                                ? 'Transfer'
+                                : (transaction.categoryName ?? 'Uncategorized'),
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textDark,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      '$prefix${CurrencyFormatter.format(transaction.amount, symbol: '')}',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: amountColor,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+
+                // Info Rows
+                _buildDetailRow('Date', dateStr),
+                const SizedBox(height: 12),
+                _buildDetailRow('Time', timeStr),
+                const SizedBox(height: 12),
+                _buildDetailRow('Asset', transaction.assetName ?? 'None'),
+                const SizedBox(height: 12),
+                _buildDetailRow(
+                  'Ledger',
+                  transaction.ledgerName ?? 'Unknown Wallet',
+                ),
+
+                const SizedBox(height: 32),
+
+                // Actions: Edit, Delete, Bookmark
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    // Edit
+                    InkWell(
+                      onTap: () {
+                        Navigator.pop(context); // Close dialog first
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                TransactionPage(transaction: transaction),
+                          ),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.textDark.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.edit,
+                          color: AppColors.textDark,
+                        ),
+                      ),
+                    ),
+                    // Delete
+                    InkWell(
+                      onTap: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text('Delete Transaction?'),
+                            content: const Text(
+                              'Are you sure you want to delete this transaction?',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text('Cancel'),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                child: const Text(
+                                  'Delete',
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+
+                        if (confirm == true && context.mounted) {
+                          ref
+                              .read(transactionProvider.notifier)
+                              .deleteTransaction(transaction);
+                          Navigator.pop(context); // Close details dialog
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.textDark.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.delete,
+                          color: AppColors.textDark,
+                        ),
+                      ),
+                    ),
+                    // Bookmark
+                    Consumer(
+                      builder: (context, ref, child) {
+                        // We need the *latest* state of the transaction if possible,
+                        // but here we have the 'transaction' object passed in.
+                        // Ideally we'd watch it by ID but simpler is just use passed in val
+                        // and rely on list rebuild if it changes.
+                        // However, inside the dialog, 'transaction' is static unless we wrap whole dialog in StreamBuilder.
+                        // For MVP: Toggle closes dialog or we accept it's static.
+                        // Improved: Use local state variable or StatefulBuilder if we want instant feedback?
+                        // Actually, tapping it calls toggle. The list behind updates. The dialog might not show new state immediately.
+                        // Let's use StatefulBuilder for the star icon specifically if we want it to animate.
+                        // For now simply:
+                        return InkWell(
+                          onTap: () {
+                            ref
+                                .read(transactionProvider.notifier)
+                                .toggleBookmark(transaction);
+                            Navigator.pop(context);
+                          },
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: AppColors.textDark.withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              transaction.isBookmarked
+                                  ? Icons.star
+                                  : Icons.star_border,
+                              color: AppColors.textDark,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            color: AppColors.textDark,
+            fontSize: 16,
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            color: AppColors.textDark.withValues(alpha: 0.7),
+            fontSize: 16,
+          ),
+        ),
+      ],
     );
   }
 }
