@@ -5,6 +5,9 @@ import '../../../settings/presentation/pages/settings_page.dart';
 import '../../../transactions/presentation/pages/transactions_list_page.dart';
 import '../../../transactions/presentation/pages/transaction_page.dart';
 import '../../../assets/presentation/pages/assets_page.dart';
+import '../../../../core/constants/app_colors.dart';
+
+import '../widgets/custom_bottom_nav.dart';
 
 class MainScaffold extends StatefulWidget {
   const MainScaffold({super.key});
@@ -16,12 +19,18 @@ class MainScaffold extends StatefulWidget {
 class _MainScaffoldState extends State<MainScaffold> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = [
-    const HomePage(),
-    const AssetsPage(),
-    const TransactionsListPage(),
-    const SettingsPage(),
-  ];
+  late final List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = [
+      const HomePage(),
+      const AssetsPage(),
+      const TransactionsListPage(),
+      const SettingsPage(),
+    ];
+  }
 
   void _onTabTapped(int index) {
     setState(() {
@@ -32,47 +41,24 @@ class _MainScaffoldState extends State<MainScaffold> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true, // Important for floating nav
       body: IndexedStack(index: _currentIndex, children: _pages),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: _onTabTapped,
-        // backgroundColor and shadow handled by Theme now
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.account_balance_wallet_outlined),
-            selectedIcon: Icon(Icons.account_balance_wallet),
-            label: 'Net Worth',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.list_alt_outlined),
-            selectedIcon: Icon(Icons.list_alt),
-            label: 'Transactions',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
+      bottomNavigationBar: CustomBottomNav(
+        currentIndex: _currentIndex,
+        onTap: _onTabTapped,
       ),
-      floatingActionButton: _currentIndex == 0
-          ? FloatingActionButton(
-              heroTag: 'home_fab',
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const TransactionPage(),
-                  ),
-                );
-              },
-              child: const Icon(Icons.add),
-            )
-          : null,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => const TransactionPage()),
+          );
+        },
+        backgroundColor: AppColors.pastelOrange,
+        child: const Icon(Icons.add, color: AppColors.textDark),
+      ),
+      // Adjust floating action button location to not overlap with bottom nav if needed
+      // With extendBody, it might overlap. Standard layout usually puts FAB above or docked.
+      // Since CustomBottomNav has margin bottom 24, we might want FAB higher up or standard.
     );
   }
 }

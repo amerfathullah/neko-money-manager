@@ -17,7 +17,9 @@ class AppColors {
 
   // Backgrounds
   // Use slightly warmer/cooler backgrounds for premium feel
-  static const Color backgroundLight = Color(0xFFFDF6F9);
+  static const Color backgroundLight = Color(
+    0xFFFFF8E1,
+  ); // Cream/Eggshell for kawaii feel
   static const Color backgroundDark = Color(0xFF1A1A1A);
   static const Color surfaceDark = Color(0xFF2C2C2C);
 
