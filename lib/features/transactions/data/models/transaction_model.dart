@@ -12,6 +12,8 @@ class TransactionModel {
   final DateTime date;
   final String? note;
   final TransactionType type;
+  final String? destinationLedgerId;
+  final String? destinationLedgerName; // Denormalized
 
   const TransactionModel({
     required this.id,
@@ -23,6 +25,8 @@ class TransactionModel {
     required this.date,
     this.note,
     required this.type,
+    this.destinationLedgerId,
+    this.destinationLedgerName,
   });
 
   factory TransactionModel.fromJson(Map<String, dynamic> json) {
@@ -36,6 +40,8 @@ class TransactionModel {
       date: (json['date'] as Timestamp).toDate(),
       note: json['note'] as String?,
       type: TransactionType.values.byName(json['type'] as String),
+      destinationLedgerId: json['destinationLedgerId'] as String?,
+      destinationLedgerName: json['destinationLedgerName'] as String?,
     );
   }
 
@@ -50,6 +56,8 @@ class TransactionModel {
       'date': Timestamp.fromDate(date),
       'note': note,
       'type': type.name,
+      'destinationLedgerId': destinationLedgerId,
+      'destinationLedgerName': destinationLedgerName,
     };
   }
 }

@@ -46,4 +46,20 @@ class Ledger {
       colorValue: colorValue ?? this.colorValue,
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is Ledger &&
+        other.id == id &&
+        other.name == name &&
+        other.balance == balance &&
+        other.colorValue == colorValue;
+  }
+
+  @override
+  int get hashCode {
+    return id.hashCode ^ name.hashCode ^ balance.hashCode ^ colorValue.hashCode;
+  }
 }

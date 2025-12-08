@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../categories/data/models/category.dart';
 import '../../../categories/presentation/providers/category_provider.dart';
-import '../../../home/data/models/ledger.dart';
 import '../../../home/presentation/providers/ledger_provider.dart';
 import '../../data/models/transaction_model.dart';
 import '../providers/transaction_provider.dart';
@@ -26,7 +25,8 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
   String _amount = '0';
   DateTime _selectedDate = DateTime.now();
   Category? _selectedCategory;
-  Ledger? _selectedLedger;
+  String? _selectedLedgerId;
+  String? _selectedDestinationLedgerId;
   bool _isInitialLoad = true;
 
   @override
@@ -43,6 +43,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
         _amount = _amount.substring(0, _amount.length - 2);
       }
       _selectedDate = t.date;
+      _selectedLedgerId = t.ledgerId;
 
       // Set tab index based on type
       int index = 0;
@@ -55,6 +56,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
           break;
         case TransactionType.transfer:
           index = 2;
+          _selectedDestinationLedgerId = t.destinationLedgerId;
           break;
       }
       _tabController.index = index;
@@ -65,6 +67,9 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
     if (_tabController.indexIsChanging) {
       setState(() {
         _selectedCategory = null; // Reset category on tab change
+        if (_tabController.index != 2) {
+          _selectedDestinationLedgerId = null;
+        }
       });
     }
   }
@@ -102,13 +107,6 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
     final amountVal = double.tryParse(_amount);
     if (amountVal == null || amountVal == 0) return;
 
-    if (_selectedCategory == null && _tabController.index != 2) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Please select a category')));
-      return;
-    }
-
     final ledgers = ref.read(ledgerProvider).value;
     if (ledgers == null || ledgers.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -119,13 +117,53 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
       return;
     }
 
-    final ledger = _selectedLedger ?? ledgers.first;
+    if (_tabController.index != 2 && _selectedCategory == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please select a category')));
+      return;
+    }
+
+    if (_tabController.index == 2) {
+      if (_selectedDestinationLedgerId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please select a destination wallet')),
+        );
+        return;
+      }
+
+      final sourceId = _selectedLedgerId ?? ledgers.first.id;
+      if (_selectedDestinationLedgerId == sourceId) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Destination wallet cannot be the same as source'),
+          ),
+        );
+        return;
+      }
+    }
+
+    final ledgerId = _selectedLedgerId ?? ledgers.first.id;
+    final ledger = ledgers.firstWhere(
+      (l) => l.id == ledgerId,
+      orElse: () => ledgers.first,
+    );
 
     final type = _tabController.index == 0
         ? TransactionType.expense
         : _tabController.index == 1
         ? TransactionType.income
         : TransactionType.transfer;
+
+    String? destName;
+    if (_selectedDestinationLedgerId != null) {
+      try {
+        final dest = ledgers.firstWhere(
+          (l) => l.id == _selectedDestinationLedgerId,
+        );
+        destName = dest.name;
+      } catch (_) {}
+    }
 
     final transaction = TransactionModel(
       id:
@@ -134,10 +172,14 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
       ledgerId: ledger.id,
       categoryId: _selectedCategory?.id ?? '',
       ledgerName: ledger.name,
-      categoryName: _selectedCategory?.name,
+      categoryName: type == TransactionType.transfer
+          ? 'Transfer'
+          : _selectedCategory?.name,
       amount: amountVal,
       date: _selectedDate,
       type: type,
+      destinationLedgerId: _selectedDestinationLedgerId,
+      destinationLedgerName: destName,
     );
 
     try {
@@ -197,10 +239,13 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
         error: (err, stack) => Center(child: Text('Error: $err')),
         data: (allCategories) {
           if (_isInitialLoad && widget.transaction != null) {
+            final t = widget.transaction!;
             try {
-              _selectedCategory = allCategories.firstWhere(
-                (c) => c.id == widget.transaction!.categoryId,
-              );
+              if (t.categoryId.isNotEmpty) {
+                _selectedCategory = allCategories.firstWhere(
+                  (c) => c.id == t.categoryId,
+                );
+              }
             } catch (_) {
               // Category might have been deleted
             }
@@ -277,42 +322,112 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
                           data: (ledgers) {
                             if (ledgers.isEmpty) return const SizedBox.shrink();
 
-                            return InputDecorator(
-                              decoration: const InputDecoration(
-                                labelText: 'Wallet',
-                                border: OutlineInputBorder(),
-                                contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 8,
+                            // Ensure valid selection
+                            final effectiveLedgerId =
+                                _selectedLedgerId ??
+                                (ledgers.isNotEmpty ? ledgers.first.id : null);
+
+                            // Check if current selection exists in list (robustness against deletions)
+                            final ledgerExists = ledgers.any(
+                              (l) => l.id == effectiveLedgerId,
+                            );
+                            final currentLedgerId = ledgerExists
+                                ? effectiveLedgerId
+                                : ledgers.first.id;
+
+                            // Ensure destination ledger is valid too
+                            if (_selectedDestinationLedgerId != null) {
+                              if (!ledgers.any(
+                                (l) => l.id == _selectedDestinationLedgerId,
+                              )) {
+                                // Reset if not found
+                                // But cannot call setState during build.
+                                // We'll just rely on the dropdown value being null effectively or handle it gracefully.
+                                // If we pass a value not in items, it crashes.
+                                // So we must pass null or a valid value.
+                              }
+                            }
+
+                            final validDestId =
+                                _selectedDestinationLedgerId != null &&
+                                    ledgers.any(
+                                      (l) =>
+                                          l.id == _selectedDestinationLedgerId,
+                                    )
+                                ? _selectedDestinationLedgerId
+                                : null;
+
+                            return Column(
+                              children: [
+                                InputDecorator(
+                                  decoration: const InputDecoration(
+                                    labelText: 'From Wallet',
+                                    border: OutlineInputBorder(),
+                                    contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 8,
+                                    ),
+                                  ),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton<String>(
+                                      value: currentLedgerId,
+                                      isDense: true,
+                                      isExpanded: true,
+                                      items: ledgers.map((ledger) {
+                                        return DropdownMenuItem(
+                                          value: ledger.id,
+                                          child: Text(ledger.name),
+                                        );
+                                      }).toList(),
+                                      onChanged: (val) {
+                                        setState(() {
+                                          _selectedLedgerId = val;
+                                        });
+                                      },
+                                    ),
+                                  ),
                                 ),
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<Ledger>(
-                                  value:
-                                      _selectedLedger ??
-                                      (ledgers.isNotEmpty
-                                          ? ledgers.firstWhere(
-                                              (l) =>
-                                                  l.id ==
-                                                  widget.transaction?.ledgerId,
-                                              orElse: () => ledgers.first,
+
+                                if (_tabController.index == 2) ...[
+                                  const SizedBox(height: 16),
+                                  InputDecorator(
+                                    decoration: const InputDecoration(
+                                      labelText: 'To Wallet',
+                                      border: OutlineInputBorder(),
+                                      contentPadding: EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 8,
+                                      ),
+                                    ),
+                                    child: DropdownButtonHideUnderline(
+                                      child: DropdownButton<String>(
+                                        value: validDestId,
+                                        hint: const Text(
+                                          'Select Destination Wallet',
+                                        ),
+                                        isDense: true,
+                                        isExpanded: true,
+                                        items: ledgers
+                                            .where(
+                                              (l) => l.id != currentLedgerId,
                                             )
-                                          : null),
-                                  isDense: true,
-                                  isExpanded: true,
-                                  items: ledgers.map((ledger) {
-                                    return DropdownMenuItem(
-                                      value: ledger,
-                                      child: Text(ledger.name),
-                                    );
-                                  }).toList(),
-                                  onChanged: (val) {
-                                    setState(() {
-                                      _selectedLedger = val;
-                                    });
-                                  },
-                                ),
-                              ),
+                                            .map((ledger) {
+                                              return DropdownMenuItem(
+                                                value: ledger.id,
+                                                child: Text(ledger.name),
+                                              );
+                                            })
+                                            .toList(),
+                                        onChanged: (val) {
+                                          setState(() {
+                                            _selectedDestinationLedgerId = val;
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
                             );
                           },
                           loading: () => const LinearProgressIndicator(),
