@@ -5,6 +5,8 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../data/models/transaction_model.dart';
 import '../providers/transaction_provider.dart';
+import '../../../settings/presentation/providers/currency_provider.dart';
+import 'transaction_page.dart';
 
 class TransactionsListPage extends ConsumerWidget {
   const TransactionsListPage({super.key});
@@ -74,11 +76,21 @@ class _TransactionItem extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isExpense = transaction.type == TransactionType.expense;
     final theme = Theme.of(context);
+    final currencyAsync = ref.watch(currencyProvider);
+    final currencySymbol = currencyAsync.asData?.value ?? '\$';
 
     return Dismissible(
       key: Key(transaction.id),
-      direction: DismissDirection.endToStart,
       background: Container(
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.only(left: 20),
+        decoration: BoxDecoration(
+          color: AppColors.income,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Icon(Icons.edit, color: Colors.white),
+      ),
+      secondaryBackground: Container(
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
         decoration: BoxDecoration(
@@ -87,27 +99,38 @@ class _TransactionItem extends ConsumerWidget {
         ),
         child: const Icon(Icons.delete, color: Colors.white),
       ),
-      confirmDismiss: (_) async {
-        return await showDialog(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text('Delete Transaction?'),
-            content: const Text(
-              'This will delete the transaction and revert the balance.',
+      confirmDismiss: (direction) async {
+        if (direction == DismissDirection.startToEnd) {
+          // Edit
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => TransactionPage(transaction: transaction),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(false),
-                child: const Text('Cancel'),
+          );
+          return false;
+        } else {
+          // Delete
+          return await showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: const Text('Delete Transaction?'),
+              content: const Text(
+                'This will delete the transaction and revert the balance.',
               ),
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(true),
-                style: TextButton.styleFrom(foregroundColor: Colors.red),
-                child: const Text('Delete'),
-              ),
-            ],
-          ),
-        );
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(false),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(true),
+                  style: TextButton.styleFrom(foregroundColor: Colors.red),
+                  child: const Text('Delete'),
+                ),
+              ],
+            ),
+          );
+        }
       },
       onDismissed: (_) {
         ref.read(transactionProvider.notifier).deleteTransaction(transaction);
@@ -137,7 +160,7 @@ class _TransactionItem extends ConsumerWidget {
             DateFormat('MMM dd, yyyy - hh:mm a').format(transaction.date),
           ),
           trailing: Text(
-            '${isExpense ? '-' : '+'}${CurrencyFormatter.format(transaction.amount)}',
+            '${isExpense ? '-' : '+'}${CurrencyFormatter.format(transaction.amount, symbol: currencySymbol)}',
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,

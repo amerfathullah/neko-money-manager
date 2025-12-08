@@ -8,10 +8,13 @@ import '../../../home/data/models/ledger.dart';
 import '../../../home/presentation/providers/ledger_provider.dart';
 import '../../data/models/transaction_model.dart';
 import '../providers/transaction_provider.dart';
+import '../../../settings/presentation/providers/currency_provider.dart';
 import '../../../../core/widgets/banner_ad_widget.dart';
 
 class TransactionPage extends ConsumerStatefulWidget {
-  const TransactionPage({super.key});
+  final TransactionModel? transaction;
+
+  const TransactionPage({super.key, this.transaction});
 
   @override
   ConsumerState<TransactionPage> createState() => _TransactionPageState();
@@ -24,12 +27,38 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
   DateTime _selectedDate = DateTime.now();
   Category? _selectedCategory;
   Ledger? _selectedLedger;
+  bool _isInitialLoad = true;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(_handleTabSelection);
+
+    if (widget.transaction != null) {
+      final t = widget.transaction!;
+      _amount = t.amount.toString();
+      // Remove trailing .0 if integer
+      if (_amount.endsWith('.0')) {
+        _amount = _amount.substring(0, _amount.length - 2);
+      }
+      _selectedDate = t.date;
+
+      // Set tab index based on type
+      int index = 0;
+      switch (t.type) {
+        case TransactionType.expense:
+          index = 0;
+          break;
+        case TransactionType.income:
+          index = 1;
+          break;
+        case TransactionType.transfer:
+          index = 2;
+          break;
+      }
+      _tabController.index = index;
+    }
   }
 
   void _handleTabSelection() {
@@ -99,7 +128,9 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
         : TransactionType.transfer;
 
     final transaction = TransactionModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id:
+          widget.transaction?.id ??
+          DateTime.now().millisecondsSinceEpoch.toString(),
       ledgerId: ledger.id,
       categoryId: _selectedCategory?.id ?? '',
       ledgerName: ledger.name,
@@ -110,7 +141,15 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
     );
 
     try {
-      await ref.read(transactionProvider.notifier).addTransaction(transaction);
+      if (widget.transaction != null) {
+        await ref
+            .read(transactionProvider.notifier)
+            .updateTransaction(widget.transaction!, transaction);
+      } else {
+        await ref
+            .read(transactionProvider.notifier)
+            .addTransaction(transaction);
+      }
       if (mounted) {
         Navigator.of(context).pop();
         ScaffoldMessenger.of(
@@ -133,10 +172,14 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
 
     final categoriesAsync = ref.watch(categoryProvider);
     final ledgersAsync = ref.watch(ledgerProvider);
+    final currencyAsync = ref.watch(currencyProvider);
+    final currencySymbol = currencyAsync.asData?.value ?? '\$';
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('New Transaction'),
+        title: Text(
+          widget.transaction != null ? 'Edit Transaction' : 'New Transaction',
+        ),
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: theme.primaryColor,
@@ -153,6 +196,17 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Center(child: Text('Error: $err')),
         data: (allCategories) {
+          if (_isInitialLoad && widget.transaction != null) {
+            try {
+              _selectedCategory = allCategories.firstWhere(
+                (c) => c.id == widget.transaction!.categoryId,
+              );
+            } catch (_) {
+              // Category might have been deleted
+            }
+            _isInitialLoad = false;
+          }
+
           List<Category> currentCategories = [];
           if (_tabController.index == 0) {
             currentCategories = allCategories
@@ -177,7 +231,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      '\$',
+                      currencySymbol,
                       style: TextStyle(
                         fontSize: 32,
                         color: AppColors.textDark.withValues(alpha: 0.6),
@@ -237,7 +291,12 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
                                   value:
                                       _selectedLedger ??
                                       (ledgers.isNotEmpty
-                                          ? ledgers.first
+                                          ? ledgers.firstWhere(
+                                              (l) =>
+                                                  l.id ==
+                                                  widget.transaction?.ledgerId,
+                                              orElse: () => ledgers.first,
+                                            )
                                           : null),
                                   isDense: true,
                                   isExpanded: true,

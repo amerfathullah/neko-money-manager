@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../providers/pro_provider.dart';
+import '../providers/currency_provider.dart';
 
 class PremiumPage extends ConsumerStatefulWidget {
   const PremiumPage({super.key});
@@ -32,6 +33,8 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
 
   @override
   Widget build(BuildContext context) {
+    final currencyAsync = ref.watch(currencyProvider);
+    final currencySymbol = currencyAsync.asData?.value ?? '\$';
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -84,9 +87,9 @@ class _PremiumPageState extends ConsumerState<PremiumPage> {
                         strokeWidth: 2,
                       ),
                     )
-                  : const Text(
-                      'Upgrade for \$1.99',
-                      style: TextStyle(
+                  : Text(
+                      'Upgrade for ${currencySymbol}1.99',
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),

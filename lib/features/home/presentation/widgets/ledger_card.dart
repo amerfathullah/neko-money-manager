@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/utils/currency_formatter.dart';
 
 class LedgerCard extends StatelessWidget {
   final String name;
   final double balance;
   final Color color;
+  final String currencySymbol;
   final VoidCallback onTap;
 
   const LedgerCard({
@@ -12,6 +14,7 @@ class LedgerCard extends StatelessWidget {
     required this.name,
     required this.balance,
     required this.color,
+    required this.currencySymbol,
     required this.onTap,
   });
 
@@ -59,7 +62,7 @@ class LedgerCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '\$${balance.toStringAsFixed(2)}',
+                    CurrencyFormatter.format(balance, symbol: currencySymbol),
                     style: const TextStyle(
                       color: AppColors.textDark,
                       fontWeight: FontWeight.bold,

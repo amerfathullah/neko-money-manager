@@ -60,6 +60,58 @@ class TransactionRepository {
     await batch.commit();
   }
 
+  Future<void> updateTransaction(
+    String userId,
+    TransactionModel oldTransaction,
+    TransactionModel newTransaction,
+  ) async {
+    final userDoc = _firestore.collection('users').doc(userId);
+    final batch = _firestore.batch();
+
+    // Revert old balance
+    if (oldTransaction.ledgerId == newTransaction.ledgerId) {
+      final ledgerRef = userDoc
+          .collection('ledgers')
+          .doc(oldTransaction.ledgerId);
+      final oldNet = oldTransaction.type == TransactionType.income
+          ? oldTransaction.amount
+          : -oldTransaction.amount;
+      final newNet = newTransaction.type == TransactionType.income
+          ? newTransaction.amount
+          : -newTransaction.amount;
+
+      batch.update(ledgerRef, {
+        'balance': FieldValue.increment(newNet - oldNet),
+      });
+    } else {
+      // Revert old
+      final oldLedgerRef = userDoc
+          .collection('ledgers')
+          .doc(oldTransaction.ledgerId);
+      final oldNet = oldTransaction.type == TransactionType.income
+          ? oldTransaction.amount
+          : -oldTransaction.amount;
+      batch.update(oldLedgerRef, {'balance': FieldValue.increment(-oldNet)});
+
+      // Apply new
+      final newLedgerRef = userDoc
+          .collection('ledgers')
+          .doc(newTransaction.ledgerId);
+      final newNet = newTransaction.type == TransactionType.income
+          ? newTransaction.amount
+          : -newTransaction.amount;
+      batch.update(newLedgerRef, {'balance': FieldValue.increment(newNet)});
+    }
+
+    // Update Transaction
+    final transactionRef = userDoc
+        .collection(_collection)
+        .doc(newTransaction.id);
+    batch.set(transactionRef, newTransaction.toJson());
+
+    await batch.commit();
+  }
+
   Stream<List<TransactionModel>> getRecentTransactions(
     String userId, {
     int limit = 10,

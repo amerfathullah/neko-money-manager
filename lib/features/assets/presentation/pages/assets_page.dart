@@ -4,6 +4,8 @@ import '../../../../core/constants/app_colors.dart';
 import '../../data/models/asset.dart';
 import '../providers/asset_provider.dart';
 import '../../../../core/widgets/banner_ad_widget.dart';
+import '../../../../core/utils/currency_formatter.dart';
+import '../../../settings/presentation/providers/currency_provider.dart';
 
 class AssetsPage extends ConsumerWidget {
   const AssetsPage({super.key});
@@ -11,6 +13,8 @@ class AssetsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final assetsAsync = ref.watch(assetProvider);
+    final currencyAsync = ref.watch(currencyProvider);
+    final currencySymbol = currencyAsync.asData?.value ?? '\$';
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -42,7 +46,10 @@ class AssetsPage extends ConsumerWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '\$${totalNetWorth.toStringAsFixed(2)}',
+                      CurrencyFormatter.format(
+                        totalNetWorth,
+                        symbol: currencySymbol,
+                      ),
                       style: const TextStyle(
                         fontSize: 36,
                         fontWeight: FontWeight.bold,
@@ -89,7 +96,10 @@ class AssetsPage extends ConsumerWidget {
                               ),
                               subtitle: Text(asset.type.name.toUpperCase()),
                               trailing: Text(
-                                '\$${asset.currentValue.toStringAsFixed(2)}',
+                                CurrencyFormatter.format(
+                                  asset.currentValue,
+                                  symbol: currencySymbol,
+                                ),
                                 style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,

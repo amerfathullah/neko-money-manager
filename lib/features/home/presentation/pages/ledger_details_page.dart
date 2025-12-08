@@ -6,6 +6,7 @@ import '../../../../core/utils/currency_formatter.dart';
 import '../../data/models/ledger.dart';
 import '../../../transactions/data/models/transaction_model.dart';
 import '../../../transactions/presentation/providers/transaction_provider.dart';
+import '../../../settings/presentation/providers/currency_provider.dart';
 
 class LedgerDetailsPage extends ConsumerWidget {
   final Ledger ledger;
@@ -15,6 +16,8 @@ class LedgerDetailsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final transactionsAsync = ref.watch(ledgerTransactionsProvider(ledger.id));
+    final currencyAsync = ref.watch(currencyProvider);
+    final currencySymbol = currencyAsync.asData?.value ?? '\$';
 
     return Scaffold(
       appBar: AppBar(
@@ -58,7 +61,10 @@ class LedgerDetailsPage extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  CurrencyFormatter.format(ledger.balance),
+                  CurrencyFormatter.format(
+                    ledger.balance,
+                    symbol: currencySymbol,
+                  ),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 32,
@@ -114,7 +120,7 @@ class LedgerDetailsPage extends ConsumerWidget {
                           DateFormat('MMM dd, yyyy').format(transaction.date),
                         ),
                         trailing: Text(
-                          '${isExpense ? '-' : '+'}${CurrencyFormatter.format(transaction.amount)}',
+                          '${isExpense ? '-' : '+'}${CurrencyFormatter.format(transaction.amount, symbol: currencySymbol)}',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,

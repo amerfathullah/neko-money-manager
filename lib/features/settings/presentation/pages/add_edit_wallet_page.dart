@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../home/data/models/ledger.dart';
 import '../../../home/presentation/providers/ledger_provider.dart';
+import '../providers/currency_provider.dart';
 
 class AddEditWalletPage extends ConsumerStatefulWidget {
   final Ledger? ledger;
@@ -85,6 +86,8 @@ class _AddEditWalletPageState extends ConsumerState<AddEditWalletPage> {
 
   @override
   Widget build(BuildContext context) {
+    final currencyAsync = ref.watch(currencyProvider);
+    final currencySymbol = currencyAsync.asData?.value ?? '\$';
     final isEditing = widget.ledger != null;
 
     return Scaffold(
@@ -131,7 +134,7 @@ class _AddEditWalletPageState extends ConsumerState<AddEditWalletPage> {
                 ),
                 decoration: InputDecoration(
                   labelText: 'Initial Balance',
-                  prefixText: '\$ ',
+                  prefixText: '$currencySymbol ',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

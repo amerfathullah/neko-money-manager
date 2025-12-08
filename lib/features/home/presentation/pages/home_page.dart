@@ -10,6 +10,7 @@ import '../widgets/transaction_chart.dart';
 import 'ledger_details_page.dart';
 import '../../../../core/widgets/banner_ad_widget.dart';
 import '../../../../core/utils/currency_formatter.dart';
+import '../../../settings/presentation/providers/currency_provider.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -19,6 +20,8 @@ class HomePage extends ConsumerWidget {
     final theme = Theme.of(context);
     final ledgersAsync = ref.watch(ledgerProvider);
     final transactionsAsync = ref.watch(transactionProvider);
+    final currencyAsync = ref.watch(currencyProvider);
+    final currencySymbol = currencyAsync.asData?.value ?? '\$';
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -53,6 +56,7 @@ class HomePage extends ConsumerWidget {
                               name: ledger.name,
                               balance: ledger.balance,
                               color: ledger.color,
+                              currencySymbol: currencySymbol,
                               onTap: () {
                                 Navigator.of(context).push(
                                   MaterialPageRoute(
@@ -87,6 +91,7 @@ class HomePage extends ConsumerWidget {
                       context,
                       transactions,
                       categoryName,
+                      currencySymbol,
                     );
                   },
                 ),
@@ -166,7 +171,7 @@ class HomePage extends ConsumerWidget {
                             ),
                           ),
                           trailing: Text(
-                            '${isExpense ? '-' : '+'}${CurrencyFormatter.format(transaction.amount)}',
+                            '${isExpense ? '-' : '+'}${CurrencyFormatter.format(transaction.amount, symbol: currencySymbol)}',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
@@ -201,6 +206,7 @@ class HomePage extends ConsumerWidget {
     BuildContext context,
     List<TransactionModel> allTransactions,
     String categoryName,
+    String currencySymbol,
   ) {
     final filtered = allTransactions
         .where(
@@ -246,7 +252,7 @@ class HomePage extends ConsumerWidget {
                     ),
                     subtitle: Text(t.note ?? 'No note'),
                     trailing: Text(
-                      '-${CurrencyFormatter.format(t.amount)}',
+                      '-${CurrencyFormatter.format(t.amount, symbol: currencySymbol)}',
                       style: const TextStyle(
                         color: AppColors.expense,
                         fontWeight: FontWeight.bold,

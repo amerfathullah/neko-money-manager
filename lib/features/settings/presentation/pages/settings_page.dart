@@ -8,6 +8,7 @@ import 'appearance_page.dart';
 import 'wallets_page.dart';
 import 'profile_page.dart';
 import 'backup_page.dart';
+import '../providers/currency_provider.dart';
 
 import '../../../auth/presentation/providers/auth_provider.dart';
 
@@ -86,6 +87,18 @@ class SettingsPage extends ConsumerWidget {
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => const AppearancePage()),
+              );
+            },
+          ),
+          Consumer(
+            builder: (context, ref, child) {
+              final currencyAsync = ref.watch(currencyProvider);
+              return _buildSettingItem(
+                context,
+                icon: Icons.currency_exchange,
+                title: 'Currency',
+                subtitle: currencyAsync.asData?.value ?? '\$',
+                onTap: () => _showCurrencyDialog(context, ref),
               );
             },
           ),
@@ -191,6 +204,33 @@ class SettingsPage extends ConsumerWidget {
               ),
               const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showCurrencyDialog(BuildContext context, WidgetRef ref) {
+    const currencies = ['\$', '€', '£', '¥', 'RM', 'Rp', '₹'];
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Select Currency'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: currencies.length,
+            itemBuilder: (context, index) {
+              final symbol = currencies[index];
+              return ListTile(
+                title: Text(symbol, style: const TextStyle(fontSize: 18)),
+                onTap: () {
+                  ref.read(currencyProvider.notifier).setCurrency(symbol);
+                  Navigator.pop(context);
+                },
+              );
+            },
           ),
         ),
       ),

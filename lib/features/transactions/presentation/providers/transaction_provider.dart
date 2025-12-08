@@ -33,6 +33,17 @@ class TransactionNotifier extends StreamNotifier<List<TransactionModel>> {
         .read(transactionRepositoryProvider)
         .deleteTransaction(userId, transaction);
   }
+
+  Future<void> updateTransaction(
+    TransactionModel oldTransaction,
+    TransactionModel newTransaction,
+  ) async {
+    final userId = ref.read(userIdProvider);
+    if (userId == null) return;
+    await ref
+        .read(transactionRepositoryProvider)
+        .updateTransaction(userId, oldTransaction, newTransaction);
+  }
 }
 
 final transactionProvider =

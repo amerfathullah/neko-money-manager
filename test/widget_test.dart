@@ -11,6 +11,7 @@ import 'package:neko_money_manager/features/auth/presentation/providers/auth_pro
 import 'package:neko_money_manager/features/transactions/presentation/providers/transaction_provider.dart';
 import 'package:neko_money_manager/features/transactions/data/models/transaction_model.dart';
 import 'package:neko_money_manager/features/settings/presentation/providers/pro_provider.dart';
+import 'package:neko_money_manager/features/settings/presentation/providers/currency_provider.dart';
 
 // Mocks
 class MockCategoryNotifier extends CategoryNotifier {
@@ -65,6 +66,13 @@ class MockProNotifier extends ProNotifier {
   @override
   Stream<bool> build() {
     return Stream.value(true);
+  }
+}
+
+class MockCurrencyNotifier extends CurrencyNotifier {
+  @override
+  Future<String> build() async {
+    return '\$';
   }
 }
 
@@ -128,6 +136,7 @@ void main() {
           ledgerTransactionsProvider.overrideWith(
             (ref, id) => Stream.value([]),
           ),
+          currencyProvider.overrideWith(MockCurrencyNotifier.new),
         ],
         child: const MaterialApp(home: MainScaffold()),
       ),
@@ -154,6 +163,11 @@ void main() {
 
     // Settings State
     expect(find.text('PREFERENCES'), findsOneWidget);
+
+    // Scroll down to find ACCOUNT section
+    await tester.drag(find.byType(ListView), const Offset(0, -500));
+    await tester.pumpAndSettle();
+
     expect(find.text('ACCOUNT'), findsOneWidget);
     expect(find.text('Expense Breakdown'), findsNothing);
 

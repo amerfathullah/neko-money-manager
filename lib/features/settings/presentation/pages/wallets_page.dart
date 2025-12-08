@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../home/data/models/ledger.dart';
 import '../../../home/presentation/providers/ledger_provider.dart';
 import '../../../../core/utils/currency_formatter.dart';
+import '../providers/currency_provider.dart';
 import 'add_edit_wallet_page.dart';
 
 class WalletsPage extends ConsumerWidget {
@@ -11,6 +12,8 @@ class WalletsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ledgersAsync = ref.watch(ledgerProvider);
+    final currencyAsync = ref.watch(currencyProvider);
+    final currencySymbol = currencyAsync.asData?.value ?? '\$';
 
     return Scaffold(
       appBar: AppBar(
@@ -72,7 +75,10 @@ class WalletsPage extends ConsumerWidget {
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   subtitle: Text(
-                    CurrencyFormatter.format(ledger.balance),
+                    CurrencyFormatter.format(
+                      ledger.balance,
+                      symbol: currencySymbol,
+                    ),
                     style: TextStyle(
                       color: Theme.of(context).textTheme.bodySmall?.color,
                     ),
