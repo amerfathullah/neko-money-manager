@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -28,6 +29,9 @@ class TransactionsListPage extends ConsumerWidget {
           fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
+        systemOverlayStyle: theme.brightness == Brightness.light
+            ? SystemUiOverlayStyle.dark
+            : SystemUiOverlayStyle.light,
       ),
       body: transactionsAsync.when(
         data: (transactions) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../categories/presentation/pages/categories_page.dart';
@@ -28,6 +29,9 @@ class SettingsPage extends ConsumerWidget {
           fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
+        systemOverlayStyle: Theme.of(context).brightness == Brightness.light
+            ? SystemUiOverlayStyle.dark
+            : SystemUiOverlayStyle.light,
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),

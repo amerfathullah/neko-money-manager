@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -25,177 +26,191 @@ class HomePage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'My Wallets',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textDark,
+      body: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: theme.brightness == Brightness.light
+            ? SystemUiOverlayStyle.dark
+            : SystemUiOverlayStyle.light,
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'My Wallets',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textDark,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                height: 140,
-                child: ledgersAsync.when(
-                  data: (ledgers) => ledgers.isEmpty
-                      ? const Center(child: Text('No wallets found. Add one!'))
-                      : ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: ledgers.length,
-                          separatorBuilder: (context, index) =>
-                              const SizedBox(width: 12),
-                          itemBuilder: (context, index) {
-                            final ledger = ledgers[index];
-                            return LedgerCard(
-                              name: ledger.name,
-                              balance: ledger.balance,
-                              color: ledger.color,
-                              currencySymbol: currencySymbol,
-                              onTap: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        LedgerDetailsPage(ledger: ledger),
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                        ),
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (err, stack) => Center(child: Text('Error: $err')),
-                ),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Expense Breakdown',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textDark,
-                ),
-              ),
-              const SizedBox(height: 16),
-              transactionsAsync.when(
-                data: (transactions) => TransactionChart(
-                  transactions: transactions,
-                  onCategoryTap: (categoryName) {
-                    _showCategoryTransactions(
-                      context,
-                      transactions,
-                      categoryName,
-                      currencySymbol,
-                    );
-                  },
-                ),
-                loading: () => const SizedBox(
-                  height: 200,
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-                error: (err, _) => const SizedBox.shrink(),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Recent Transactions',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textDark,
-                ),
-              ),
-              const SizedBox(height: 16),
-              transactionsAsync.when(
-                data: (transactions) {
-                  if (transactions.isEmpty) {
-                    return const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(32.0),
-                        child: Text('No transactions yet'),
-                      ),
-                    );
-                  }
-                  return ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: transactions.length,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(height: 12),
-                    itemBuilder: (context, index) {
-                      final transaction = transactions[index];
-                      final isExpense =
-                          transaction.type == TransactionType.expense;
-                      final isIncome =
-                          transaction.type == TransactionType.income;
-
-                      return Card(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        elevation: 0,
-                        color: Theme.of(context).cardColor,
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: isExpense
-                                ? AppColors.pastelRed.withValues(alpha: 0.2)
-                                : isIncome
-                                ? AppColors.pastelGreen.withValues(alpha: 0.2)
-                                : AppColors.pastelBlue.withValues(alpha: 0.2),
-                            child: Icon(
-                              isExpense
-                                  ? Icons.arrow_downward
-                                  : isIncome
-                                  ? Icons.arrow_upward
-                                  : Icons.swap_horiz,
-                              color: isExpense
-                                  ? AppColors.expense
-                                  : isIncome
-                                  ? AppColors.income
-                                  : AppColors.transfer,
-                            ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  height: 140,
+                  child: ledgersAsync.when(
+                    data: (ledgers) => ledgers.isEmpty
+                        ? const Center(
+                            child: Text('No wallets found. Add one!'),
+                          )
+                        : ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: ledgers.length,
+                            separatorBuilder: (context, index) =>
+                                const SizedBox(width: 12),
+                            itemBuilder: (context, index) {
+                              final ledger = ledgers[index];
+                              return LedgerCard(
+                                name: ledger.name,
+                                balance: ledger.balance,
+                                color: ledger.color,
+                                currencySymbol: currencySymbol,
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          LedgerDetailsPage(ledger: ledger),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
                           ),
-                          title: Text(
-                            transaction.categoryName ?? 'Uncategorized',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Text(
-                            DateFormat('MMM dd, yyyy').format(transaction.date),
-                            style: TextStyle(
-                              color: AppColors.textDark.withValues(alpha: 0.6),
-                            ),
-                          ),
-                          trailing: Text(
-                            '${isExpense ? '-' : '+'}${CurrencyFormatter.format(transaction.amount, symbol: currencySymbol)}',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: isExpense
-                                  ? AppColors.expense
-                                  : isIncome
-                                  ? AppColors.income
-                                  : AppColors
-                                        .textDark, // Transfer neutral? or specific color
-                            ),
-                          ),
-                        ),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (err, stack) => Center(child: Text('Error: $err')),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  'Expense Breakdown',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textDark,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                transactionsAsync.when(
+                  data: (transactions) => TransactionChart(
+                    transactions: transactions,
+                    onCategoryTap: (categoryName) {
+                      _showCategoryTransactions(
+                        context,
+                        transactions,
+                        categoryName,
+                        currencySymbol,
                       );
                     },
-                  );
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, stack) =>
-                    Center(child: Text('Error loading transactions: $err')),
-              ),
+                  ),
+                  loading: () => const SizedBox(
+                    height: 200,
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                  error: (err, _) => const SizedBox.shrink(),
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  'Recent Transactions',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textDark,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                transactionsAsync.when(
+                  data: (transactions) {
+                    if (transactions.isEmpty) {
+                      return const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(32.0),
+                          child: Text('No transactions yet'),
+                        ),
+                      );
+                    }
+                    return ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: transactions.length,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final transaction = transactions[index];
+                        final isExpense =
+                            transaction.type == TransactionType.expense;
+                        final isIncome =
+                            transaction.type == TransactionType.income;
 
-              const SizedBox(height: 24),
-              const BannerAdWidget(),
-            ],
+                        return Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 0,
+                          color: Theme.of(context).cardColor,
+                          child: ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: isExpense
+                                  ? AppColors.pastelRed.withValues(alpha: 0.2)
+                                  : isIncome
+                                  ? AppColors.pastelGreen.withValues(alpha: 0.2)
+                                  : AppColors.pastelBlue.withValues(alpha: 0.2),
+                              child: Icon(
+                                isExpense
+                                    ? Icons.arrow_downward
+                                    : isIncome
+                                    ? Icons.arrow_upward
+                                    : Icons.swap_horiz,
+                                color: isExpense
+                                    ? AppColors.expense
+                                    : isIncome
+                                    ? AppColors.income
+                                    : AppColors.transfer,
+                              ),
+                            ),
+                            title: Text(
+                              transaction.categoryName ?? 'Uncategorized',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            subtitle: Text(
+                              DateFormat(
+                                'MMM dd, yyyy',
+                              ).format(transaction.date),
+                              style: TextStyle(
+                                color: AppColors.textDark.withValues(
+                                  alpha: 0.6,
+                                ),
+                              ),
+                            ),
+                            trailing: Text(
+                              '${isExpense ? '-' : '+'}${CurrencyFormatter.format(transaction.amount, symbol: currencySymbol)}',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: isExpense
+                                    ? AppColors.expense
+                                    : isIncome
+                                    ? AppColors.income
+                                    : AppColors
+                                          .textDark, // Transfer neutral? or specific color
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (err, stack) =>
+                      Center(child: Text('Error loading transactions: $err')),
+                ),
+
+                const SizedBox(height: 24),
+                const BannerAdWidget(),
+              ],
+            ),
           ),
         ),
       ),
