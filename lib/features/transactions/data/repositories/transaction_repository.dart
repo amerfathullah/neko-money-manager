@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/transaction_model.dart';
+import '../../../assets/data/models/asset_history_model.dart';
 
 class TransactionRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -7,88 +8,86 @@ class TransactionRepository {
 
   Future<void> addTransaction(
     String userId,
-    TransactionModel transaction,
+    TransactionModel transactionModel,
   ) async {
     final userDoc = _firestore.collection('users').doc(userId);
 
-    // Batch write to update transaction list and asset balance atomically
-    final batch = _firestore.batch();
+    await _firestore.runTransaction((transaction) async {
+      // 1. Add Transaction
+      final transactionRef = userDoc
+          .collection(_collection)
+          .doc(transactionModel.id);
+      transaction.set(transactionRef, transactionModel.toJson());
 
-    // 1. Add Transaction
-    final transactionRef = userDoc.collection(_collection).doc(transaction.id);
-    batch.set(transactionRef, transaction.toJson());
+      // 2. Update Asset Balance & History
+      if (transactionModel.assetId != null) {
+        await _updateAssetBalanceInTransaction(
+          transaction,
+          userDoc,
+          transactionModel.assetId!,
+          transactionModel.type == TransactionType.income
+              ? transactionModel.amount
+              : -transactionModel.amount, // Expense or Transfer Source
+          transactionModel.id,
+          'transaction_add',
+        );
 
-    // 2. Update Asset Balance
-    if (transaction.assetId != null) {
-      final assetRef = userDoc.collection('assets').doc(transaction.assetId);
-
-      if (transaction.type == TransactionType.transfer &&
-          transaction.destinationAssetId != null) {
-        // Transfer: Deduct from Source Asset, Add to Destination Asset
-        batch.update(assetRef, {
-          'balance': FieldValue.increment(-transaction.amount),
-        });
-
-        final destAssetRef = userDoc
-            .collection('assets')
-            .doc(transaction.destinationAssetId);
-        batch.update(destAssetRef, {
-          'balance': FieldValue.increment(transaction.amount),
-        });
-      } else {
-        // Expense or Income
-        // Income increases Asset balance (e.g. Salary -> Bank)
-        // Expense decreases Asset balance (e.g. Lunch -> Wallet)
-        double amountChange = transaction.type == TransactionType.income
-            ? transaction.amount
-            : -transaction.amount;
-        batch.update(assetRef, {'balance': FieldValue.increment(amountChange)});
+        if (transactionModel.type == TransactionType.transfer &&
+            transactionModel.destinationAssetId != null) {
+          await _updateAssetBalanceInTransaction(
+            transaction,
+            userDoc,
+            transactionModel.destinationAssetId!,
+            transactionModel.amount, // Transfer Dest (Income)
+            transactionModel.id,
+            'transaction_add_transfer',
+          );
+        }
       }
-    }
-
-    await batch.commit();
+    });
   }
 
   Future<void> deleteTransaction(
     String userId,
-    TransactionModel transaction,
+    TransactionModel transactionModel,
   ) async {
     final userDoc = _firestore.collection('users').doc(userId);
-    final batch = _firestore.batch();
 
-    // 1. Delete Transaction
-    final transactionRef = userDoc.collection(_collection).doc(transaction.id);
-    batch.delete(transactionRef);
+    await _firestore.runTransaction((transaction) async {
+      // 1. Delete Transaction
+      final transactionRef = userDoc
+          .collection(_collection)
+          .doc(transactionModel.id);
+      transaction.delete(transactionRef);
 
-    // 2. Revert Asset Balance
-    if (transaction.assetId != null) {
-      final assetRef = userDoc.collection('assets').doc(transaction.assetId);
+      // 2. Revert Asset Balance & History
+      if (transactionModel.assetId != null) {
+        // Revert: Expense -> Add, Income -> Subtract
+        await _updateAssetBalanceInTransaction(
+          transaction,
+          userDoc,
+          transactionModel.assetId!,
+          transactionModel.type == TransactionType.income
+              ? -transactionModel.amount
+              : transactionModel.amount,
+          transactionModel.id,
+          'transaction_delete',
+        );
 
-      if (transaction.type == TransactionType.transfer &&
-          transaction.destinationAssetId != null) {
-        // Revert Transfer: Refund Source, Deduct from Destination
-        batch.update(assetRef, {
-          'balance': FieldValue.increment(transaction.amount),
-        });
-
-        final destAssetRef = userDoc
-            .collection('assets')
-            .doc(transaction.destinationAssetId);
-        batch.update(destAssetRef, {
-          'balance': FieldValue.increment(-transaction.amount),
-        });
-      } else {
-        // Revert Expense/Income
-        // Income was +, so revert is -
-        // Expense was -, so revert is +
-        double amountChange = transaction.type == TransactionType.income
-            ? -transaction.amount
-            : transaction.amount;
-        batch.update(assetRef, {'balance': FieldValue.increment(amountChange)});
+        if (transactionModel.type == TransactionType.transfer &&
+            transactionModel.destinationAssetId != null) {
+          // Revert Transfer Dest: Subtract
+          await _updateAssetBalanceInTransaction(
+            transaction,
+            userDoc,
+            transactionModel.destinationAssetId!,
+            -transactionModel.amount,
+            transactionModel.id,
+            'transaction_delete_transfer',
+          );
+        }
       }
-    }
-
-    await batch.commit();
+    });
   }
 
   Future<void> updateTransaction(
@@ -97,77 +96,105 @@ class TransactionRepository {
     TransactionModel newTransaction,
   ) async {
     final userDoc = _firestore.collection('users').doc(userId);
-    final batch = _firestore.batch();
 
-    // Helper to revert old transaction
-    void revertOld() {
+    await _firestore.runTransaction((transaction) async {
+      // 1. Revert Old (Manual Logic to avoid double reads?)
+      // Actually _updateAssetBalanceInTransaction handles reads.
+      // Firestore transactions handle repeated reads of same doc fine (returns same snap).
+
+      // Revert Old Source
       if (oldTransaction.assetId != null) {
-        final oldSource = userDoc
-            .collection('assets')
-            .doc(oldTransaction.assetId);
+        await _updateAssetBalanceInTransaction(
+          transaction,
+          userDoc,
+          oldTransaction.assetId!,
+          oldTransaction.type == TransactionType.income
+              ? -oldTransaction.amount
+              : oldTransaction.amount,
+          newTransaction.id, // Use new ID for history relation
+          'transaction_update_revert',
+        );
 
         if (oldTransaction.type == TransactionType.transfer &&
             oldTransaction.destinationAssetId != null) {
-          // Revert Transfer
-          batch.update(oldSource, {
-            'balance': FieldValue.increment(oldTransaction.amount),
-          });
-          final oldDest = userDoc
-              .collection('assets')
-              .doc(oldTransaction.destinationAssetId);
-          batch.update(oldDest, {
-            'balance': FieldValue.increment(-oldTransaction.amount),
-          });
-        } else {
-          // Revert Expense/Income
-          final change = oldTransaction.type == TransactionType.income
-              ? -oldTransaction.amount
-              : oldTransaction.amount;
-          batch.update(oldSource, {'balance': FieldValue.increment(change)});
+          await _updateAssetBalanceInTransaction(
+            transaction,
+            userDoc,
+            oldTransaction.destinationAssetId!,
+            -oldTransaction.amount,
+            newTransaction.id,
+            'transaction_update_revert_transfer',
+          );
         }
       }
-    }
 
-    // Helper to apply new transaction
-    void applyNew() {
+      // 2. Apply New
       if (newTransaction.assetId != null) {
-        final newSource = userDoc
-            .collection('assets')
-            .doc(newTransaction.assetId);
+        await _updateAssetBalanceInTransaction(
+          transaction,
+          userDoc,
+          newTransaction.assetId!,
+          newTransaction.type == TransactionType.income
+              ? newTransaction.amount
+              : -newTransaction.amount,
+          newTransaction.id,
+          'transaction_update_apply',
+        );
 
         if (newTransaction.type == TransactionType.transfer &&
             newTransaction.destinationAssetId != null) {
-          // Apply Transfer
-          batch.update(newSource, {
-            'balance': FieldValue.increment(-newTransaction.amount),
-          });
-          final newDest = userDoc
-              .collection('assets')
-              .doc(newTransaction.destinationAssetId);
-          batch.update(newDest, {
-            'balance': FieldValue.increment(newTransaction.amount),
-          });
-        } else {
-          // Apply Expense/Income
-          final change = newTransaction.type == TransactionType.income
-              ? newTransaction.amount
-              : -newTransaction.amount;
-          batch.update(newSource, {'balance': FieldValue.increment(change)});
+          await _updateAssetBalanceInTransaction(
+            transaction,
+            userDoc,
+            newTransaction.destinationAssetId!,
+            newTransaction.amount,
+            newTransaction.id,
+            'transaction_update_apply_transfer',
+          );
         }
       }
+
+      // 3. Update Transaction Doc
+      final transactionRef = userDoc
+          .collection(_collection)
+          .doc(newTransaction.id);
+      transaction.set(transactionRef, newTransaction.toJson());
+    });
+  }
+
+  // Helper to update balance and log history
+  Future<void> _updateAssetBalanceInTransaction(
+    Transaction transaction,
+    DocumentReference userDoc,
+    String assetId,
+    double amountChange,
+    String? transactionId,
+    String reason,
+  ) async {
+    final assetRef = userDoc.collection('assets').doc(assetId);
+    final assetSnap = await transaction.get(assetRef);
+
+    if (assetSnap.exists) {
+      final currentBalance =
+          (assetSnap.data() as Map<String, dynamic>)['balance'] as double? ??
+          0.0;
+      final newBalance = currentBalance + amountChange;
+
+      // Update Asset
+      transaction.update(assetRef, {'balance': newBalance});
+
+      // Log History
+      final historyRef = userDoc.collection('asset_history').doc();
+      final historyEntry = AssetHistoryModel(
+        id: historyRef.id,
+        assetId: assetId,
+        balance: newBalance,
+        date: DateTime.now(),
+        reason: reason,
+        relatedTransactionId: transactionId,
+      );
+      transaction.set(historyRef, historyEntry.toJson());
     }
-
-    // Applying both separately (revert then apply)
-    revertOld();
-    applyNew();
-
-    // Update Transaction
-    final transactionRef = userDoc
-        .collection(_collection)
-        .doc(newTransaction.id);
-    batch.set(transactionRef, newTransaction.toJson());
-
-    await batch.commit();
   }
 
   Stream<List<TransactionModel>> getRecentTransactions(
@@ -180,6 +207,20 @@ class TransactionRepository {
         .collection(_collection)
         .orderBy('date', descending: true)
         .limit(limit)
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs
+              .map((doc) => TransactionModel.fromJson(doc.data()))
+              .toList();
+        });
+  }
+
+  Stream<List<TransactionModel>> getAllTransactionsStream(String userId) {
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .collection(_collection)
+        .orderBy('date', descending: true)
         .snapshots()
         .map((snapshot) {
           return snapshot.docs

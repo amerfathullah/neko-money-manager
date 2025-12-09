@@ -77,3 +77,11 @@ final ledgerTransactionsProvider =
       final repository = ref.watch(transactionRepositoryProvider);
       return repository.getTransactionsByLedger(userId, ledgerId);
     });
+
+final allTransactionsProvider = StreamProvider<List<TransactionModel>>((ref) {
+  final userId = ref.watch(userIdProvider);
+  if (userId == null) return Stream.value([]);
+
+  final repository = ref.watch(transactionRepositoryProvider);
+  return repository.getAllTransactionsStream(userId);
+});

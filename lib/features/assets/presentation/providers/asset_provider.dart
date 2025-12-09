@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models/asset.dart';
+import '../../data/models/asset_history_model.dart';
 import '../../data/repositories/asset_repository.dart';
 import '../../../auth/presentation/providers/auth_provider.dart'; // For userIdProvider
 
@@ -44,3 +45,12 @@ class AssetNotifier extends StreamNotifier<List<Asset>> {
     await repository.deleteAsset(userId, assetId);
   }
 }
+
+final assetHistoryProvider = StreamProvider<List<AssetHistoryModel>>((ref) {
+  final userId = ref.watch(userIdProvider);
+  if (userId == null) {
+    return Stream.value([]);
+  }
+  final repository = ref.watch(assetRepositoryProvider);
+  return repository.getAssetHistoryStream(userId);
+});

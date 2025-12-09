@@ -10,7 +10,9 @@ import '../widgets/asset_pie_chart_section.dart';
 import '../../../transactions/presentation/pages/transaction_history_page.dart';
 import '../../../home/presentation/providers/ledger_provider.dart';
 import '../../../transactions/presentation/pages/transaction_page.dart';
-import '../../../transactions/data/models/transaction_model.dart';
+import '../../../transactions/data/models/transaction_model.dart'; // Keep for enum if needed, or remove if unused. AssetGraphSection doesn't use it anymore.
+// removed transaction_provider.dart
+import '../widgets/add_edit_asset_dialog.dart';
 
 class AssetsPage extends ConsumerStatefulWidget {
   const AssetsPage({super.key});
@@ -26,6 +28,8 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
   Widget build(BuildContext context) {
     final assetsAsync = ref.watch(assetProvider);
     final ledgersAsync = ref.watch(ledgerProvider);
+    final historyAsync = ref.watch(assetHistoryProvider);
+    final history = historyAsync.value ?? [];
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8E1), // Cream background
@@ -268,7 +272,10 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
                                     children: [
                                       const SizedBox(height: 20),
                                       // Graph Section
-                                      AssetGraphSection(assets: assets),
+                                      AssetGraphSection(
+                                        assets: assets,
+                                        assetHistory: history,
+                                      ),
                                       const SizedBox(height: 32),
 
                                       // Assets List (Positive)
@@ -358,12 +365,6 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'assets_fab',
-        onPressed: () => _showAddEditAssetDialog(context, ref, null),
-        backgroundColor: AppColors.pastelOrange,
-        child: const Icon(Icons.add),
-      ),
     );
   }
 
@@ -441,7 +442,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
                 const SizedBox(width: 8),
                 IconButton(
                   icon: const Icon(Icons.edit, size: 20, color: Colors.grey),
-                  onPressed: () => _showAddEditAssetDialog(context, ref, asset),
+                  onPressed: () => showAddEditAssetDialog(context, ref, asset),
                 ),
               ],
             ),
@@ -455,135 +456,6 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
           ),
         );
       }).toList(),
-    );
-  }
-
-  void _showAddEditAssetDialog(
-    BuildContext context,
-    WidgetRef ref,
-    Asset? existingAsset,
-  ) {
-    final nameController = TextEditingController(
-      text: existingAsset?.name ?? '',
-    );
-    final balanceController = TextEditingController(
-      text: existingAsset?.initialBalance.toString() ?? '',
-    );
-    final remarkController = TextEditingController(
-      text: existingAsset?.remark ?? '',
-    );
-
-    // You could add a color picker here later
-    Color selectedColor = existingAsset?.color ?? AppColors.pastelPurple;
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: Text(
-                existingAsset == null
-                    ? 'Add Asset Category'
-                    : 'Edit Asset Category',
-              ),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(
-                      controller: nameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Asset Name (e.g. Business, Personal)',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: balanceController,
-                      decoration: const InputDecoration(
-                        labelText: 'Initial Balance',
-                        border: OutlineInputBorder(),
-                        prefixText: '\$ ',
-                      ),
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      enabled: existingAsset == null,
-                    ),
-                    if (existingAsset != null)
-                      const Padding(
-                        padding: EdgeInsets.only(top: 8.0),
-                        child: Text(
-                          'Note: Changing Initial Balance will not affect current calculated balance unless you implement recalculation logic. For now, it is just for reference.',
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
-                        ),
-                      ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: remarkController,
-                      decoration: const InputDecoration(
-                        labelText: 'Remark (Optional)',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                if (existingAsset != null)
-                  TextButton(
-                    onPressed: () {
-                      ref
-                          .read(assetProvider.notifier)
-                          .deleteAsset(existingAsset.id);
-                      Navigator.pop(context);
-                    },
-                    child: const Text(
-                      'Delete',
-                      style: TextStyle(color: Colors.red),
-                    ),
-                  ),
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    final name = nameController.text.trim();
-                    if (name.isEmpty) return;
-
-                    final initialBalance =
-                        double.tryParse(balanceController.text) ?? 0.0;
-                    final remark = remarkController.text.trim();
-
-                    if (existingAsset == null) {
-                      final asset = Asset(
-                        id: DateTime.now().millisecondsSinceEpoch.toString(),
-                        name: name,
-                        colorValue: selectedColor.toARGB32(),
-                        balance: initialBalance,
-                        initialBalance: initialBalance,
-                        remark: remark,
-                      );
-                      ref.read(assetProvider.notifier).addAsset(asset);
-                    } else {
-                      final asset = existingAsset.copyWith(
-                        name: name,
-                        initialBalance: initialBalance,
-                        remark: remark,
-                      );
-                      ref.read(assetProvider.notifier).updateAsset(asset);
-                    }
-                    Navigator.pop(context);
-                  },
-                  child: const Text('Save'),
-                ),
-              ],
-            );
-          },
-        );
-      },
     );
   }
 }

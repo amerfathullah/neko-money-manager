@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'home_page.dart';
 import '../../../settings/presentation/pages/settings_page.dart';
@@ -6,17 +7,18 @@ import '../../../transactions/presentation/pages/transactions_list_page.dart';
 import '../../../transactions/presentation/pages/transaction_page.dart';
 import '../../../assets/presentation/pages/assets_page.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../assets/presentation/widgets/add_edit_asset_dialog.dart';
 
 import '../widgets/custom_bottom_nav.dart';
 
-class MainScaffold extends StatefulWidget {
+class MainScaffold extends ConsumerStatefulWidget {
   const MainScaffold({super.key});
 
   @override
-  State<MainScaffold> createState() => _MainScaffoldState();
+  ConsumerState<MainScaffold> createState() => _MainScaffoldState();
 }
 
-class _MainScaffoldState extends State<MainScaffold> {
+class _MainScaffoldState extends ConsumerState<MainScaffold> {
   int _currentIndex = 0;
 
   late final List<Widget> _pages;
@@ -40,6 +42,20 @@ class _MainScaffoldState extends State<MainScaffold> {
 
   @override
   Widget build(BuildContext context) {
+    // Determine FAB action and visibility based on index
+    VoidCallback? onFabPressed;
+    if (_currentIndex == 0) {
+      onFabPressed = () {
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (context) => const TransactionPage()),
+        );
+      };
+    } else if (_currentIndex == 2) {
+      onFabPressed = () {
+        showAddEditAssetDialog(context, ref, null);
+      };
+    }
+
     return Scaffold(
       extendBody: true, // Important for floating nav
       body: IndexedStack(index: _currentIndex, children: _pages),
@@ -47,22 +63,13 @@ class _MainScaffoldState extends State<MainScaffold> {
         currentIndex: _currentIndex,
         onTap: _onTabTapped,
       ),
-      floatingActionButton: _currentIndex == 0
+      floatingActionButton: onFabPressed != null
           ? FloatingActionButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const TransactionPage(),
-                  ),
-                );
-              },
+              onPressed: onFabPressed,
               backgroundColor: AppColors.pastelOrange,
               child: const Icon(Icons.add, color: AppColors.textDark),
             )
           : null,
-      // Adjust floating action button location to not overlap with bottom nav if needed
-      // With extendBody, it might overlap. Standard layout usually puts FAB above or docked.
-      // Since CustomBottomNav has margin bottom 24, we might want FAB higher up or standard.
     );
   }
 }
