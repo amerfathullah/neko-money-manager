@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../categories/presentation/pages/categories_page.dart';
-import '../providers/pro_provider.dart';
+
 import '../providers/settings_provider.dart';
 import 'premium_page.dart';
 import 'appearance_page.dart';
@@ -24,450 +24,290 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     final currencyAsync = ref.watch(currencyProvider);
-    final isProAsync = ref.watch(proProvider);
     final settingsAsync = ref.watch(settingsProvider);
     final currencySymbol = currencyAsync.asData?.value ?? '\$';
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8E1), // Cream background
-      body: SafeArea(
-        child: settingsAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (err, stack) => Center(child: Text('Error: $err')),
-          data: (settings) {
-            return Stack(
-              children: [
-                // Background Elements
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: Opacity(
-                    opacity: 0.8,
-                    child: Image.asset(
-                      'assets/images/cat_top_right.png',
-                      width: 120,
-                      errorBuilder: (c, e, s) => const SizedBox(),
-                    ),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFFFF8E1),
+        elevation: 0,
+        centerTitle: true,
+        title: const Text(
+          'Settings',
+          style: TextStyle(
+            color: AppColors.textDark,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        iconTheme: const IconThemeData(color: AppColors.textDark),
+      ),
+      body: settingsAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('Error: $err')),
+        data: (settings) {
+          return ListView(
+            padding: const EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 16,
+              bottom: 100, // Extra padding for bottom nav bar
+            ),
+            children: [
+              // SECTION: CUSTOM
+              _buildSectionHeader('Custom', color: AppColors.pastelRed),
+
+              // Membership
+              _buildModernSettingItem(
+                context,
+                icon: Icons.card_giftcard,
+                iconColor: AppColors.pastelOrange,
+                title: 'Membership',
+                subtitle: 'Unlock all features',
+                trailing: const Text(
+                  '20% off',
+                  style: TextStyle(
+                    color: AppColors.pastelRed,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
                   ),
                 ),
-
-                // Top Content
-                Column(
-                  children: [
-                    const SizedBox(height: 16),
-                    // Header: Membership Pill
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                      child: Row(
-                        children: [
-                          const Spacer(),
-
-                          // Membership Pill
-                          isProAsync.when(
-                            data: (isPro) => GestureDetector(
-                              onTap: isPro
-                                  ? null
-                                  : () {
-                                      Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              const PremiumPage(),
-                                        ),
-                                      );
-                                    },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 8,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.pastelRed.withValues(
-                                    alpha: 0.2,
-                                  ),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.card_membership,
-                                      size: 20,
-                                      color: isPro
-                                          ? AppColors.textDark
-                                          : AppColors.pastelRed,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      isPro ? 'Life member' : 'Join member 20%',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: isPro
-                                            ? AppColors.textDark
-                                            : AppColors.pastelRed,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            loading: () => const SizedBox.shrink(),
-                            error: (e, s) => const SizedBox.shrink(),
-                          ),
-                        ],
-                      ),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const PremiumPage(),
                     ),
-                  ],
+                  );
+                },
+              ),
+
+              // Dark Theme
+              _buildModernSettingItem(
+                context,
+                icon: Icons.dark_mode,
+                iconColor: AppColors.textDark,
+                title: 'Dark theme setting',
+                subtitle: 'Switch to dark theme',
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const AppearancePage(),
+                    ),
+                  );
+                },
+              ),
+
+              // Language
+              _buildModernSettingItem(
+                context,
+                icon: Icons.language,
+                iconColor: Colors.grey,
+                title: 'Switch language',
+                subtitle: _getLanguageName(settings.locale.languageCode),
+                onTap: () => _showLanguageDialog(context, ref, settings),
+              ),
+
+              // Monthly Start Date
+              _buildModernSettingItem(
+                context,
+                icon: Icons.calendar_month,
+                iconColor: AppColors.textDark,
+                title: 'Monthly start date',
+                subtitle:
+                    '${settings.monthlyStartDate}${_getDaySuffix(settings.monthlyStartDate)} day of each month',
+                onTap: () => _showStartDateDialog(context, ref, settings),
+              ),
+
+              // First day of week
+              _buildModernSettingItem(
+                context,
+                icon: Icons.calendar_today,
+                iconColor: AppColors.textDark,
+                title: 'First day of the week',
+                subtitle: _getDayName(settings.firstDayOfWeek),
+                onTap: () => _showWeekStartDialog(context, ref, settings),
+              ),
+
+              // Currency
+              _buildModernSettingItem(
+                context,
+                icon: Icons.monetization_on,
+                iconColor: AppColors.textDark,
+                title: 'Currency symbol',
+                subtitle: 'Display the currency symbol before the amount',
+                trailing: Text(
+                  currencySymbol,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
+                onTap: () => _showCurrencyDialog(context, ref),
+              ),
 
-                // Draggable Sheet
-                DraggableScrollableSheet(
-                  initialChildSize: 0.85,
-                  minChildSize: 0.7,
-                  maxChildSize: 1.0,
-                  builder: (context, scrollController) {
-                    return Stack(
-                      alignment: Alignment.topCenter,
-                      clipBehavior: Clip.none,
-                      children: [
-                        // Main Container
-                        Container(
-                          margin: const EdgeInsets.only(top: 25),
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFFFFDF5),
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(32),
-                              topRight: Radius.circular(32),
-                            ),
-                          ),
-                          child: ListView(
-                            controller: scrollController,
-                            padding: const EdgeInsets.only(
-                              top: 40,
-                              left: 16,
-                              right: 16,
-                              bottom: 100,
-                            ),
-                            children: [
-                              // SECTION: CUSTOM
-                              _buildSectionHeader(
-                                'Custom',
-                                color: AppColors.pastelRed,
-                              ),
-
-                              // Membership
-                              _buildModernSettingItem(
-                                context,
-                                icon: Icons.card_giftcard,
-                                iconColor: AppColors.pastelOrange,
-                                title: 'Membership',
-                                subtitle: 'Unlock all features',
-                                trailing: const Text(
-                                  '20% off',
-                                  style: TextStyle(
-                                    color: AppColors.pastelRed,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                onTap: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) => const PremiumPage(),
-                                    ),
-                                  );
-                                },
-                              ),
-
-                              // Dark Theme
-                              _buildModernSettingItem(
-                                context,
-                                icon: Icons.dark_mode,
-                                iconColor: AppColors.textDark,
-                                title: 'Dark theme setting',
-                                subtitle: 'Switch to dark theme',
-                                onTap: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          const AppearancePage(),
-                                    ),
-                                  );
-                                },
-                              ),
-
-                              // Language
-                              _buildModernSettingItem(
-                                context,
-                                icon: Icons.language,
-                                iconColor: Colors.grey,
-                                title: 'Switch language',
-                                subtitle: _getLanguageName(
-                                  settings.locale.languageCode,
-                                ),
-                                onTap: () =>
-                                    _showLanguageDialog(context, ref, settings),
-                              ),
-
-                              // Monthly Start Date
-                              _buildModernSettingItem(
-                                context,
-                                icon: Icons.calendar_month,
-                                iconColor: AppColors.textDark,
-                                title: 'Monthly start date',
-                                subtitle:
-                                    '${settings.monthlyStartDate}${_getDaySuffix(settings.monthlyStartDate)} day of each month',
-                                onTap: () => _showStartDateDialog(
-                                  context,
-                                  ref,
-                                  settings,
-                                ),
-                              ),
-
-                              // First day of week
-                              _buildModernSettingItem(
-                                context,
-                                icon: Icons.calendar_today,
-                                iconColor: AppColors.textDark,
-                                title: 'First day of the week',
-                                subtitle: _getDayName(settings.firstDayOfWeek),
-                                onTap: () => _showWeekStartDialog(
-                                  context,
-                                  ref,
-                                  settings,
-                                ),
-                              ),
-
-                              // Currency
-                              _buildModernSettingItem(
-                                context,
-                                icon: Icons.monetization_on,
-                                iconColor: AppColors.textDark,
-                                title: 'Currency symbol',
-                                subtitle:
-                                    'Display the currency symbol before the amount',
-                                trailing: Text(
-                                  currencySymbol,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                onTap: () => _showCurrencyDialog(context, ref),
-                              ),
-
-                              // Comma Separator
-                              _buildModernSettingItem(
-                                context,
-                                icon: Icons.format_quote,
-                                iconColor: AppColors.textDark,
-                                title: 'Comma separator',
-                                subtitle: 'Show the comma currency separator',
-                                trailing: Switch(
-                                  value: settings.useCommaSeparator,
-                                  onChanged: (val) {
-                                    ref
-                                        .read(settingsProvider.notifier)
-                                        .setCommaSeparator(val);
-                                  },
-                                  activeTrackColor: AppColors.pastelRed,
-                                ),
-                                onTap: () {
-                                  ref
-                                      .read(settingsProvider.notifier)
-                                      .setCommaSeparator(
-                                        !settings.useCommaSeparator,
-                                      );
-                                },
-                              ),
-
-                              // Fingerprint
-                              _buildModernSettingItem(
-                                context,
-                                icon: Icons.fingerprint,
-                                iconColor: AppColors.textDark,
-                                title: 'Fingerprint lock',
-                                subtitle:
-                                    'Need to enter fingerprint when open app',
-                                trailing: Switch(
-                                  value: settings.isBiometricEnabled,
-                                  onChanged: (val) async {
-                                    await _handleBiometricToggle(
-                                      context,
-                                      ref,
-                                      val,
-                                    );
-                                  },
-                                  activeTrackColor: AppColors.pastelRed,
-                                ),
-                                onTap: () async {
-                                  await _handleBiometricToggle(
-                                    context,
-                                    ref,
-                                    !settings.isBiometricEnabled,
-                                  );
-                                },
-                              ),
-
-                              const SizedBox(height: 24),
-
-                              // SECTION: MANAGEMENT
-                              _buildSectionHeader(
-                                'Management',
-                                color: AppColors.pastelRed,
-                              ),
-
-                              _buildModernSettingItem(
-                                context,
-                                icon: Icons.category,
-                                iconColor: AppColors.textDark,
-                                title: 'Record category management',
-                                subtitle:
-                                    'Add, modify and sort record categories',
-                                onTap: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          const CategoriesPage(),
-                                    ),
-                                  );
-                                },
-                              ),
-
-                              _buildModernSettingItem(
-                                context,
-                                icon: Icons.book,
-                                iconColor: AppColors.textDark,
-                                title: 'Ledger',
-                                subtitle: 'Manage the ledgers',
-                                onTap: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) => const WalletsPage(),
-                                    ),
-                                  );
-                                },
-                              ),
-
-                              _buildModernSettingItem(
-                                context,
-                                icon: Icons.autorenew,
-                                iconColor: AppColors.textDark,
-                                title: 'Recurring record',
-                                subtitle: 'Automatic recurring record',
-                                onTap: () {},
-                              ),
-                              _buildModernSettingItem(
-                                context,
-                                icon: Icons.work,
-                                iconColor: AppColors.textDark,
-                                title: 'Reimburse',
-                                subtitle: 'Manage the reimbursement',
-                                onTap: () {},
-                              ),
-                              _buildModernSettingItem(
-                                context,
-                                icon: Icons.star,
-                                iconColor: AppColors.textDark,
-                                title: 'Bookmarks',
-                                subtitle: 'Manage the bookmarks',
-                                onTap: () {},
-                              ),
-                              _buildModernSettingItem(
-                                context,
-                                icon: Icons.pie_chart,
-                                iconColor: AppColors.textDark,
-                                title: 'Budget',
-                                subtitle: 'Manage the category budgets',
-                                onTap: () {},
-                              ),
-                              _buildModernSettingItem(
-                                context,
-                                icon: Icons.exit_to_app,
-                                iconColor: AppColors.textDark,
-                                title: 'Bill Export',
-                                subtitle:
-                                    'The bill will be exported to a csv format file',
-                                onTap: () {},
-                              ),
-
-                              const SizedBox(height: 24),
-
-                              // SECTION: ABOUT US
-                              _buildSectionHeader(
-                                'About Us',
-                                color: AppColors.pastelRed,
-                              ),
-                              _buildModernSettingItem(
-                                context,
-                                icon: Icons.thumb_up,
-                                iconColor: AppColors.textDark,
-                                title: 'Rate',
-                                subtitle: 'Rate us on the Play Store!',
-                                onTap: () {},
-                              ),
-                              _buildModernSettingItem(
-                                context,
-                                icon: Icons.lock,
-                                iconColor: AppColors.textDark,
-                                title: 'Privacy Policy',
-                                subtitle:
-                                    'See the privacy policy for more information.',
-                                onTap: () {},
-                              ),
-                              _buildModernSettingItem(
-                                context,
-                                icon: Icons.info,
-                                iconColor: AppColors.textDark,
-                                title: 'About',
-                                subtitle: 'Version 1.0.0',
-                                onTap: () {},
-                              ),
-                              _buildModernSettingItem(
-                                context,
-                                icon: Icons.logout,
-                                iconColor: AppColors.textDark,
-                                title: 'Logout',
-                                subtitle: 'Sign out from current account',
-                                onTap: () async {
-                                  await ref
-                                      .read(authRepositoryProvider)
-                                      .signOut();
-                                },
-                              ),
-
-                              const SizedBox(height: 24),
-                            ],
-                          ),
-                        ),
-
-                        // Peeking Cat
-                        Positioned(
-                          top: 0,
-                          child: Image.asset(
-                            'assets/images/cat_peek.png',
-                            width: 60,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Container(
-                                  width: 50,
-                                  height: 30,
-                                  decoration: const BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.vertical(
-                                      top: Radius.circular(20),
-                                    ),
-                                  ),
-                                  child: const Icon(Icons.pets, size: 20),
-                                ),
-                          ),
-                        ),
-                      ],
-                    );
+              // Comma Separator
+              _buildModernSettingItem(
+                context,
+                icon: Icons.format_quote,
+                iconColor: AppColors.textDark,
+                title: 'Comma separator',
+                subtitle: 'Show the comma currency separator',
+                trailing: Switch(
+                  value: settings.useCommaSeparator,
+                  onChanged: (val) {
+                    ref.read(settingsProvider.notifier).setCommaSeparator(val);
                   },
+                  activeTrackColor: AppColors.pastelRed,
                 ),
-              ],
-            );
-          },
-        ),
+                onTap: () {
+                  ref
+                      .read(settingsProvider.notifier)
+                      .setCommaSeparator(!settings.useCommaSeparator);
+                },
+              ),
+
+              // Fingerprint
+              _buildModernSettingItem(
+                context,
+                icon: Icons.fingerprint,
+                iconColor: AppColors.textDark,
+                title: 'Fingerprint lock',
+                subtitle: 'Need to enter fingerprint when open app',
+                trailing: Switch(
+                  value: settings.isBiometricEnabled,
+                  onChanged: (val) async {
+                    await _handleBiometricToggle(context, ref, val);
+                  },
+                  activeTrackColor: AppColors.pastelRed,
+                ),
+                onTap: () async {
+                  await _handleBiometricToggle(
+                    context,
+                    ref,
+                    !settings.isBiometricEnabled,
+                  );
+                },
+              ),
+
+              const SizedBox(height: 24),
+
+              // SECTION: MANAGEMENT
+              _buildSectionHeader('Management', color: AppColors.pastelRed),
+
+              _buildModernSettingItem(
+                context,
+                icon: Icons.category,
+                iconColor: AppColors.textDark,
+                title: 'Record category management',
+                subtitle: 'Add, modify and sort record categories',
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const CategoriesPage(),
+                    ),
+                  );
+                },
+              ),
+
+              _buildModernSettingItem(
+                context,
+                icon: Icons.book,
+                iconColor: AppColors.textDark,
+                title: 'Ledger',
+                subtitle: 'Manage the ledgers',
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const WalletsPage(),
+                    ),
+                  );
+                },
+              ),
+
+              _buildModernSettingItem(
+                context,
+                icon: Icons.autorenew,
+                iconColor: AppColors.textDark,
+                title: 'Recurring record',
+                subtitle: 'Automatic recurring record',
+                onTap: () {},
+              ),
+              _buildModernSettingItem(
+                context,
+                icon: Icons.work,
+                iconColor: AppColors.textDark,
+                title: 'Reimburse',
+                subtitle: 'Manage the reimbursement',
+                onTap: () {},
+              ),
+              _buildModernSettingItem(
+                context,
+                icon: Icons.star,
+                iconColor: AppColors.textDark,
+                title: 'Bookmarks',
+                subtitle: 'Manage the bookmarks',
+                onTap: () {},
+              ),
+              _buildModernSettingItem(
+                context,
+                icon: Icons.pie_chart,
+                iconColor: AppColors.textDark,
+                title: 'Budget',
+                subtitle: 'Manage the category budgets',
+                onTap: () {},
+              ),
+              _buildModernSettingItem(
+                context,
+                icon: Icons.exit_to_app,
+                iconColor: AppColors.textDark,
+                title: 'Bill Export',
+                subtitle: 'The bill will be exported to a csv format file',
+                onTap: () {},
+              ),
+
+              const SizedBox(height: 24),
+
+              // SECTION: ABOUT US
+              _buildSectionHeader('About Us', color: AppColors.pastelRed),
+              _buildModernSettingItem(
+                context,
+                icon: Icons.thumb_up,
+                iconColor: AppColors.textDark,
+                title: 'Rate',
+                subtitle: 'Rate us on the Play Store!',
+                onTap: () {},
+              ),
+              _buildModernSettingItem(
+                context,
+                icon: Icons.lock,
+                iconColor: AppColors.textDark,
+                title: 'Privacy Policy',
+                subtitle: 'See the privacy policy for more information.',
+                onTap: () {},
+              ),
+              _buildModernSettingItem(
+                context,
+                icon: Icons.info,
+                iconColor: AppColors.textDark,
+                title: 'About',
+                subtitle: 'Version 1.0.0',
+                onTap: () {},
+              ),
+              _buildModernSettingItem(
+                context,
+                icon: Icons.logout,
+                iconColor: AppColors.textDark,
+                title: 'Logout',
+                subtitle: 'Sign out from current account',
+                onTap: () async {
+                  await ref.read(authRepositoryProvider).signOut();
+                },
+              ),
+
+              const SizedBox(height: 24),
+            ],
+          );
+        },
       ),
     );
   }
