@@ -6,13 +6,11 @@ import '../../data/models/asset.dart';
 import '../providers/asset_provider.dart';
 import '../../../../core/widgets/banner_ad_widget.dart';
 import '../widgets/asset_graph_section.dart';
-import '../widgets/asset_pie_chart_section.dart';
-import '../../../transactions/presentation/pages/transaction_history_page.dart';
+
 import '../../../home/presentation/providers/ledger_provider.dart';
 import '../../../transactions/presentation/pages/transaction_page.dart';
-import '../../../transactions/data/models/transaction_model.dart'; // Keep for enum if needed, or remove if unused. AssetGraphSection doesn't use it anymore.
-// removed transaction_provider.dart
-import '../widgets/add_edit_asset_dialog.dart';
+import '../../../transactions/data/models/transaction_model.dart';
+import '../widgets/asset_chart_section.dart';
 import '../../../settings/presentation/providers/currency_provider.dart';
 
 class AssetsPage extends ConsumerStatefulWidget {
@@ -282,55 +280,28 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
                                       ),
                                       const SizedBox(height: 32),
 
-                                      // Assets List (Positive)
-                                      const Text(
-                                        'Assets',
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: AppColors.textDark,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 16),
-                                      _buildAssetList(
-                                        context,
-                                        ref,
-                                        _getAssets(
+                                      // Assets Chart Section
+                                      AssetChartSection(
+                                        title: 'Assets',
+                                        isLiabilities: false,
+                                        assets: _getAssets(
                                           assets,
                                           isLiabilities: false,
                                         ),
-                                        currencySymbol,
-                                      ),
-                                      const SizedBox(height: 16),
-                                      // Assets Pie Chart
-                                      AssetPieChartSection(
-                                        assets: assets,
-                                        isLiabilities: false,
+                                        currencySymbol: currencySymbol,
                                       ),
 
                                       const SizedBox(height: 32),
 
-                                      // Liabilities List (Negative)
-                                      const Text(
-                                        'Liabilities',
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: AppColors.pastelRed,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 16),
-                                      _buildAssetList(
-                                        context,
-                                        ref,
-                                        _getAssets(assets, isLiabilities: true),
-                                        currencySymbol,
-                                      ),
-                                      const SizedBox(height: 16),
-                                      // Liabilities Pie Chart
-                                      AssetPieChartSection(
-                                        assets: assets,
+                                      // Liabilities Chart Section
+                                      AssetChartSection(
+                                        title: 'Liabilities',
                                         isLiabilities: true,
+                                        assets: _getAssets(
+                                          assets,
+                                          isLiabilities: true,
+                                        ),
+                                        currencySymbol: currencySymbol,
                                       ),
                                       const SizedBox(height: 32),
                                       const BannerAdWidget(),
@@ -379,94 +350,6 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
       if (isLiabilities) return a.balance.isNegative;
       return !a.balance.isNegative;
     }).toList();
-  }
-
-  Widget _buildAssetList(
-    BuildContext context,
-    WidgetRef ref,
-    List<Asset> assets,
-    String currencySymbol,
-  ) {
-    if (assets.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 8.0),
-        child: Text(
-          'No items',
-          style: TextStyle(fontStyle: FontStyle.italic, color: Colors.grey),
-        ),
-      );
-    }
-    return Column(
-      children: assets.map((asset) {
-        return Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          elevation: 2,
-          shadowColor: Colors.black.withValues(alpha: 0.05),
-          color: Colors.white,
-          child: ListTile(
-            leading: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: asset.color.withValues(alpha: 0.2),
-                shape: BoxShape.circle,
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                asset.name.isNotEmpty
-                    ? asset.name.substring(0, 1).toUpperCase()
-                    : '?',
-                style: TextStyle(
-                  color: asset.color,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            title: Text(
-              asset.name,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: AppColors.textDark,
-              ),
-            ),
-            subtitle: asset.remark.isNotEmpty ? Text(asset.remark) : null,
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  CurrencyFormatter.format(
-                    asset.balance,
-                    symbol: currencySymbol,
-                  ),
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: asset.balance < 0
-                        ? AppColors.pastelRed
-                        : AppColors.textDark,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.edit, size: 20, color: Colors.grey),
-                  onPressed: () => showAddEditAssetDialog(context, ref, asset),
-                ),
-              ],
-            ),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => TransactionHistoryPage(asset: asset),
-                ),
-              );
-            },
-          ),
-        );
-      }).toList(),
-    );
   }
 }
 
