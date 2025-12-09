@@ -8,7 +8,6 @@ import 'appearance_page.dart';
 import 'wallets_page.dart';
 
 import '../providers/currency_provider.dart';
-import '../../../home/presentation/providers/ledger_provider.dart';
 
 import '../../../auth/presentation/providers/auth_provider.dart';
 
@@ -20,11 +19,8 @@ class SettingsPage extends ConsumerStatefulWidget {
 }
 
 class _SettingsPageState extends ConsumerState<SettingsPage> {
-  String? _selectedLedgerId; // Visual mostly, for consistency
-
   @override
   Widget build(BuildContext context) {
-    final ledgersAsync = ref.watch(ledgerProvider);
     final currencyAsync = ref.watch(currencyProvider);
     final isProAsync = ref.watch(proProvider);
     final currencySymbol = currencyAsync.asData?.value ?? '\$';
@@ -57,75 +53,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   padding: const EdgeInsets.symmetric(horizontal: 24.0),
                   child: Row(
                     children: [
-                      ledgersAsync.when(
-                        data: (ledgers) => Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.pastelOrange.withValues(
-                              alpha: 0.3,
-                            ),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<String?>(
-                              value: _selectedLedgerId,
-                              icon: const Icon(
-                                Icons.arrow_drop_down,
-                                color: AppColors.textDark,
-                              ),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textDark,
-                              ),
-                              borderRadius: BorderRadius.circular(20),
-                              dropdownColor: const Color(0xFFFFFDF5),
-                              items: [
-                                const DropdownMenuItem<String?>(
-                                  value: null,
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.book,
-                                        size: 20,
-                                        color: AppColors.textDark,
-                                      ),
-                                      SizedBox(width: 8),
-                                      Text('All ledgers'),
-                                    ],
-                                  ),
-                                ),
-                                ...ledgers.map(
-                                  (l) => DropdownMenuItem<String?>(
-                                    value: l.id,
-                                    child: Row(
-                                      children: [
-                                        Icon(
-                                          Icons.account_balance_wallet,
-                                          size: 20,
-                                          color: AppColors.textDark,
-                                        ),
-                                        SizedBox(width: 8),
-                                        Text(l.name),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                              onChanged: (val) {
-                                setState(() {
-                                  _selectedLedgerId = val;
-                                });
-                              },
-                            ),
-                          ),
-                        ),
-                        loading: () => const SizedBox(width: 120, height: 40),
-                        error: (err, stack) => const SizedBox.shrink(),
-                      ),
-
                       const Spacer(),
 
                       // Membership Pill
