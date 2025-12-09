@@ -42,7 +42,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       // Calculate start date for 3 months history (e.g., 90 days ago or start of 2 months ago)
       final threeMonthsAgo = DateTime(now.year, now.month - 2, 1);
 
-      var allTransactions = transactionsAsync.asData!.value;
+      var allTransactions = transactionsAsync.value!;
 
       // 1. Filter by Ledger
       List<TransactionModel> ledgerFilteredTransactions = [];
