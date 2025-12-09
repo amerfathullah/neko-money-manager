@@ -34,9 +34,12 @@ class _HomePageState extends ConsumerState<HomePage> {
     Map<String, List<TransactionModel>> groupedTransactions = {};
     List<String> sortedDates = [];
 
+    // Format current month for display
+    final currentMonthName = DateFormat('MMM').format(DateTime.now());
+
     if (transactionsAsync.hasValue) {
       final now = DateTime.now();
-      // Calculate start date for 3 months history (e.g. 90 days ago or start of 2 months ago)
+      // Calculate start date for 3 months history (e.g., 90 days ago or start of 2 months ago)
       final threeMonthsAgo = DateTime(now.year, now.month - 2, 1);
 
       var allTransactions = transactionsAsync.asData!.value;
@@ -112,7 +115,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       body: SafeArea(
         child: Stack(
           children: [
-            // Background Elements (e.g. Cat Top Right)
+            // Background Elements (e.g., Cat Top Right)
             Positioned(
               top: 0,
               right: 0,
@@ -130,6 +133,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
             ),
 
+            // Top Content (Fixed)
             Column(
               children: [
                 const SizedBox(height: 16),
@@ -229,13 +233,13 @@ class _HomePageState extends ConsumerState<HomePage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       _SummaryItem(
-                        label: 'Dec · Expenses',
+                        label: '$currentMonthName · Expenses',
                         amount: currentMonthExpense,
                         currency: currencySymbol,
                         isExpense: true,
                       ),
                       _SummaryItem(
-                        label: 'Dec · Income',
+                        label: '$currentMonthName · Income',
                         amount: currentMonthIncome,
                         currency: currencySymbol,
                         isExpense: false,
@@ -243,450 +247,437 @@ class _HomePageState extends ConsumerState<HomePage> {
                     ],
                   ),
                 ),
+              ],
+            ),
 
-                const SizedBox(height: 20),
-
-                // Peek Cat & Container
-                Expanded(
-                  child: Stack(
-                    alignment: Alignment.topCenter,
-                    clipBehavior: Clip.none,
-                    children: [
-                      // The main white/cream container
-                      Container(
-                        margin: const EdgeInsets.only(top: 25),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFFFFDF5),
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(32),
-                            topRight: Radius.circular(32),
-                          ),
+            // Draggable Sheet (Peek Cat & Container)
+            DraggableScrollableSheet(
+              initialChildSize: 0.7,
+              minChildSize: 0.7,
+              maxChildSize: 1.0,
+              builder: (context, scrollController) {
+                return Stack(
+                  alignment: Alignment.topCenter,
+                  clipBehavior: Clip.none,
+                  children: [
+                    // The main white/cream container
+                    Container(
+                      margin: const EdgeInsets.only(top: 25),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFFFFDF5),
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(32),
+                          topRight: Radius.circular(32),
                         ),
-                        child: CustomScrollView(
-                          slivers: [
-                            SliverToBoxAdapter(
-                              child: Column(
-                                children: [
-                                  const SizedBox(
-                                    height: 40,
-                                  ), // Space for cat overlap
-                                  // Quick Actions Grid
-                                  SizedBox(
-                                    height: 90,
-                                    child: ListView(
-                                      scrollDirection: Axis.horizontal,
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                      ),
-                                      children: const [
-                                        _QuickAction(
-                                          icon: Icons.book,
-                                          label: 'Ledger',
-                                          color: AppColors.pastelOrange,
-                                        ),
-                                        _QuickAction(
-                                          icon: Icons.calendar_today,
-                                          label: 'Recurring',
-                                          color: AppColors.pastelBlue,
-                                        ),
-                                        _QuickAction(
-                                          icon: Icons.lunch_dining,
-                                          label: 'Category',
-                                          color: AppColors.pastelRed,
-                                        ),
-                                        _QuickAction(
-                                          icon: Icons.work,
-                                          label: 'Reimburse',
-                                          color: AppColors.pastelPurple,
-                                        ),
-                                        _QuickAction(
-                                          icon: Icons.bookmark,
-                                          label: 'Bookmarks',
-                                          color: AppColors.pastelBlue,
-                                        ),
-                                      ],
+                      ),
+                      child: CustomScrollView(
+                        controller: scrollController,
+                        slivers: [
+                          SliverToBoxAdapter(
+                            child: Column(
+                              children: [
+                                const SizedBox(
+                                  height: 40,
+                                ), // Space for cat overlap
+                                // Quick Actions Grid
+                                SizedBox(
+                                  height: 90,
+                                  child: ListView(
+                                    scrollDirection: Axis.horizontal,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
                                     ),
+                                    children: const [
+                                      _QuickAction(
+                                        icon: Icons.book,
+                                        label: 'Ledger',
+                                        color: AppColors.pastelOrange,
+                                      ),
+                                      _QuickAction(
+                                        icon: Icons.calendar_today,
+                                        label: 'Recurring',
+                                        color: AppColors.pastelBlue,
+                                      ),
+                                      _QuickAction(
+                                        icon: Icons.lunch_dining,
+                                        label: 'Category',
+                                        color: AppColors.pastelRed,
+                                      ),
+                                      _QuickAction(
+                                        icon: Icons.work,
+                                        label: 'Reimburse',
+                                        color: AppColors.pastelPurple,
+                                      ),
+                                      _QuickAction(
+                                        icon: Icons.bookmark,
+                                        label: 'Bookmarks',
+                                        color: AppColors.pastelBlue,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                              ],
+                            ),
+                          ),
+
+                          if (sortedDates.isEmpty)
+                            SliverFillRemaining(
+                              hasScrollBody: false,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Image.asset(
+                                    'assets/images/cat_balloons.png',
+                                    height: 200,
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            const Icon(
+                                              Icons.image,
+                                              size: 100,
+                                              color: AppColors.pastelBlue,
+                                            ),
                                   ),
                                   const SizedBox(height: 16),
+                                  const Text(
+                                    'Welcome',
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.textDark,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'There is no record at the moment\nstart your first record now.',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: AppColors.textDark.withValues(
+                                        alpha: 0.6,
+                                      ),
+                                    ),
+                                  ),
                                 ],
                               ),
-                            ),
+                            )
+                          else
+                            SliverList(
+                              delegate: SliverChildBuilderDelegate(
+                                (context, index) {
+                                  if (index >= sortedDates.length) {
+                                    return const SizedBox(
+                                      height: 80,
+                                    ); // Bottom padding
+                                  }
 
-                            if (sortedDates.isEmpty)
-                              SliverFillRemaining(
-                                hasScrollBody: false,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Image.asset(
-                                      'assets/images/cat_balloons.png',
-                                      height: 200,
-                                      errorBuilder:
-                                          (context, error, stackTrace) =>
-                                              const Icon(
-                                                Icons.image,
-                                                size: 100,
-                                                color: AppColors.pastelBlue,
-                                              ),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    const Text(
-                                      'Welcome',
-                                      style: TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppColors.textDark,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      'There is no record at the moment\nstart your first record now.',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        color: AppColors.textDark.withValues(
-                                          alpha: 0.6,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            else
-                              SliverList(
-                                delegate: SliverChildBuilderDelegate(
-                                  (context, index) {
-                                    if (index >= sortedDates.length) {
-                                      return const SizedBox(
-                                        height: 80,
-                                      ); // Bottom padding
+                                  final dateKey = sortedDates[index];
+                                  final transactions =
+                                      groupedTransactions[dateKey]!;
+                                  final date = transactions
+                                      .first
+                                      .date; // All represent the same day
+
+                                  // Calculate Daily Totals
+                                  double dailyIncome = 0;
+                                  double dailyExpense = 0;
+                                  for (var t in transactions) {
+                                    // Simplified logic for daily summary
+                                    if (t.type == TransactionType.income) {
+                                      dailyIncome += t.amount;
+                                    } else if (t.type ==
+                                        TransactionType.expense) {
+                                      dailyExpense += t.amount;
                                     }
-
-                                    final dateKey = sortedDates[index];
-                                    final transactions =
-                                        groupedTransactions[dateKey]!;
-                                    final date = transactions
-                                        .first
-                                        .date; // All represent the same day
-
-                                    // Calculate Daily Totals
-                                    double dailyIncome = 0;
-                                    double dailyExpense = 0;
-                                    for (var t in transactions) {
-                                      // Simplified logic for daily summary
-                                      if (t.type == TransactionType.income) {
-                                        dailyIncome += t.amount;
-                                      } else if (t.type ==
-                                          TransactionType.expense) {
-                                        dailyExpense += t.amount;
-                                      }
-                                      // Transfers - logic depends on view, but for list display usually just show activity.
-                                      // If we want exact daily balance change for 'Selected Wallet', we'd sum signed amounts.
-                                      // The reference image shows: "+500 -0".
-                                      else if (t.type ==
-                                          TransactionType.transfer) {
-                                        if (_selectedLedgerId != null) {
-                                          if (t.ledgerId == _selectedLedgerId) {
-                                            dailyExpense += t.amount;
-                                          } else if (t.destinationLedgerId ==
-                                              _selectedLedgerId) {
-                                            dailyIncome += t.amount;
-                                          }
+                                    // Transfers - logic depends on view, but for list display usually just show activity.
+                                    // If we want exact daily balance change for 'Selected Wallet', we'd sum signed amounts.
+                                    // The reference image shows: "+500 -0".
+                                    else if (t.type ==
+                                        TransactionType.transfer) {
+                                      if (_selectedLedgerId != null) {
+                                        if (t.ledgerId == _selectedLedgerId) {
+                                          dailyExpense += t.amount;
+                                        } else if (t.destinationLedgerId ==
+                                            _selectedLedgerId) {
+                                          dailyIncome += t.amount;
                                         }
                                       }
                                     }
+                                  }
 
-                                    return Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        // Date Header
-                                        Padding(
-                                          padding: const EdgeInsets.fromLTRB(
-                                            24,
-                                            16,
-                                            24,
-                                            8,
-                                          ),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Text(
+                                  return Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // Date Header
+                                      Padding(
+                                        padding: const EdgeInsets.fromLTRB(
+                                          24,
+                                          16,
+                                          24,
+                                          8,
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  DateFormat(
+                                                    'MMM dd',
+                                                  ).format(date),
+                                                  style: const TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: AppColors.textDark,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Container(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 6,
+                                                        vertical: 2,
+                                                      ),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.grey[200],
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          4,
+                                                        ),
+                                                  ),
+                                                  child: Text(
                                                     DateFormat(
-                                                      'MMM dd',
+                                                      'EEE',
                                                     ).format(date),
-                                                    style: const TextStyle(
-                                                      fontSize: 18,
+                                                    style: TextStyle(
+                                                      fontSize: 12,
                                                       fontWeight:
                                                           FontWeight.bold,
-                                                      color: AppColors.textDark,
+                                                      color: Colors.grey[600],
                                                     ),
                                                   ),
+                                                ),
+                                              ],
+                                            ),
+                                            Row(
+                                              children: [
+                                                if (dailyIncome > 0)
+                                                  Text(
+                                                    '+${CurrencyFormatter.format(dailyIncome, symbol: '')}',
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: AppColors.income,
+                                                    ),
+                                                  ),
+                                                if (dailyIncome > 0 &&
+                                                    dailyExpense > 0)
                                                   const SizedBox(width: 8),
-                                                  Container(
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                          horizontal: 6,
-                                                          vertical: 2,
-                                                        ),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.grey[200],
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            4,
-                                                          ),
-                                                    ),
-                                                    child: Text(
-                                                      DateFormat(
-                                                        'EEE',
-                                                      ).format(date),
-                                                      style: TextStyle(
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: Colors.grey[600],
-                                                      ),
+                                                if (dailyExpense > 0)
+                                                  Text(
+                                                    '-${CurrencyFormatter.format(dailyExpense, symbol: '')}',
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: AppColors.expense,
                                                     ),
                                                   ),
-                                                ],
-                                              ),
-                                              Row(
-                                                children: [
-                                                  if (dailyIncome > 0)
-                                                    Text(
-                                                      '+${CurrencyFormatter.format(dailyIncome, symbol: '')}',
-                                                      style: const TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color: AppColors.income,
-                                                      ),
-                                                    ),
-                                                  if (dailyIncome > 0 &&
-                                                      dailyExpense > 0)
-                                                    const SizedBox(width: 8),
-                                                  if (dailyExpense > 0)
-                                                    Text(
-                                                      '-${CurrencyFormatter.format(dailyExpense, symbol: '')}',
-                                                      style: const TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        color:
-                                                            AppColors.expense,
-                                                      ),
-                                                    ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
+                                              ],
+                                            ),
+                                          ],
                                         ),
+                                      ),
 
-                                        // Transactions
-                                        ...transactions.map((t) {
-                                          final isExpense =
-                                              t.type == TransactionType.expense;
-                                          final isIncome =
-                                              t.type == TransactionType.income;
-                                          final isTransfer =
-                                              t.type ==
-                                              TransactionType.transfer;
+                                      // Transactions
+                                      ...transactions.map((t) {
+                                        final isExpense =
+                                            t.type == TransactionType.expense;
+                                        final isIncome =
+                                            t.type == TransactionType.income;
+                                        final isTransfer =
+                                            t.type == TransactionType.transfer;
 
-                                          Color color = AppColors.textDark;
-                                          String prefix = '';
+                                        Color color = AppColors.textDark;
+                                        String prefix = '';
 
-                                          if (isExpense) {
+                                        if (isExpense) {
+                                          prefix = '-';
+                                          color = AppColors.expense;
+                                        } else if (isIncome) {
+                                          prefix = '+';
+                                          color = AppColors.income;
+                                        } else if (isTransfer) {
+                                          if (_selectedLedgerId != null &&
+                                              t.ledgerId == _selectedLedgerId) {
                                             prefix = '-';
                                             color = AppColors.expense;
-                                          } else if (isIncome) {
+                                          } else if (_selectedLedgerId !=
+                                                  null &&
+                                              t.destinationLedgerId ==
+                                                  _selectedLedgerId) {
                                             prefix = '+';
                                             color = AppColors.income;
-                                          } else if (isTransfer) {
-                                            if (_selectedLedgerId != null &&
-                                                t.ledgerId ==
-                                                    _selectedLedgerId) {
-                                              prefix = '-';
-                                              color = AppColors.expense;
-                                            } else if (_selectedLedgerId !=
-                                                    null &&
-                                                t.destinationLedgerId ==
-                                                    _selectedLedgerId) {
-                                              prefix = '+';
-                                              color = AppColors.income;
-                                            }
                                           }
+                                        }
 
-                                          return InkWell(
-                                            onTap: () =>
-                                                _showTransactionDetails(
-                                                  context,
-                                                  t,
-                                                ),
-                                            child: Container(
-                                              margin:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 16,
-                                                    vertical: 6,
-                                                  ),
-                                              padding: const EdgeInsets.all(16),
-                                              decoration: BoxDecoration(
-                                                color: const Color(
-                                                  0xFFFFF8E1,
-                                                ), // Light cream card
-                                                borderRadius:
-                                                    BorderRadius.circular(20),
-                                              ),
-                                              child: Row(
-                                                children: [
-                                                  // Icon
-                                                  Container(
-                                                    padding:
-                                                        const EdgeInsets.all(8),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors
-                                                          .amber[100], // Placeholder color
-                                                      // color: Color(categoryColor).withValues(alpha: 0.2),
-                                                      shape: BoxShape.circle,
-                                                    ),
-                                                    child: Icon(
-                                                      // t.categoryIcon ??
-                                                      isExpense
-                                                          ? Icons.lunch_dining
-                                                          : Icons.attach_money,
-                                                      color: Colors
-                                                          .brown, // Placeholder
-                                                      size: 20,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(width: 16),
-                                                  Expanded(
-                                                    child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Text(
-                                                          t.categoryName ??
-                                                              (isTransfer
-                                                                  ? 'Transfer'
-                                                                  : 'Uncategorized'),
-                                                          style:
-                                                              const TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                fontSize: 16,
-                                                                color: AppColors
-                                                                    .textDark,
-                                                              ),
-                                                        ),
-                                                        const SizedBox(
-                                                          height: 4,
-                                                        ),
-                                                        Row(
-                                                          children: [
-                                                            Text(
-                                                              DateFormat(
-                                                                'HH:mm',
-                                                              ).format(t.date),
-                                                              style: TextStyle(
-                                                                color: Colors
-                                                                    .grey[600],
-                                                                fontSize: 12,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                              ),
-                                                            ),
-                                                            if (t.note !=
-                                                                    null &&
-                                                                t
-                                                                    .note!
-                                                                    .isNotEmpty) ...[
-                                                              const SizedBox(
-                                                                width: 8,
-                                                              ),
-                                                              Icon(
-                                                                Icons
-                                                                    .sticky_note_2,
-                                                                size: 14,
-                                                                color: Colors
-                                                                    .blue[300],
-                                                              ),
-                                                            ],
-                                                            if (t
-                                                                .isBookmarked) ...[
-                                                              const SizedBox(
-                                                                width: 8,
-                                                              ),
-                                                              const Icon(
-                                                                Icons.star,
-                                                                size: 14,
-                                                                color: AppColors
-                                                                    .pastelOrange,
-                                                              ),
-                                                            ],
-                                                          ],
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    '$prefix${CurrencyFormatter.format(t.amount, symbol: '')}',
-                                                    style: TextStyle(
-                                                      fontSize: 18,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: color,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
+                                        return InkWell(
+                                          onTap: () => _showTransactionDetails(
+                                            context,
+                                            t,
+                                          ),
+                                          child: Container(
+                                            margin: const EdgeInsets.symmetric(
+                                              horizontal: 16,
+                                              vertical: 6,
                                             ),
-                                          );
-                                        }),
-                                      ],
-                                    );
-                                  },
-                                  childCount:
-                                      sortedDates.length +
-                                      1, // +1 for bottom padding
-                                ),
+                                            padding: const EdgeInsets.all(16),
+                                            decoration: BoxDecoration(
+                                              color: const Color(
+                                                0xFFFFF8E1,
+                                              ), // Light cream card
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                // Icon
+                                                Container(
+                                                  padding: const EdgeInsets.all(
+                                                    8,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors
+                                                        .amber[100], // Placeholder color
+                                                    // color: Color(categoryColor).withValues(alpha: 0.2),
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                  child: Icon(
+                                                    // t.categoryIcon ??
+                                                    isExpense
+                                                        ? Icons.lunch_dining
+                                                        : Icons.attach_money,
+                                                    color: Colors
+                                                        .brown, // Placeholder
+                                                    size: 20,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 16),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        t.categoryName ??
+                                                            (isTransfer
+                                                                ? 'Transfer'
+                                                                : 'Uncategorized'),
+                                                        style: const TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontSize: 16,
+                                                          color: AppColors
+                                                              .textDark,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      Row(
+                                                        children: [
+                                                          Text(
+                                                            DateFormat(
+                                                              'HH:mm',
+                                                            ).format(t.date),
+                                                            style: TextStyle(
+                                                              color: Colors
+                                                                  .grey[600],
+                                                              fontSize: 12,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                            ),
+                                                          ),
+                                                          if (t.note != null &&
+                                                              t
+                                                                  .note!
+                                                                  .isNotEmpty) ...[
+                                                            const SizedBox(
+                                                              width: 8,
+                                                            ),
+                                                            Icon(
+                                                              Icons
+                                                                  .sticky_note_2,
+                                                              size: 14,
+                                                              color: Colors
+                                                                  .blue[300],
+                                                            ),
+                                                          ],
+                                                          if (t
+                                                              .isBookmarked) ...[
+                                                            const SizedBox(
+                                                              width: 8,
+                                                            ),
+                                                            const Icon(
+                                                              Icons.star,
+                                                              size: 14,
+                                                              color: AppColors
+                                                                  .pastelOrange,
+                                                            ),
+                                                          ],
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Text(
+                                                  '$prefix${CurrencyFormatter.format(t.amount, symbol: '')}',
+                                                  style: TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: color,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      }),
+                                    ],
+                                  );
+                                },
+                                childCount:
+                                    sortedDates.length +
+                                    1, // +1 for bottom padding
                               ),
-                          ],
-                        ),
+                            ),
+                        ],
                       ),
+                    ),
 
-                      // Peeking Cat at Top
-                      Positioned(
-                        top: 0,
-                        child: Image.asset(
-                          'assets/images/cat_peek.png',
-                          width: 60,
-                          errorBuilder: (context, error, stackTrace) =>
-                              Container(
-                                width: 50,
-                                height: 30,
-                                decoration: const BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.vertical(
-                                    top: Radius.circular(20),
-                                  ),
-                                ),
-                                child: const Icon(Icons.pets, size: 20),
-                              ),
+                    // Peeking Cat at Top
+                    Positioned(
+                      top: 0,
+                      child: Image.asset(
+                        'assets/images/cat_peek.png',
+                        width: 60,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          width: 50,
+                          height: 30,
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(20),
+                            ),
+                          ),
+                          child: const Icon(Icons.pets, size: 20),
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              ],
+                    ),
+                  ],
+                );
+              },
             ),
-            // Positioned( // If there were other background elements, they'd be here.
-            //   top: 0,
-            //   right: 0,
-            //   child: Image.asset('assets/images/cat_top_right.png', width: 100),
-            // ),
           ],
         ),
       ),
