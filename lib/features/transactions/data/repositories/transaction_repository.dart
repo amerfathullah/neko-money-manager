@@ -11,40 +11,39 @@ class TransactionRepository {
   ) async {
     final userDoc = _firestore.collection('users').doc(userId);
 
-    // Batch write to update transaction list and ledger balance atomically
+    // Batch write to update transaction list and asset balance atomically
     final batch = _firestore.batch();
 
     // 1. Add Transaction
     final transactionRef = userDoc.collection(_collection).doc(transaction.id);
     batch.set(transactionRef, transaction.toJson());
 
-    // 2. Update Ledger Balance
-    // Note: This requires reading the ledger first or using increment if possible.
-    // Ideally we should use a Transaction (Firestore Transaction) not just a Batch
-    // to ensure consistency if multiple concurrent writes happen, but for this app Batch/Client-side logic might suffice for MVP.
-    // However, FieldValue.increment is safer.
+    // 2. Update Asset Balance
+    if (transaction.assetId != null) {
+      final assetRef = userDoc.collection('assets').doc(transaction.assetId);
 
-    final ledgerRef = userDoc.collection('ledgers').doc(transaction.ledgerId);
+      if (transaction.type == TransactionType.transfer &&
+          transaction.destinationAssetId != null) {
+        // Transfer: Deduct from Source Asset, Add to Destination Asset
+        batch.update(assetRef, {
+          'balance': FieldValue.increment(-transaction.amount),
+        });
 
-    if (transaction.type == TransactionType.transfer &&
-        transaction.destinationLedgerId != null) {
-      // Transfer: Deduct from Source, Add to Destination
-      batch.update(ledgerRef, {
-        'balance': FieldValue.increment(-transaction.amount),
-      });
-
-      final destLedgerRef = userDoc
-          .collection('ledgers')
-          .doc(transaction.destinationLedgerId);
-      batch.update(destLedgerRef, {
-        'balance': FieldValue.increment(transaction.amount),
-      });
-    } else {
-      // Expense or Income
-      double amountChange = transaction.type == TransactionType.income
-          ? transaction.amount
-          : -transaction.amount;
-      batch.update(ledgerRef, {'balance': FieldValue.increment(amountChange)});
+        final destAssetRef = userDoc
+            .collection('assets')
+            .doc(transaction.destinationAssetId);
+        batch.update(destAssetRef, {
+          'balance': FieldValue.increment(transaction.amount),
+        });
+      } else {
+        // Expense or Income
+        // Income increases Asset balance (e.g. Salary -> Bank)
+        // Expense decreases Asset balance (e.g. Lunch -> Wallet)
+        double amountChange = transaction.type == TransactionType.income
+            ? transaction.amount
+            : -transaction.amount;
+        batch.update(assetRef, {'balance': FieldValue.increment(amountChange)});
+      }
     }
 
     await batch.commit();
@@ -61,28 +60,32 @@ class TransactionRepository {
     final transactionRef = userDoc.collection(_collection).doc(transaction.id);
     batch.delete(transactionRef);
 
-    // 2. Revert Ledger Balance
-    final ledgerRef = userDoc.collection('ledgers').doc(transaction.ledgerId);
+    // 2. Revert Asset Balance
+    if (transaction.assetId != null) {
+      final assetRef = userDoc.collection('assets').doc(transaction.assetId);
 
-    if (transaction.type == TransactionType.transfer &&
-        transaction.destinationLedgerId != null) {
-      // Revert Transfer: Refund Source, Deduct from Destination
-      batch.update(ledgerRef, {
-        'balance': FieldValue.increment(transaction.amount),
-      });
+      if (transaction.type == TransactionType.transfer &&
+          transaction.destinationAssetId != null) {
+        // Revert Transfer: Refund Source, Deduct from Destination
+        batch.update(assetRef, {
+          'balance': FieldValue.increment(transaction.amount),
+        });
 
-      final destLedgerRef = userDoc
-          .collection('ledgers')
-          .doc(transaction.destinationLedgerId);
-      batch.update(destLedgerRef, {
-        'balance': FieldValue.increment(-transaction.amount),
-      });
-    } else {
-      // Revert Expense/Income
-      double amountChange = transaction.type == TransactionType.income
-          ? -transaction.amount
-          : transaction.amount;
-      batch.update(ledgerRef, {'balance': FieldValue.increment(amountChange)});
+        final destAssetRef = userDoc
+            .collection('assets')
+            .doc(transaction.destinationAssetId);
+        batch.update(destAssetRef, {
+          'balance': FieldValue.increment(-transaction.amount),
+        });
+      } else {
+        // Revert Expense/Income
+        // Income was +, so revert is -
+        // Expense was -, so revert is +
+        double amountChange = transaction.type == TransactionType.income
+            ? -transaction.amount
+            : transaction.amount;
+        batch.update(assetRef, {'balance': FieldValue.increment(amountChange)});
+      }
     }
 
     await batch.commit();
@@ -98,64 +101,63 @@ class TransactionRepository {
 
     // Helper to revert old transaction
     void revertOld() {
-      if (oldTransaction.type == TransactionType.transfer &&
-          oldTransaction.destinationLedgerId != null) {
-        // Revert Transfer
+      if (oldTransaction.assetId != null) {
         final oldSource = userDoc
-            .collection('ledgers')
-            .doc(oldTransaction.ledgerId);
-        batch.update(oldSource, {
-          'balance': FieldValue.increment(oldTransaction.amount),
-        });
-        final oldDest = userDoc
-            .collection('ledgers')
-            .doc(oldTransaction.destinationLedgerId);
-        batch.update(oldDest, {
-          'balance': FieldValue.increment(-oldTransaction.amount),
-        });
-      } else {
-        // Revert Expense/Income
-        final oldSource = userDoc
-            .collection('ledgers')
-            .doc(oldTransaction.ledgerId);
-        final change = oldTransaction.type == TransactionType.income
-            ? -oldTransaction.amount
-            : oldTransaction.amount;
-        batch.update(oldSource, {'balance': FieldValue.increment(change)});
+            .collection('assets')
+            .doc(oldTransaction.assetId);
+
+        if (oldTransaction.type == TransactionType.transfer &&
+            oldTransaction.destinationAssetId != null) {
+          // Revert Transfer
+          batch.update(oldSource, {
+            'balance': FieldValue.increment(oldTransaction.amount),
+          });
+          final oldDest = userDoc
+              .collection('assets')
+              .doc(oldTransaction.destinationAssetId);
+          batch.update(oldDest, {
+            'balance': FieldValue.increment(-oldTransaction.amount),
+          });
+        } else {
+          // Revert Expense/Income
+          final change = oldTransaction.type == TransactionType.income
+              ? -oldTransaction.amount
+              : oldTransaction.amount;
+          batch.update(oldSource, {'balance': FieldValue.increment(change)});
+        }
       }
     }
 
     // Helper to apply new transaction
     void applyNew() {
-      if (newTransaction.type == TransactionType.transfer &&
-          newTransaction.destinationLedgerId != null) {
-        // Apply Transfer
+      if (newTransaction.assetId != null) {
         final newSource = userDoc
-            .collection('ledgers')
-            .doc(newTransaction.ledgerId);
-        batch.update(newSource, {
-          'balance': FieldValue.increment(-newTransaction.amount),
-        });
-        final newDest = userDoc
-            .collection('ledgers')
-            .doc(newTransaction.destinationLedgerId);
-        batch.update(newDest, {
-          'balance': FieldValue.increment(newTransaction.amount),
-        });
-      } else {
-        // Apply Expense/Income
-        final newSource = userDoc
-            .collection('ledgers')
-            .doc(newTransaction.ledgerId);
-        final change = newTransaction.type == TransactionType.income
-            ? newTransaction.amount
-            : -newTransaction.amount;
-        batch.update(newSource, {'balance': FieldValue.increment(change)});
+            .collection('assets')
+            .doc(newTransaction.assetId);
+
+        if (newTransaction.type == TransactionType.transfer &&
+            newTransaction.destinationAssetId != null) {
+          // Apply Transfer
+          batch.update(newSource, {
+            'balance': FieldValue.increment(-newTransaction.amount),
+          });
+          final newDest = userDoc
+              .collection('assets')
+              .doc(newTransaction.destinationAssetId);
+          batch.update(newDest, {
+            'balance': FieldValue.increment(newTransaction.amount),
+          });
+        } else {
+          // Apply Expense/Income
+          final change = newTransaction.type == TransactionType.income
+              ? newTransaction.amount
+              : -newTransaction.amount;
+          batch.update(newSource, {'balance': FieldValue.increment(change)});
+        }
       }
     }
 
-    // Applying both separately (revert then apply) is safer and easier to reason about
-    // than complex diffing for transfers.
+    // Applying both separately (revert then apply)
     revertOld();
     applyNew();
 

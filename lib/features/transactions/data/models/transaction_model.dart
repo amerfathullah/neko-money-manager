@@ -17,6 +17,8 @@ class TransactionModel {
   final bool isBookmarked;
   final String? assetId;
   final String? assetName; // Denormalized
+  final String? destinationAssetId;
+  final String? destinationAssetName; // Denormalized
 
   const TransactionModel({
     required this.id,
@@ -33,6 +35,8 @@ class TransactionModel {
     this.isBookmarked = false,
     this.assetId,
     this.assetName,
+    this.destinationAssetId,
+    this.destinationAssetName,
   });
 
   factory TransactionModel.fromJson(Map<String, dynamic> json) {
@@ -51,6 +55,8 @@ class TransactionModel {
       isBookmarked: json['isBookmarked'] as bool? ?? false,
       assetId: json['assetId'] as String?,
       assetName: json['assetName'] as String?,
+      destinationAssetId: json['destinationAssetId'] as String?,
+      destinationAssetName: json['destinationAssetName'] as String?,
     );
   }
 
@@ -70,6 +76,8 @@ class TransactionModel {
       'isBookmarked': isBookmarked,
       'assetId': assetId,
       'assetName': assetName,
+      'destinationAssetId': destinationAssetId,
+      'destinationAssetName': destinationAssetName,
     };
   }
 }

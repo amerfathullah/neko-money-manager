@@ -13,8 +13,9 @@ import '../../../assets/presentation/providers/asset_provider.dart';
 
 class TransactionPage extends ConsumerStatefulWidget {
   final TransactionModel? transaction;
+  final TransactionType? initialType;
 
-  const TransactionPage({super.key, this.transaction});
+  const TransactionPage({super.key, this.transaction, this.initialType});
 
   @override
   ConsumerState<TransactionPage> createState() => _TransactionPageState();
@@ -27,8 +28,8 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
   DateTime _selectedDate = DateTime.now();
   Category? _selectedCategory;
   String? _selectedLedgerId;
-  String? _selectedDestinationLedgerId;
   String? _selectedAssetId;
+  String? _selectedDestinationAssetId;
   bool _isInitialLoad = true;
 
   @override
@@ -58,11 +59,26 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
           break;
         case TransactionType.transfer:
           index = 2;
-          _selectedDestinationLedgerId = t.destinationLedgerId;
+          // _selectedDestinationLedgerId = t.destinationLedgerId; // Legacy
+          _selectedDestinationAssetId = t.destinationAssetId;
           break;
       }
       _tabController.index = index;
       _selectedAssetId = t.assetId;
+    } else if (widget.initialType != null) {
+      int index = 0;
+      switch (widget.initialType!) {
+        case TransactionType.expense:
+          index = 0;
+          break;
+        case TransactionType.income:
+          index = 1;
+          break;
+        case TransactionType.transfer:
+          index = 2;
+          break;
+      }
+      _tabController.index = index;
     }
   }
 
@@ -71,7 +87,8 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
       setState(() {
         _selectedCategory = null; // Reset category on tab change
         if (_tabController.index != 2) {
-          _selectedDestinationLedgerId = null;
+          // _selectedDestinationLedgerId = null;
+          _selectedDestinationAssetId = null;
         }
       });
     }
@@ -127,19 +144,26 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
       return;
     }
 
+    // Asset is mandatory now
+    if (_selectedAssetId == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please select an Asset')));
+      return;
+    }
+
     if (_tabController.index == 2) {
-      if (_selectedDestinationLedgerId == null) {
+      if (_selectedDestinationAssetId == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select a destination wallet')),
+          const SnackBar(content: Text('Please select a destination Asset')),
         );
         return;
       }
 
-      final sourceId = _selectedLedgerId ?? ledgers.first.id;
-      if (_selectedDestinationLedgerId == sourceId) {
+      if (_selectedDestinationAssetId == _selectedAssetId) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Destination wallet cannot be the same as source'),
+            content: Text('Destination Asset cannot be the same as source'),
           ),
         );
         return;
@@ -158,14 +182,18 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
         ? TransactionType.income
         : TransactionType.transfer;
 
-    String? destName;
-    if (_selectedDestinationLedgerId != null) {
-      try {
-        final dest = ledgers.firstWhere(
-          (l) => l.id == _selectedDestinationLedgerId,
-        );
-        destName = dest.name;
-      } catch (_) {}
+    // String? destName; // Removed unused variable logic
+
+    String? destAssetName;
+    if (_selectedDestinationAssetId != null) {
+      final assets = ref.read(assetProvider).value;
+      if (assets != null) {
+        try {
+          destAssetName = assets
+              .firstWhere((a) => a.id == _selectedDestinationAssetId)
+              .name;
+        } catch (_) {}
+      }
     }
 
     String? assetName;
@@ -191,10 +219,12 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
       amount: amountVal,
       date: _selectedDate,
       type: type,
-      destinationLedgerId: _selectedDestinationLedgerId,
-      destinationLedgerName: destName,
+      destinationLedgerId: null, // Deprecated logic
+      destinationLedgerName: null,
       assetId: _selectedAssetId,
       assetName: assetName,
+      destinationAssetId: _selectedDestinationAssetId,
+      destinationAssetName: destAssetName,
     );
 
     try {
@@ -338,108 +368,42 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
                           data: (ledgers) {
                             if (ledgers.isEmpty) return const SizedBox.shrink();
 
-                            // Ensure valid selection
+                            // Validations
                             final effectiveLedgerId =
                                 _selectedLedgerId ??
                                 (ledgers.isNotEmpty ? ledgers.first.id : null);
-
-                            // Check if current selection exists in list (robustness against deletions)
-                            final ledgerExists = ledgers.any(
-                              (l) => l.id == effectiveLedgerId,
-                            );
-                            final currentLedgerId = ledgerExists
+                            final currentLedgerId =
+                                ledgers.any((l) => l.id == effectiveLedgerId)
                                 ? effectiveLedgerId
                                 : ledgers.first.id;
 
-                            // Ensure destination ledger is valid too
-                            if (_selectedDestinationLedgerId != null) {
-                              if (!ledgers.any(
-                                (l) => l.id == _selectedDestinationLedgerId,
-                              )) {
-                                // Reset if not found
-                              }
-                            }
-
-                            final validDestId =
-                                _selectedDestinationLedgerId != null &&
-                                    ledgers.any(
-                                      (l) =>
-                                          l.id == _selectedDestinationLedgerId,
-                                    )
-                                ? _selectedDestinationLedgerId
-                                : null;
-
-                            return Column(
-                              children: [
-                                InputDecorator(
-                                  decoration: const InputDecoration(
-                                    labelText: 'From Wallet',
-                                    border: OutlineInputBorder(),
-                                    contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 8,
-                                    ),
-                                  ),
-                                  child: DropdownButtonHideUnderline(
-                                    child: DropdownButton<String>(
-                                      value: currentLedgerId,
-                                      isDense: true,
-                                      isExpanded: true,
-                                      items: ledgers.map((ledger) {
-                                        return DropdownMenuItem(
-                                          value: ledger.id,
-                                          child: Text(ledger.name),
-                                        );
-                                      }).toList(),
-                                      onChanged: (val) {
-                                        setState(() {
-                                          _selectedLedgerId = val;
-                                        });
-                                      },
-                                    ),
-                                  ),
+                            return InputDecorator(
+                              decoration: const InputDecoration(
+                                labelText: 'Ledger Book',
+                                border: OutlineInputBorder(),
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
                                 ),
-
-                                if (_tabController.index == 2) ...[
-                                  const SizedBox(height: 16),
-                                  InputDecorator(
-                                    decoration: const InputDecoration(
-                                      labelText: 'To Wallet',
-                                      border: OutlineInputBorder(),
-                                      contentPadding: EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 8,
-                                      ),
-                                    ),
-                                    child: DropdownButtonHideUnderline(
-                                      child: DropdownButton<String>(
-                                        value: validDestId,
-                                        hint: const Text(
-                                          'Select Destination Wallet',
-                                        ),
-                                        isDense: true,
-                                        isExpanded: true,
-                                        items: ledgers
-                                            .where(
-                                              (l) => l.id != currentLedgerId,
-                                            )
-                                            .map((ledger) {
-                                              return DropdownMenuItem(
-                                                value: ledger.id,
-                                                child: Text(ledger.name),
-                                              );
-                                            })
-                                            .toList(),
-                                        onChanged: (val) {
-                                          setState(() {
-                                            _selectedDestinationLedgerId = val;
-                                          });
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ],
+                              ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  value: currentLedgerId,
+                                  isDense: true,
+                                  isExpanded: true,
+                                  items: ledgers.map((ledger) {
+                                    return DropdownMenuItem(
+                                      value: ledger.id,
+                                      child: Text(ledger.name),
+                                    );
+                                  }).toList(),
+                                  onChanged: (val) {
+                                    setState(() {
+                                      _selectedLedgerId = val;
+                                    });
+                                  },
+                                ),
+                              ),
                             );
                           },
                           loading: () => const LinearProgressIndicator(),
@@ -452,11 +416,26 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
                           data: (assets) {
                             if (assets.isEmpty) return const SizedBox.shrink();
 
+                            // Ensure validation of selected asset
+                            final validAssetId =
+                                _selectedAssetId != null &&
+                                    assets.any((a) => a.id == _selectedAssetId)
+                                ? _selectedAssetId
+                                : null;
+                            final validDestAssetId =
+                                _selectedDestinationAssetId != null &&
+                                    assets.any(
+                                      (a) =>
+                                          a.id == _selectedDestinationAssetId,
+                                    )
+                                ? _selectedDestinationAssetId
+                                : null;
+
                             return Column(
                               children: [
                                 InputDecorator(
                                   decoration: const InputDecoration(
-                                    labelText: 'Asset Category (Optional)',
+                                    labelText: 'Asset / Account',
                                     border: OutlineInputBorder(),
                                     contentPadding: EdgeInsets.symmetric(
                                       horizontal: 12,
@@ -465,28 +444,60 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
                                   ),
                                   child: DropdownButtonHideUnderline(
                                     child: DropdownButton<String>(
-                                      value: _selectedAssetId,
-                                      hint: const Text('Select Asset Category'),
+                                      value: validAssetId,
+                                      hint: const Text('Select Asset'),
                                       isDense: true,
                                       isExpanded: true,
-                                      items: [
-                                        const DropdownMenuItem<String>(
-                                          value: null,
-                                          child: Text('None'),
-                                        ),
-                                        ...assets.map((asset) {
-                                          return DropdownMenuItem<String>(
-                                            value: asset.id,
-                                            child: Text(asset.name),
-                                          );
-                                        }),
-                                      ],
+                                      items: assets.map((asset) {
+                                        return DropdownMenuItem<String>(
+                                          value: asset.id,
+                                          child: Text(asset.name),
+                                        );
+                                      }).toList(),
                                       onChanged: (val) {
                                         setState(() => _selectedAssetId = val);
                                       },
                                     ),
                                   ),
                                 ),
+                                if (_tabController.index == 2) ...[
+                                  const SizedBox(height: 16),
+                                  InputDecorator(
+                                    decoration: const InputDecoration(
+                                      labelText: 'To Asset / Account',
+                                      border: OutlineInputBorder(),
+                                      contentPadding: EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 8,
+                                      ),
+                                    ),
+                                    child: DropdownButtonHideUnderline(
+                                      child: DropdownButton<String>(
+                                        value: validDestAssetId,
+                                        hint: const Text(
+                                          'Select Destination Asset',
+                                        ),
+                                        isDense: true,
+                                        isExpanded: true,
+                                        items: assets
+                                            .where((a) => a.id != validAssetId)
+                                            .map((asset) {
+                                              return DropdownMenuItem<String>(
+                                                value: asset.id,
+                                                child: Text(asset.name),
+                                              );
+                                            })
+                                            .toList(),
+                                        onChanged: (val) {
+                                          setState(
+                                            () => _selectedDestinationAssetId =
+                                                val,
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                ],
                                 const SizedBox(height: 16),
                               ],
                             );
