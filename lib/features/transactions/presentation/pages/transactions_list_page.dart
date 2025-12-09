@@ -179,26 +179,25 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage> {
 
           final ledgers = ledgersAsync.asData?.value ?? [];
 
-          return Stack(
-            children: [
-              // Background Elements
-              Positioned(
-                top: 0,
-                right: 0,
-                child: Opacity(
-                  opacity: 0.6,
-                  child: Image.asset(
-                    'assets/images/cat_top_right.png',
-                    width: 100,
-                    errorBuilder: (c, e, s) => const SizedBox(),
+          return SafeArea(
+            child: Stack(
+              children: [
+                // Background Elements
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Opacity(
+                    opacity: 0.6,
+                    child: Image.asset(
+                      'assets/images/cat_top_right.png',
+                      width: 100,
+                      errorBuilder: (c, e, s) => const SizedBox(),
+                    ),
                   ),
                 ),
-              ),
 
-              // Top Section (Background)
-              SafeArea(
-                bottom: false,
-                child: Column(
+                // Top Section
+                Column(
                   children: [
                     TransactionsTopSection(
                       selectedLedgerId: _selectedLedgerId,
@@ -216,108 +215,110 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage> {
                     ),
                   ],
                 ),
-              ),
 
-              // Draggable Sheet
-              DraggableScrollableSheet(
-                initialChildSize: 0.7,
-                minChildSize: 0.7,
-                maxChildSize: 1.0,
-                builder: (context, scrollController) {
-                  return Stack(
-                    alignment: Alignment.topCenter,
-                    clipBehavior: Clip.none,
-                    children: [
-                      // White Sheet
-                      Container(
-                        margin: const EdgeInsets.only(top: 25),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFFFFDF5),
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(32),
-                            topRight: Radius.circular(32),
+                // Draggable Sheet
+                DraggableScrollableSheet(
+                  initialChildSize: 0.7,
+                  minChildSize: 0.7,
+                  maxChildSize: 1.0,
+                  builder: (context, scrollController) {
+                    return Stack(
+                      alignment: Alignment.topCenter,
+                      clipBehavior: Clip.none,
+                      children: [
+                        // White Sheet
+                        Container(
+                          margin: const EdgeInsets.only(top: 25),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFFFFDF5),
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(32),
+                              topRight: Radius.circular(32),
+                            ),
                           ),
-                        ),
-                        child: ListView(
-                          controller: scrollController,
-                          padding: const EdgeInsets.only(top: 40, bottom: 80),
-                          children: [
-                            // Section 1: Search
-                            TransactionSearchBar(
-                              controller: _searchController,
-                              onChanged: (v) {},
-                            ),
-                            const SizedBox(height: 24),
-
-                            // Section 2: Expenses
-                            TransactionChartSection(
-                              title: 'Expenses',
-                              isExpense: true,
-                              transactions: filtered
-                                  .where(
-                                    (t) =>
-                                        t.type == TransactionType.expense ||
-                                        (t.type == TransactionType.transfer &&
-                                            t.ledgerId == _selectedLedgerId),
-                                  )
-                                  .toList(),
-                              currencySymbol: currencySymbol,
-                            ),
-
-                            // Section 3: Income
-                            TransactionChartSection(
-                              title: 'Income',
-                              isExpense: false,
-                              transactions: filtered
-                                  .where(
-                                    (t) =>
-                                        t.type == TransactionType.income ||
-                                        (t.type == TransactionType.transfer &&
-                                            t.destinationLedgerId ==
-                                                _selectedLedgerId),
-                                  )
-                                  .toList(),
-                              currencySymbol: currencySymbol,
-                            ),
-
-                            // Section 4: Calendar
-                            TransactionCalendarSection(
-                              transactions: filtered,
-                              isExpenseView: _calendarIsExpenseView,
-                              onViewChanged: (val) =>
-                                  setState(() => _calendarIsExpenseView = val),
-                            ),
-
-                            // Section 5: List
-                            TransactionListSection(transactions: filtered),
-                          ],
-                        ),
-                      ),
-
-                      // Cat Peek
-                      Positioned(
-                        top: 0,
-                        child: Image.asset(
-                          'assets/images/cat_peek.png',
-                          width: 60,
-                          errorBuilder: (context, error, stackTrace) => Container(
-                            width: 50,
-                            height: 30,
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.vertical(
-                                top: Radius.circular(20),
+                          child: ListView(
+                            controller: scrollController,
+                            padding: const EdgeInsets.only(top: 40, bottom: 80),
+                            children: [
+                              // Section 1: Search
+                              TransactionSearchBar(
+                                controller: _searchController,
+                                onChanged: (v) {},
                               ),
-                            ),
-                            child: const Icon(Icons.pets, size: 20),
+                              const SizedBox(height: 24),
+
+                              // Section 2: Expenses
+                              TransactionChartSection(
+                                title: 'Expenses',
+                                isExpense: true,
+                                transactions: filtered
+                                    .where(
+                                      (t) =>
+                                          t.type == TransactionType.expense ||
+                                          (t.type == TransactionType.transfer &&
+                                              t.ledgerId == _selectedLedgerId),
+                                    )
+                                    .toList(),
+                                currencySymbol: currencySymbol,
+                              ),
+
+                              // Section 3: Income
+                              TransactionChartSection(
+                                title: 'Income',
+                                isExpense: false,
+                                transactions: filtered
+                                    .where(
+                                      (t) =>
+                                          t.type == TransactionType.income ||
+                                          (t.type == TransactionType.transfer &&
+                                              t.destinationLedgerId ==
+                                                  _selectedLedgerId),
+                                    )
+                                    .toList(),
+                                currencySymbol: currencySymbol,
+                              ),
+
+                              // Section 4: Calendar
+                              TransactionCalendarSection(
+                                transactions: filtered,
+                                isExpenseView: _calendarIsExpenseView,
+                                onViewChanged: (val) => setState(
+                                  () => _calendarIsExpenseView = val,
+                                ),
+                              ),
+
+                              // Section 5: List
+                              TransactionListSection(transactions: filtered),
+                            ],
                           ),
                         ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ],
+
+                        // Cat Peek
+                        Positioned(
+                          top: 0,
+                          child: Image.asset(
+                            'assets/images/cat_peek.png',
+                            width: 60,
+                            errorBuilder: (context, error, stackTrace) =>
+                                Container(
+                                  width: 50,
+                                  height: 30,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(20),
+                                    ),
+                                  ),
+                                  child: const Icon(Icons.pets, size: 20),
+                                ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ],
+            ),
           );
         },
       ),

@@ -81,12 +81,13 @@ class TransactionsTopSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16),
-      child: Column(
-        children: [
-          // Top Row: Ledger & Time Range
-          Row(
+    return Column(
+      children: [
+        const SizedBox(height: 16),
+        // Top Row: Ledger & Time Range
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               // Ledger Dropdown
@@ -214,11 +215,14 @@ class TransactionsTopSection extends StatelessWidget {
               ),
             ],
           ),
+        ),
 
-          const SizedBox(height: 24),
+        const SizedBox(height: 32),
 
-          // Totals Display
-          Row(
+        // Totals Display
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               // Expense
@@ -247,7 +251,7 @@ class TransactionsTopSection extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.expense,
+                      color: AppColors.pastelRed,
                     ),
                   ),
                 ],
@@ -283,8 +287,8 @@ class TransactionsTopSection extends StatelessWidget {
               ),
             ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
