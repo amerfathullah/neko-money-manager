@@ -19,6 +19,7 @@ class TransactionModel {
   final String? assetName; // Denormalized
   final String? destinationAssetId;
   final String? destinationAssetName; // Denormalized
+  final String? remarks;
 
   const TransactionModel({
     required this.id,
@@ -37,6 +38,7 @@ class TransactionModel {
     this.assetName,
     this.destinationAssetId,
     this.destinationAssetName,
+    this.remarks,
   });
 
   factory TransactionModel.fromJson(Map<String, dynamic> json) {
@@ -57,6 +59,7 @@ class TransactionModel {
       assetName: json['assetName'] as String?,
       destinationAssetId: json['destinationAssetId'] as String?,
       destinationAssetName: json['destinationAssetName'] as String?,
+      remarks: json['remarks'] as String?,
     );
   }
 
@@ -78,6 +81,7 @@ class TransactionModel {
       'assetName': assetName,
       'destinationAssetId': destinationAssetId,
       'destinationAssetName': destinationAssetName,
+      'remarks': remarks,
     };
   }
 }
