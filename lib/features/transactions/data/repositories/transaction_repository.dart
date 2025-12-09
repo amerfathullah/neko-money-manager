@@ -13,18 +13,35 @@ class TransactionRepository {
     final userDoc = _firestore.collection('users').doc(userId);
 
     await _firestore.runTransaction((transaction) async {
-      // 1. Add Transaction
+      // 1. READ PHASE: Fetch all necessary assets
+      final assetIds = <String>{};
+      if (transactionModel.assetId != null) {
+        assetIds.add(transactionModel.assetId!);
+      }
+      if (transactionModel.type == TransactionType.transfer &&
+          transactionModel.destinationAssetId != null) {
+        assetIds.add(transactionModel.destinationAssetId!);
+      }
+
+      final assetSnapshots = await _getAssetSnapshots(
+        transaction,
+        userDoc,
+        assetIds,
+      );
+
+      // 2. WRITE PHASE: Perform all writes
+      // Add Transaction
       final transactionRef = userDoc
           .collection(_collection)
           .doc(transactionModel.id);
       transaction.set(transactionRef, transactionModel.toJson());
 
-      // 2. Update Asset Balance & History
+      // Update Asset Balance & History
       if (transactionModel.assetId != null) {
-        await _updateAssetBalanceInTransaction(
+        _queueAssetUpdate(
           transaction,
           userDoc,
-          transactionModel.assetId!,
+          assetSnapshots[transactionModel.assetId!]!,
           transactionModel.type == TransactionType.income
               ? transactionModel.amount
               : -transactionModel.amount, // Expense or Transfer Source
@@ -34,10 +51,10 @@ class TransactionRepository {
 
         if (transactionModel.type == TransactionType.transfer &&
             transactionModel.destinationAssetId != null) {
-          await _updateAssetBalanceInTransaction(
+          _queueAssetUpdate(
             transaction,
             userDoc,
-            transactionModel.destinationAssetId!,
+            assetSnapshots[transactionModel.destinationAssetId!]!,
             transactionModel.amount, // Transfer Dest (Income)
             transactionModel.id,
             'transaction_add_transfer',
@@ -54,19 +71,36 @@ class TransactionRepository {
     final userDoc = _firestore.collection('users').doc(userId);
 
     await _firestore.runTransaction((transaction) async {
-      // 1. Delete Transaction
+      // 1. READ PHASE
+      final assetIds = <String>{};
+      if (transactionModel.assetId != null) {
+        assetIds.add(transactionModel.assetId!);
+      }
+      if (transactionModel.type == TransactionType.transfer &&
+          transactionModel.destinationAssetId != null) {
+        assetIds.add(transactionModel.destinationAssetId!);
+      }
+
+      final assetSnapshots = await _getAssetSnapshots(
+        transaction,
+        userDoc,
+        assetIds,
+      );
+
+      // 2. WRITE PHASE
+      // Delete Transaction
       final transactionRef = userDoc
           .collection(_collection)
           .doc(transactionModel.id);
       transaction.delete(transactionRef);
 
-      // 2. Revert Asset Balance & History
+      // Revert Asset Balance & History
       if (transactionModel.assetId != null) {
         // Revert: Expense -> Add, Income -> Subtract
-        await _updateAssetBalanceInTransaction(
+        _queueAssetUpdate(
           transaction,
           userDoc,
-          transactionModel.assetId!,
+          assetSnapshots[transactionModel.assetId!]!,
           transactionModel.type == TransactionType.income
               ? -transactionModel.amount
               : transactionModel.amount,
@@ -77,10 +111,10 @@ class TransactionRepository {
         if (transactionModel.type == TransactionType.transfer &&
             transactionModel.destinationAssetId != null) {
           // Revert Transfer Dest: Subtract
-          await _updateAssetBalanceInTransaction(
+          _queueAssetUpdate(
             transaction,
             userDoc,
-            transactionModel.destinationAssetId!,
+            assetSnapshots[transactionModel.destinationAssetId!]!,
             -transactionModel.amount,
             transactionModel.id,
             'transaction_delete_transfer',
@@ -98,63 +132,131 @@ class TransactionRepository {
     final userDoc = _firestore.collection('users').doc(userId);
 
     await _firestore.runTransaction((transaction) async {
-      // 1. Revert Old (Manual Logic to avoid double reads?)
-      // Actually _updateAssetBalanceInTransaction handles reads.
-      // Firestore transactions handle repeated reads of same doc fine (returns same snap).
+      // 1. READ PHASE: Collect ALL asset IDs from old and new
+      final assetIds = <String>{};
+      if (oldTransaction.assetId != null) assetIds.add(oldTransaction.assetId!);
+      if (oldTransaction.type == TransactionType.transfer &&
+          oldTransaction.destinationAssetId != null) {
+        assetIds.add(oldTransaction.destinationAssetId!);
+      }
+      if (newTransaction.assetId != null) assetIds.add(newTransaction.assetId!);
+      if (newTransaction.type == TransactionType.transfer &&
+          newTransaction.destinationAssetId != null) {
+        assetIds.add(newTransaction.destinationAssetId!);
+      }
 
-      // Revert Old Source
+      final assetSnapshots = await _getAssetSnapshots(
+        transaction,
+        userDoc,
+        assetIds,
+      );
+
+      // Logic check: Calculate net changes for each asset?
+      // Or just apply reverts then applies sequentially?
+      // Firestore transactions handle sequential writes to same doc in one batch fine?
+      // Actually, since we read first, we have the BASE snapshot.
+      // If we update the same asset twice (revert old, apply new), we need to daisy-chain the balance.
+
+      // Map to track running balance updates during this transaction block
+      final tempBalances = <String, double>{};
+      for (final id in assetIds) {
+        final snap = assetSnapshots[id];
+        if (snap != null && snap.exists) {
+          tempBalances[id] =
+              (snap.data() as Map<String, dynamic>)['balance'] as double? ??
+              0.0;
+        }
+      }
+
+      // Helper to apply change to temp balance and queue write
+      void queueUpdate(
+        String assetId,
+        double change,
+        String reason,
+        String txId,
+      ) {
+        if (!tempBalances.containsKey(assetId)) return; // Asset doesn't exist?
+
+        final current = tempBalances[assetId]!;
+        final newBal = current + change;
+        tempBalances[assetId] = newBal; // Update temp for next op
+
+        // We can queue multiple updates to the same doc in a transaction?
+        // Yes, but only the last one sticks usually if it's a 'set' or 'update'.
+        // BUT wait, if we queue two updates:
+        // 1. update(bal=100)
+        // 2. update(bal=110)
+        // Firestore might complain or last wins.
+        // Safer means: Calculate NET change or Final Balance and write ONCE per asset.
+        // However, we also need to write History entries. One per operation usually preferred.
+
+        // Let's write the history entry immediately.
+        // But the asset update we should ideally do once?
+        // Actually, let's just do the writes. Firestore SDK merges updates locally in the batch?
+        // No, "Transactions require all reads before all writes".
+        // Once we start writing, we can't read. We aren't reading anymore.
+        // So we can do multiple writes.
+
+        final assetRef = userDoc.collection('assets').doc(assetId);
+        transaction.update(assetRef, {'balance': newBal});
+
+        final historyRef = userDoc.collection('asset_history').doc();
+        final historyEntry = AssetHistoryModel(
+          id: historyRef.id,
+          assetId: assetId,
+          balance: newBal,
+          date: DateTime.now(),
+          reason: reason,
+          relatedTransactionId: txId,
+        );
+        transaction.set(historyRef, historyEntry.toJson());
+      }
+
+      // 2. WRITE PHASE - Execute Revert Old
       if (oldTransaction.assetId != null) {
-        await _updateAssetBalanceInTransaction(
-          transaction,
-          userDoc,
+        queueUpdate(
           oldTransaction.assetId!,
           oldTransaction.type == TransactionType.income
               ? -oldTransaction.amount
               : oldTransaction.amount,
-          newTransaction.id, // Use new ID for history relation
           'transaction_update_revert',
+          newTransaction.id,
         );
 
         if (oldTransaction.type == TransactionType.transfer &&
             oldTransaction.destinationAssetId != null) {
-          await _updateAssetBalanceInTransaction(
-            transaction,
-            userDoc,
+          queueUpdate(
             oldTransaction.destinationAssetId!,
             -oldTransaction.amount,
-            newTransaction.id,
             'transaction_update_revert_transfer',
+            newTransaction.id,
           );
         }
       }
 
-      // 2. Apply New
+      // 3. WRITE PHASE - Execute Apply New
       if (newTransaction.assetId != null) {
-        await _updateAssetBalanceInTransaction(
-          transaction,
-          userDoc,
+        queueUpdate(
           newTransaction.assetId!,
           newTransaction.type == TransactionType.income
               ? newTransaction.amount
               : -newTransaction.amount,
-          newTransaction.id,
           'transaction_update_apply',
+          newTransaction.id,
         );
 
         if (newTransaction.type == TransactionType.transfer &&
             newTransaction.destinationAssetId != null) {
-          await _updateAssetBalanceInTransaction(
-            transaction,
-            userDoc,
+          queueUpdate(
             newTransaction.destinationAssetId!,
             newTransaction.amount,
-            newTransaction.id,
             'transaction_update_apply_transfer',
+            newTransaction.id,
           );
         }
       }
 
-      // 3. Update Transaction Doc
+      // Update Transaction Doc
       final transactionRef = userDoc
           .collection(_collection)
           .doc(newTransaction.id);
@@ -162,39 +264,55 @@ class TransactionRepository {
     });
   }
 
-  // Helper to update balance and log history
-  Future<void> _updateAssetBalanceInTransaction(
+  // Helper: Batch read assets
+  Future<Map<String, DocumentSnapshot>> _getAssetSnapshots(
     Transaction transaction,
     DocumentReference userDoc,
-    String assetId,
+    Set<String> assetIds,
+  ) async {
+    final results = <String, DocumentSnapshot>{};
+    for (final id in assetIds) {
+      final ref = userDoc.collection('assets').doc(id);
+      final snap = await transaction.get(ref);
+      results[id] = snap;
+    }
+    return results;
+  }
+
+  // Helper: Queue Write (Assumes single write per asset per transaction for simplicity,
+  // but updateTransaction uses local state to allow multiple logical updates)
+  // NOTE: This simple helper is used by add/delete where we modify each asset once.
+  void _queueAssetUpdate(
+    Transaction transaction,
+    DocumentReference userDoc,
+    DocumentSnapshot assetSnap,
     double amountChange,
     String? transactionId,
     String reason,
-  ) async {
+  ) {
+    if (!assetSnap.exists) return;
+
+    final currentBalance =
+        (assetSnap.data() as Map<String, dynamic>)['balance'] as double? ?? 0.0;
+    final newBalance = currentBalance + amountChange;
+    final assetId = assetSnap.id;
+
     final assetRef = userDoc.collection('assets').doc(assetId);
-    final assetSnap = await transaction.get(assetRef);
 
-    if (assetSnap.exists) {
-      final currentBalance =
-          (assetSnap.data() as Map<String, dynamic>)['balance'] as double? ??
-          0.0;
-      final newBalance = currentBalance + amountChange;
+    // Update Asset
+    transaction.update(assetRef, {'balance': newBalance});
 
-      // Update Asset
-      transaction.update(assetRef, {'balance': newBalance});
-
-      // Log History
-      final historyRef = userDoc.collection('asset_history').doc();
-      final historyEntry = AssetHistoryModel(
-        id: historyRef.id,
-        assetId: assetId,
-        balance: newBalance,
-        date: DateTime.now(),
-        reason: reason,
-        relatedTransactionId: transactionId,
-      );
-      transaction.set(historyRef, historyEntry.toJson());
-    }
+    // Log History
+    final historyRef = userDoc.collection('asset_history').doc();
+    final historyEntry = AssetHistoryModel(
+      id: historyRef.id,
+      assetId: assetId,
+      balance: newBalance,
+      date: DateTime.now(),
+      reason: reason,
+      relatedTransactionId: transactionId,
+    );
+    transaction.set(historyRef, historyEntry.toJson());
   }
 
   Stream<List<TransactionModel>> getRecentTransactions(
