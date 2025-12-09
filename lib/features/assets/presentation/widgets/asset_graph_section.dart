@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/utils/currency_formatter.dart';
 import '../../data/models/asset.dart';
 import '../../data/models/asset_history_model.dart';
 import 'dart:math';
@@ -14,12 +15,14 @@ class AssetGraphSection extends StatefulWidget {
   final List<Asset> assets;
   final List<AssetHistoryModel> assetHistory;
   final String currencySymbol;
+  final bool useComma;
 
   const AssetGraphSection({
     super.key,
     required this.assets,
     required this.assetHistory,
     this.currencySymbol = '\$',
+    required this.useComma,
   });
 
   @override
@@ -229,8 +232,11 @@ class _AssetGraphSectionState extends State<AssetGraphSection> {
                                 ),
                                 children: [
                                   TextSpan(
-                                    text:
-                                        '${widget.currencySymbol}${point.value.toStringAsFixed(0)}',
+                                    text: CurrencyFormatter.format(
+                                      point.value,
+                                      symbol: widget.currencySymbol,
+                                      useGrouping: widget.useComma,
+                                    ),
                                     style: const TextStyle(
                                       color: AppColors.pastelGreen,
                                       fontWeight: FontWeight.normal,

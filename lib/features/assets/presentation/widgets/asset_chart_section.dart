@@ -10,6 +10,7 @@ class AssetChartSection extends StatelessWidget {
   final bool isLiabilities;
   final List<Asset> assets;
   final String currencySymbol;
+  final bool useComma;
 
   const AssetChartSection({
     super.key,
@@ -17,6 +18,7 @@ class AssetChartSection extends StatelessWidget {
     required this.isLiabilities,
     required this.assets,
     required this.currencySymbol,
+    required this.useComma,
   });
 
   @override
@@ -206,6 +208,7 @@ class AssetChartSection extends StatelessWidget {
                               CurrencyFormatter.format(
                                 asset.balance,
                                 symbol: currencySymbol,
+                                useGrouping: useComma,
                               ),
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,

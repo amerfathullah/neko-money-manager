@@ -8,12 +8,14 @@ class CategoryTransactionsPage extends StatelessWidget {
   final List<TransactionModel> transactions;
 
   final String currencySymbol;
+  final bool useComma;
 
   const CategoryTransactionsPage({
     super.key,
     required this.categoryName,
     required this.transactions,
     required this.currencySymbol,
+    required this.useComma,
   });
 
   @override
@@ -31,6 +33,7 @@ class CategoryTransactionsPage extends StatelessWidget {
         child: TransactionListSection(
           transactions: transactions,
           currencySymbol: currencySymbol,
+          useComma: useComma,
         ),
       ),
     );

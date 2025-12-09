@@ -6,6 +6,7 @@ import '../../../transactions/presentation/providers/transaction_provider.dart';
 import '../../../transactions/data/models/transaction_model.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../settings/presentation/providers/currency_provider.dart';
+import '../../../settings/presentation/providers/settings_provider.dart';
 import '../providers/ledger_provider.dart';
 import '../../../transactions/presentation/pages/transaction_page.dart';
 
@@ -24,7 +25,13 @@ class _HomePageState extends ConsumerState<HomePage> {
     final ledgersAsync = ref.watch(ledgerProvider);
     final transactionsAsync = ref.watch(transactionProvider);
     final currencyAsync = ref.watch(currencyProvider);
+    final settingsAsync = ref.watch(settingsProvider);
     final currencySymbol = currencyAsync.asData?.value ?? '\$';
+
+    // Settings defaults
+    final settings = settingsAsync.asData?.value ?? const SettingsState();
+    final startDay = settings.monthlyStartDate;
+    final useComma = settings.useCommaSeparator;
 
     // Calculate totals & Filter Transactions
     double currentMonthExpense = 0;
@@ -34,12 +41,46 @@ class _HomePageState extends ConsumerState<HomePage> {
     Map<String, List<TransactionModel>> groupedTransactions = {};
     List<String> sortedDates = [];
 
-    // Format current month for display
-    final currentMonthName = DateFormat('MMM').format(DateTime.now());
+    // Calculate Current Month Range based on startDay
+    final now = DateTime.now();
+    DateTime rangeStart;
+    DateTime rangeEnd;
+
+    if (now.day >= startDay) {
+      rangeStart = DateTime(now.year, now.month, startDay);
+      rangeEnd = DateTime(
+        now.year,
+        now.month + 1,
+        startDay,
+      ).subtract(const Duration(days: 1));
+    } else {
+      rangeStart = DateTime(now.year, now.month - 1, startDay);
+      rangeEnd = DateTime(
+        now.year,
+        now.month,
+        startDay,
+      ).subtract(const Duration(days: 1));
+    }
+    // To handle End of Day for comparison or just date parts
+    // Best to compare just Date parts if time doesn't matter, but transactions have time.
+    // Ideally: t.date >= rangeStart (at 00:00) && t.date <= rangeEnd (at 23:59:59)
+    final rangeEndEod = DateTime(
+      rangeEnd.year,
+      rangeEnd.month,
+      rangeEnd.day,
+      23,
+      59,
+      59,
+    );
+
+    // Format current month for display (e.g. "Dec" or "Nov-Dec" if needed, but "Dec" is standard)
+    // Actually if custom date, maybe display "Period"? keeping it simple: Month Name of the majority?
+    // Or just "Current Period". User requested "Monthly Start Date".
+    // Usually standard month name of the *End* date is used.
+    final currentMonthName = DateFormat('MMM').format(rangeEnd);
 
     if (transactionsAsync.hasValue) {
-      final now = DateTime.now();
-      // Calculate start date for 3 months history (e.g., 90 days ago or start of 2 months ago)
+      // Calculate start date for 3 months history (approx)
       final threeMonthsAgo = DateTime(now.year, now.month - 2, 1);
 
       var allTransactions = transactionsAsync.value!;
@@ -64,8 +105,12 @@ class _HomePageState extends ConsumerState<HomePage> {
         final isIncome = t.type.toString().contains('income');
         final isTransfer = t.type.toString().contains('transfer');
 
-        // A. Current Month Totals Calculation
-        if (t.date.year == now.year && t.date.month == now.month) {
+        // A. Current Month Totals Calculation (Custom Period)
+        bool isInCurrentPeriod =
+            t.date.isAfter(rangeStart.subtract(const Duration(seconds: 1))) &&
+            t.date.isBefore(rangeEndEod.add(const Duration(seconds: 1)));
+
+        if (isInCurrentPeriod) {
           if (_selectedLedgerId == null) {
             // Global View
             if (isExpense) {
@@ -120,7 +165,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               top: 0,
               right: 0,
               child: Opacity(
-                opacity: 0.8,
+                opacity: 0.6,
                 child: Image.asset(
                   'assets/images/cat_top_right.png',
                   width: 120,
@@ -237,12 +282,14 @@ class _HomePageState extends ConsumerState<HomePage> {
                         amount: currentMonthExpense,
                         currency: currencySymbol,
                         isExpense: true,
+                        useComma: useComma,
                       ),
                       _SummaryItem(
                         label: '$currentMonthName · Income',
                         amount: currentMonthIncome,
                         currency: currencySymbol,
                         isExpense: false,
+                        useComma: useComma,
                       ),
                     ],
                   ),
@@ -464,7 +511,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                               children: [
                                                 if (dailyIncome > 0)
                                                   Text(
-                                                    '+${CurrencyFormatter.format(dailyIncome, symbol: '')}',
+                                                    '+${CurrencyFormatter.format(dailyIncome, symbol: '', useGrouping: useComma)}',
                                                     style: const TextStyle(
                                                       fontWeight:
                                                           FontWeight.bold,
@@ -476,7 +523,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                                   const SizedBox(width: 8),
                                                 if (dailyExpense > 0)
                                                   Text(
-                                                    '-${CurrencyFormatter.format(dailyExpense, symbol: '')}',
+                                                    '-${CurrencyFormatter.format(dailyExpense, symbol: '', useGrouping: useComma)}',
                                                     style: const TextStyle(
                                                       fontWeight:
                                                           FontWeight.bold,
@@ -526,6 +573,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                             context,
                                             t,
                                             currencySymbol,
+                                            useComma,
                                           ),
                                           child: Container(
                                             margin: const EdgeInsets.symmetric(
@@ -632,7 +680,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                                   ),
                                                 ),
                                                 Text(
-                                                  '$prefix${CurrencyFormatter.format(t.amount, symbol: currencySymbol)}',
+                                                  '$prefix${CurrencyFormatter.format(t.amount, symbol: currencySymbol, useGrouping: useComma)}',
                                                   style: TextStyle(
                                                     fontSize: 18,
                                                     fontWeight: FontWeight.bold,
@@ -689,6 +737,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     BuildContext context,
     TransactionModel transaction,
     String currencySymbol,
+    bool useComma,
   ) {
     showDialog(
       context: context,
@@ -756,7 +805,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                       ),
                     ),
                     Text(
-                      '$prefix${CurrencyFormatter.format(transaction.amount, symbol: currencySymbol)}',
+                      '$prefix${CurrencyFormatter.format(transaction.amount, symbol: currencySymbol, useGrouping: useComma)}',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -798,20 +847,38 @@ class _HomePageState extends ConsumerState<HomePage> {
                       },
                       borderRadius: BorderRadius.circular(12),
                       child: Container(
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
-                          color: AppColors.textDark.withValues(alpha: 0.05),
+                          color: AppColors.pastelBlue.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(
-                          Icons.edit,
-                          color: AppColors.textDark,
+                        child: const Row(
+                          children: [
+                            Icon(
+                              Icons.edit,
+                              color: AppColors.pastelBlue,
+                              size: 20,
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              'Edit',
+                              style: TextStyle(
+                                color: AppColors.pastelBlue,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
+
                     // Delete
                     InkWell(
                       onTap: () async {
+                        // Confirm Delete
                         final confirm = await showDialog<bool>(
                           context: context,
                           builder: (context) => AlertDialog(
@@ -826,71 +893,52 @@ class _HomePageState extends ConsumerState<HomePage> {
                               ),
                               TextButton(
                                 onPressed: () => Navigator.pop(context, true),
-                                child: const Text(
-                                  'Delete',
-                                  style: TextStyle(color: Colors.red),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.red,
                                 ),
+                                child: const Text('Delete'),
                               ),
                             ],
                           ),
                         );
 
-                        if (confirm == true && context.mounted) {
-                          ref
+                        if (confirm == true) {
+                          await ref
                               .read(transactionProvider.notifier)
                               .deleteTransaction(transaction);
-                          Navigator.pop(context); // Close details dialog
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                          }
                         }
                       },
                       borderRadius: BorderRadius.circular(12),
                       child: Container(
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
-                          color: AppColors.textDark.withValues(alpha: 0.05),
+                          color: AppColors.pastelRed.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(
-                          Icons.delete,
-                          color: AppColors.textDark,
+                        child: const Row(
+                          children: [
+                            Icon(
+                              Icons.delete,
+                              color: AppColors.pastelRed,
+                              size: 20,
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              'Delete',
+                              style: TextStyle(
+                                color: AppColors.pastelRed,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                    // Bookmark
-                    Consumer(
-                      builder: (context, ref, child) {
-                        // We need the *latest* state of the transaction if possible,
-                        // but here we have the 'transaction' object passed in.
-                        // Ideally we'd watch it by ID but simpler is just use passed in val
-                        // and rely on list rebuild if it changes.
-                        // However, inside the dialog, 'transaction' is static unless we wrap whole dialog in StreamBuilder.
-                        // For MVP: Toggle closes dialog or we accept it's static.
-                        // Improved: Use local state variable or StatefulBuilder if we want instant feedback?
-                        // Actually, tapping it calls toggle. The list behind updates. The dialog might not show new state immediately.
-                        // Let's use StatefulBuilder for the star icon specifically if we want it to animate.
-                        // For now simply:
-                        return InkWell(
-                          onTap: () {
-                            ref
-                                .read(transactionProvider.notifier)
-                                .toggleBookmark(transaction);
-                            Navigator.pop(context);
-                          },
-                          borderRadius: BorderRadius.circular(12),
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: AppColors.textDark.withValues(alpha: 0.05),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              transaction.isBookmarked
-                                  ? Icons.star
-                                  : Icons.star_border,
-                              color: AppColors.textDark,
-                            ),
-                          ),
-                        );
-                      },
                     ),
                   ],
                 ),
@@ -908,16 +956,16 @@ class _HomePageState extends ConsumerState<HomePage> {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            color: AppColors.textDark,
-            fontSize: 16,
+          style: TextStyle(
+            color: AppColors.textDark.withValues(alpha: 0.6),
+            fontSize: 14,
           ),
         ),
         Text(
           value,
-          style: TextStyle(
-            color: AppColors.textDark.withValues(alpha: 0.7),
+          style: const TextStyle(
+            color: AppColors.textDark,
+            fontWeight: FontWeight.bold,
             fontSize: 16,
           ),
         ),
@@ -926,18 +974,73 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 }
 
-// Re-using _TopPill, _SummaryItem, _QuickAction (Redefined to avoid missing referenced classes if I replaced whole file)
+class _SummaryItem extends StatelessWidget {
+  final String label;
+  final double amount;
+  final String currency;
+  final bool isExpense;
+  final bool useComma;
+
+  const _SummaryItem({
+    required this.label,
+    required this.amount,
+    required this.currency,
+    required this.isExpense,
+    required this.useComma,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              label,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: AppColors.textDark,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              isExpense ? Icons.arrow_drop_down : Icons.arrow_drop_up,
+              color: isExpense ? AppColors.expense : AppColors.textDark,
+            ),
+          ],
+        ),
+        Text(
+          CurrencyFormatter.format(
+            amount,
+            symbol: isExpense ? currency : '',
+            useGrouping: useComma,
+          ),
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: isExpense ? AppColors.pastelRed : AppColors.textDark,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _TopPill extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color color;
   final VoidCallback onTap;
+
   const _TopPill({
     required this.icon,
     required this.label,
     required this.color,
     required this.onTap,
   });
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -966,80 +1069,44 @@ class _TopPill extends StatelessWidget {
   }
 }
 
-class _SummaryItem extends StatelessWidget {
-  final String label;
-  final double amount;
-  final String currency;
-  final bool isExpense;
-  const _SummaryItem({
-    required this.label,
-    required this.amount,
-    required this.currency,
-    required this.isExpense,
-  });
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textDark,
-              ),
-            ),
-            const SizedBox(width: 4),
-            Icon(
-              isExpense ? Icons.arrow_drop_down : Icons.arrow_drop_up,
-              color: isExpense ? AppColors.pastelRed : AppColors.textDark,
-            ),
-          ],
-        ),
-        Text(
-          CurrencyFormatter.format(amount, symbol: ''),
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: isExpense ? AppColors.pastelRed : AppColors.textDark,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _QuickAction extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color color;
+
   const _QuickAction({
     required this.icon,
     required this.label,
     required this.color,
   });
+
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+    return Container(
+      width: 70,
+      margin: const EdgeInsets.only(right: 16),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(16),
+              color: color.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: AppColors.textDark),
+            child: Icon(icon, color: color, size: 24),
           ),
           const SizedBox(height: 8),
           Text(
             label,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 12,
+              color: AppColors.textDark.withValues(alpha: 0.8),
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

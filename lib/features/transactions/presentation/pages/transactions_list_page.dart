@@ -6,6 +6,7 @@ import '../../data/models/transaction_model.dart';
 import '../providers/transaction_provider.dart';
 import '../../../../features/home/presentation/providers/ledger_provider.dart';
 import '../../../settings/presentation/providers/currency_provider.dart';
+import '../../../settings/presentation/providers/settings_provider.dart';
 import '../widgets/transactions_list_widgets.dart';
 
 class TransactionsListPage extends ConsumerStatefulWidget {
@@ -66,7 +67,11 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage> {
     }
   }
 
-  bool _isTransactionInTimeRange(DateTime date) {
+  bool _isTransactionInTimeRange(
+    DateTime date,
+    int monthlyStartDate,
+    int firstDayOfWeek,
+  ) {
     final startOfDay = DateTime(date.year, date.month, date.day);
     switch (_timeRange) {
       case TransactionTimeRange.daily:
@@ -74,27 +79,54 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage> {
             date.month == _selectedDate.month &&
             date.day == _selectedDate.day;
       case TransactionTimeRange.weekly:
-        // Simple "current week" for demo
-        // Ideally calculate start/end of week based on selectedDate
-        // week of year logic or simple +/- 3 days?
-        // Let's implement actual week logic from selectedDate
-        // final diff = date.difference(_selectedDate).inDays;
-        // This is complex without proper util, sticking to "Same Week" check?
-        // Using intl week?
-        // Simplified: Match same ISO week number (very rough)
-        // Better:
-        final startOfWeek = _selectedDate.subtract(
-          Duration(days: _selectedDate.weekday - 1),
-        );
+        // Use firstDayOfWeek (1=Mon ... 7=Sun)
+        // Find start of week for _selectedDate
+        // weekday: Mon=1..Sun=7
+        // diff = (weekday - first + 7) % 7
+        final diff = (_selectedDate.weekday - firstDayOfWeek + 7) % 7;
+        final startOfWeek = DateTime(
+          _selectedDate.year,
+          _selectedDate.month,
+          _selectedDate.day,
+        ).subtract(Duration(days: diff));
+
         final endOfWeek = startOfWeek.add(const Duration(days: 6));
+
+        // Check if transaction is in this week
         return startOfDay.isAfter(
               startOfWeek.subtract(const Duration(seconds: 1)),
             ) &&
             startOfDay.isBefore(endOfWeek.add(const Duration(days: 1)));
 
       case TransactionTimeRange.monthly:
-        return date.year == _selectedDate.year &&
-            date.month == _selectedDate.month;
+        // Monthly Start Date Logic
+        // Cycle starts on Day S of Month M (of _selectedDate)
+        // If S=1: Month M, 1 to Month M+1, 0. (Standard month)
+        // If S>1: Month M, S to Month M+1, S-1.
+
+        final startDay = monthlyStartDate;
+        final startOfPeriod = DateTime(
+          _selectedDate.year,
+          _selectedDate.month,
+          startDay,
+        );
+        // End is Start + 1 month - 1 day
+        // safest way: (month + 1, startDay) subtract 1 day.
+        final nextPeriodStart = DateTime(
+          _selectedDate.year,
+          _selectedDate.month + 1,
+          startDay,
+        );
+
+        // Need to cover full days so check against startOfDay logic or standard compare
+        // t.date usually has time.
+        // startOfPeriod is at 00:00. endOfPeriod is at 00:00 of the last day.
+        // So we need t.date >= startOfPeriod AND t.date < nextPeriodStart
+        return date.isAfter(
+              startOfPeriod.subtract(const Duration(seconds: 1)),
+            ) &&
+            date.isBefore(nextPeriodStart);
+
       case TransactionTimeRange.annual:
         return date.year == _selectedDate.year;
       case TransactionTimeRange.custom:
@@ -114,11 +146,16 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage> {
   Widget build(BuildContext context) {
     final ledgersAsync = ref.watch(ledgerProvider);
     final transactionsAsync = ref.watch(transactionProvider);
-    final currencyAsync = ref.watch(
-      currencyProvider,
-    ); // Keep for symbol if needed, though passed down
-    // final theme = Theme.of(context);
+    final currencyAsync = ref.watch(currencyProvider);
+    final settingsAsync = ref.watch(settingsProvider);
+
     final currencySymbol = currencyAsync.asData?.value ?? '\$';
+
+    // Default settings if loading or error
+    final settings = settingsAsync.asData?.value ?? const SettingsState();
+    final monthlyStartDate = settings.monthlyStartDate;
+    final firstDayOfWeek = settings.firstDayOfWeek;
+    final useComma = settings.useCommaSeparator;
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8E1), // Cream background
@@ -141,7 +178,13 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage> {
 
           // 2. Filter by Time Range
           filtered = filtered
-              .where((t) => _isTransactionInTimeRange(t.date))
+              .where(
+                (t) => _isTransactionInTimeRange(
+                  t.date,
+                  monthlyStartDate,
+                  firstDayOfWeek,
+                ),
+              )
               .toList();
 
           // 3. Filter by Search (Amount or Remarks)
@@ -212,6 +255,7 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage> {
                       totalIncome: totalIncome,
                       totalExpense: totalExpense,
                       currencySymbol: currencySymbol,
+                      useComma: useComma,
                     ),
                   ],
                 ),
@@ -260,6 +304,7 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage> {
                                     )
                                     .toList(),
                                 currencySymbol: currencySymbol,
+                                useComma: useComma,
                               ),
 
                               // Section 3: Income
@@ -276,6 +321,7 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage> {
                                     )
                                     .toList(),
                                 currencySymbol: currencySymbol,
+                                useComma: useComma,
                               ),
 
                               // Section 4: Calendar
@@ -285,12 +331,14 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage> {
                                 onViewChanged: (val) => setState(
                                   () => _calendarIsExpenseView = val,
                                 ),
+                                firstDayOfWeek: firstDayOfWeek,
                               ),
 
                               // Section 5: List
                               TransactionListSection(
                                 transactions: filtered,
                                 currencySymbol: currencySymbol,
+                                useComma: useComma,
                               ),
                             ],
                           ),

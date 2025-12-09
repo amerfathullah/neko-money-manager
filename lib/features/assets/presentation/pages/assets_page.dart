@@ -12,6 +12,7 @@ import '../../../transactions/presentation/pages/transaction_page.dart';
 import '../../../transactions/data/models/transaction_model.dart';
 import '../widgets/asset_chart_section.dart';
 import '../../../settings/presentation/providers/currency_provider.dart';
+import '../../../settings/presentation/providers/settings_provider.dart';
 
 class AssetsPage extends ConsumerStatefulWidget {
   const AssetsPage({super.key});
@@ -30,7 +31,11 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
     final historyAsync = ref.watch(assetHistoryProvider);
     final history = historyAsync.value ?? [];
     final currencyAsync = ref.watch(currencyProvider);
+    final settingsAsync = ref.watch(settingsProvider);
+
     final currencySymbol = currencyAsync.asData?.value ?? '\$';
+    final settings = settingsAsync.asData?.value ?? const SettingsState();
+    final useComma = settings.useCommaSeparator;
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8E1), // Cream background
@@ -191,6 +196,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
                                 CurrencyFormatter.format(
                                   totalLiabilities,
                                   symbol: currencySymbol,
+                                  useGrouping: useComma,
                                 ),
                                 style: const TextStyle(
                                   fontSize: 28,
@@ -199,7 +205,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
                                 ),
                               ),
                               Text(
-                                '${CurrencyFormatter.format(net, symbol: currencySymbol)} ≣',
+                                '${CurrencyFormatter.format(net, symbol: currencySymbol, useGrouping: useComma)} ≣',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -226,6 +232,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
                                 CurrencyFormatter.format(
                                   totalAssets,
                                   symbol: currencySymbol,
+                                  useGrouping: useComma,
                                 ),
                                 style: const TextStyle(
                                   fontSize: 28,
@@ -277,6 +284,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
                                         assets: assets,
                                         assetHistory: history,
                                         currencySymbol: currencySymbol,
+                                        useComma: useComma,
                                       ),
                                       const SizedBox(height: 32),
 
@@ -289,6 +297,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
                                           isLiabilities: false,
                                         ),
                                         currencySymbol: currencySymbol,
+                                        useComma: useComma,
                                       ),
 
                                       const SizedBox(height: 32),
@@ -302,6 +311,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
                                           isLiabilities: true,
                                         ),
                                         currencySymbol: currencySymbol,
+                                        useComma: useComma,
                                       ),
                                       const SizedBox(height: 32),
                                       const BannerAdWidget(),

@@ -25,6 +25,7 @@ class TransactionsTopSection extends StatelessWidget {
   final double totalIncome;
   final double totalExpense;
   final String currencySymbol;
+  final bool useComma;
 
   const TransactionsTopSection({
     super.key,
@@ -38,6 +39,7 @@ class TransactionsTopSection extends StatelessWidget {
     required this.totalIncome,
     required this.totalExpense,
     required this.currencySymbol,
+    required this.useComma,
     this.customDateRange,
   });
 
@@ -63,7 +65,6 @@ class TransactionsTopSection extends StatelessWidget {
       case TransactionTimeRange.daily:
         return DateFormat('MMM dd yyyy').format(selectedDate);
       case TransactionTimeRange.weekly:
-        // Show start and end of week? simplified for now
         return 'Week ${DateFormat('w').format(selectedDate)}';
       case TransactionTimeRange.monthly:
         return DateFormat('MMM yyyy').format(selectedDate);
@@ -229,8 +230,8 @@ class TransactionsTopSection extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: const [
+                  const Row(
+                    children: [
                       Text(
                         'Expenses',
                         style: TextStyle(
@@ -247,6 +248,7 @@ class TransactionsTopSection extends StatelessWidget {
                     CurrencyFormatter.format(
                       totalExpense,
                       symbol: currencySymbol,
+                      useGrouping: useComma,
                     ),
                     style: const TextStyle(
                       fontSize: 28,
@@ -261,8 +263,8 @@ class TransactionsTopSection extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: const [
+                  const Row(
+                    children: [
                       Text(
                         'Income',
                         style: TextStyle(
@@ -276,7 +278,11 @@ class TransactionsTopSection extends StatelessWidget {
                     ],
                   ),
                   Text(
-                    CurrencyFormatter.format(totalIncome, symbol: ''),
+                    CurrencyFormatter.format(
+                      totalIncome,
+                      symbol: '',
+                      useGrouping: useComma,
+                    ),
                     style: const TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
@@ -359,11 +365,7 @@ class TransactionSearchBar extends StatelessWidget {
           onChanged: onChanged,
           decoration: const InputDecoration(
             hintText: 'Search by amount or remarks..',
-            prefixIcon: Icon(
-              Icons.search,
-              color: Colors.grey,
-            ), // Should be empty/invisible prefix if we want right icon?
-            // Image shows text on left, icon on right.
+            prefixIcon: Icon(Icons.search, color: Colors.grey),
             suffixIcon: Icon(Icons.search, color: AppColors.textDark),
             border: InputBorder.none,
             contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
@@ -379,6 +381,7 @@ class TransactionChartSection extends StatelessWidget {
   final bool isExpense;
   final List<TransactionModel> transactions;
   final String currencySymbol;
+  final bool useComma;
 
   const TransactionChartSection({
     super.key,
@@ -386,20 +389,18 @@ class TransactionChartSection extends StatelessWidget {
     required this.isExpense,
     required this.transactions,
     required this.currencySymbol,
+    required this.useComma,
   });
 
   @override
   Widget build(BuildContext context) {
     // 1. Group by category
     final Map<String, double> categoryTotals = {};
-    final Map<String, int> categoryCounts =
-        {}; // For colors? Or just random/hashed?
     double total = 0;
 
     for (var t in transactions) {
       final key = t.categoryName ?? 'Uncategorized';
       categoryTotals[key] = (categoryTotals[key] ?? 0) + t.amount;
-      categoryCounts[key] = (categoryCounts[key] ?? 0) + 1;
       total += t.amount;
     }
 
@@ -476,7 +477,7 @@ class TransactionChartSection extends StatelessWidget {
                     final index = sortedKeys.indexOf(key);
                     final color = colors[index % colors.length];
                     final value = categoryTotals[key]!;
-                    final percent = (value / total) * 100;
+                    final percent = total > 0 ? (value / total) * 100 : 0.0;
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 4.0),
                       child: Row(
@@ -520,7 +521,7 @@ class TransactionChartSection extends StatelessWidget {
             final index = sortedKeys.indexOf(key);
             final color = colors[index % colors.length];
             final value = categoryTotals[key]!;
-            final percent = (value / total);
+            final percent = total > 0 ? (value / total) : 0.0;
 
             return InkWell(
               onTap: () {
@@ -535,6 +536,7 @@ class TransactionChartSection extends StatelessWidget {
                             .where((t) => t.categoryName == key)
                             .toList(),
                         currencySymbol: currencySymbol,
+                        useComma: useComma,
                       ),
                     ),
                   );
@@ -557,7 +559,7 @@ class TransactionChartSection extends StatelessWidget {
                             isExpense ? Icons.lunch_dining : Icons.wallet,
                             size: 20,
                             color: color,
-                          ), // Dynamic icon needed ideally
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Text(
@@ -569,7 +571,11 @@ class TransactionChartSection extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
-                              CurrencyFormatter.format(value, symbol: ''),
+                              CurrencyFormatter.format(
+                                value,
+                                symbol: '',
+                                useGrouping: useComma,
+                              ),
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                               ),
@@ -610,12 +616,14 @@ class TransactionCalendarSection extends StatefulWidget {
   final List<TransactionModel> transactions;
   final bool isExpenseView;
   final ValueChanged<bool> onViewChanged;
+  final int firstDayOfWeek; // 1 = Monday, 7 = Sunday, etc.
 
   const TransactionCalendarSection({
     super.key,
     required this.transactions,
     required this.isExpenseView,
     required this.onViewChanged,
+    required this.firstDayOfWeek,
   });
 
   @override
@@ -627,13 +635,20 @@ class _TransactionCalendarSectionState
     extends State<TransactionCalendarSection> {
   @override
   Widget build(BuildContext context) {
-    // Generate dates for current month view (or selected range). Defaulting to "this month" for calendar visual as per image
     final now = DateTime.now();
     final daysInMonth = DateUtils.getDaysInMonth(now.year, now.month);
-    final firstDay = DateTime(now.year, now.month, 1);
-    final startingWeekday = firstDay.weekday % 7; // Sunday = 0
+    final firstDayOfMonth = DateTime(now.year, now.month, 1);
 
-    // Map data to days
+    // Calculate starting offset based on firstDayOfWeek
+    // Weekday: Mon=1,... Sun=7.
+    // firstDayOfWeek: Mon=1, Sun=7.
+    // if Mon starts (1), and firstDay is Mon (1) -> offset 0.
+    // if Sun starts (7), and firstDay is Mon (1) -> offset 1?
+    // Weekdays list: [Sun, Mon, Tue...] if Sun starts.
+    // Generally: (firstDay.weekday - startOfWeek + 7)  % 7
+    final startingOffset =
+        (firstDayOfMonth.weekday - widget.firstDayOfWeek + 7) % 7;
+
     final Map<int, double> dailyTotals = {};
     for (var t in widget.transactions) {
       final isTargetType = widget.isExpenseView
@@ -661,11 +676,9 @@ class _TransactionCalendarSectionState
                   fontWeight: FontWeight.bold,
                   color: AppColors.expense,
                 ),
-              ), // Red header per image
+              ),
               Row(
                 children: [
-                  // Toggle Buttons? Image shows Filter icon and Arrow up.
-                  // Implementing simple toggle for now
                   IconButton(
                     onPressed: () =>
                         widget.onViewChanged(!widget.isExpenseView),
@@ -685,17 +698,7 @@ class _TransactionCalendarSectionState
           const SizedBox(height: 16),
           Table(
             children: [
-              const TableRow(
-                children: [
-                  Center(child: Text('Sun', style: TextStyle(fontSize: 10))),
-                  Center(child: Text('Mon', style: TextStyle(fontSize: 10))),
-                  Center(child: Text('Tue', style: TextStyle(fontSize: 10))),
-                  Center(child: Text('Wed', style: TextStyle(fontSize: 10))),
-                  Center(child: Text('Thu', style: TextStyle(fontSize: 10))),
-                  Center(child: Text('Fri', style: TextStyle(fontSize: 10))),
-                  Center(child: Text('Sat', style: TextStyle(fontSize: 10))),
-                ],
-              ),
+              TableRow(children: _buildWeekHeaders()),
               const TableRow(
                 children: [
                   SizedBox(height: 8),
@@ -706,8 +709,8 @@ class _TransactionCalendarSectionState
                   SizedBox(),
                   SizedBox(),
                 ],
-              ), // Spacer
-              ..._buildCalendarRows(daysInMonth, startingWeekday, dailyTotals),
+              ),
+              ..._buildCalendarRows(daysInMonth, startingOffset, dailyTotals),
             ],
           ),
         ],
@@ -715,18 +718,30 @@ class _TransactionCalendarSectionState
     );
   }
 
+  List<Widget> _buildWeekHeaders() {
+    final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    final shift = widget.firstDayOfWeek - 1;
+    final orderedDays = [...days.sublist(shift), ...days.sublist(0, shift)];
+
+    return orderedDays
+        .map(
+          (d) => Center(child: Text(d, style: const TextStyle(fontSize: 10))),
+        )
+        .toList();
+  }
+
   List<TableRow> _buildCalendarRows(
     int daysInMonth,
-    int startingWeekday,
+    int startingOffset,
     Map<int, double> totals,
   ) {
     List<TableRow> rows = [];
     int currentDay = 1;
 
-    // Row 1 (Partial)
+    // Row 1
     List<Widget> rowWidgets = [];
     for (int i = 0; i < 7; i++) {
-      if (i < startingWeekday) {
+      if (i < startingOffset) {
         rowWidgets.add(const SizedBox());
       } else {
         if (currentDay <= daysInMonth) {
@@ -737,7 +752,7 @@ class _TransactionCalendarSectionState
     }
     rows.add(TableRow(children: rowWidgets));
 
-    // Rest of rows
+    // Rest
     while (currentDay <= daysInMonth) {
       rowWidgets = [];
       for (int i = 0; i < 7; i++) {
@@ -792,18 +807,17 @@ class _TransactionCalendarSectionState
 class TransactionListSection extends ConsumerWidget {
   final List<TransactionModel> transactions;
   final String currencySymbol;
+  final bool useComma;
 
   const TransactionListSection({
     super.key,
     required this.transactions,
     this.currencySymbol = '\$',
+    required this.useComma,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Group by Date for sticky headers or just sections
-    // Reusing logic from Home Page would be good, but rewriting for cleaner structure here
-
     final grouped = <String, List<TransactionModel>>{};
     final sortedDates = <String>[];
 
@@ -815,7 +829,6 @@ class TransactionListSection extends ConsumerWidget {
       }
       grouped[dateKey]!.add(t);
     }
-    // Sort logic already assumed in input? better sort here
     sortedDates.sort((a, b) => b.compareTo(a));
 
     return Column(
@@ -823,20 +836,15 @@ class TransactionListSection extends ConsumerWidget {
         final dayTransactions = grouped[dateKey]!;
         final date = dayTransactions.first.date;
 
-        // Calculate daily header totals
         double dayIncome = 0;
         double dayExpense = 0;
         for (var t in dayTransactions) {
           if (t.type == TransactionType.income) dayIncome += t.amount;
           if (t.type == TransactionType.expense) dayExpense += t.amount;
-          if (t.type == TransactionType.transfer) {
-            // simplified transfer logic for list view (net 0 usually unless specific logic)
-          }
         }
 
         return Column(
           children: [
-            // Header
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
               child: Row(
@@ -865,7 +873,7 @@ class TransactionListSection extends ConsumerWidget {
                     children: [
                       if (dayIncome > 0)
                         Text(
-                          '+${CurrencyFormatter.format(dayIncome, symbol: currencySymbol)}',
+                          '+${CurrencyFormatter.format(dayIncome, symbol: currencySymbol, useGrouping: useComma)}',
                           style: const TextStyle(
                             color: AppColors.income,
                             fontSize: 12,
@@ -876,7 +884,7 @@ class TransactionListSection extends ConsumerWidget {
                         const SizedBox(width: 8),
                       if (dayExpense > 0)
                         Text(
-                          '-${CurrencyFormatter.format(dayExpense, symbol: currencySymbol)}',
+                          '-${CurrencyFormatter.format(dayExpense, symbol: currencySymbol, useGrouping: useComma)}',
                           style: const TextStyle(
                             color: AppColors.expense,
                             fontSize: 12,
@@ -888,8 +896,6 @@ class TransactionListSection extends ConsumerWidget {
                 ],
               ),
             ),
-
-            // Items
             ...dayTransactions.map((t) => _buildTransactionItem(context, t)),
           ],
         );
@@ -900,7 +906,6 @@ class TransactionListSection extends ConsumerWidget {
   Widget _buildTransactionItem(BuildContext context, TransactionModel t) {
     final isExpense = t.type == TransactionType.expense;
     final isIncome = t.type == TransactionType.income;
-    // simple transfer logic
 
     return InkWell(
       onTap: () {
@@ -951,7 +956,7 @@ class TransactionListSection extends ConsumerWidget {
               ),
             ),
             Text(
-              '${isExpense ? '-' : (isIncome ? '+' : '')}${CurrencyFormatter.format(t.amount, symbol: currencySymbol)}',
+              '${isExpense ? '-' : (isIncome ? '+' : '')}${CurrencyFormatter.format(t.amount, symbol: currencySymbol, useGrouping: useComma)}',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: isExpense

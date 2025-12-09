@@ -33,4 +33,23 @@ class SettingsRepository {
         .doc('global')
         .set({'currency': symbol}, SetOptions(merge: true));
   }
+
+  Stream<Map<String, dynamic>> getSettingsStream(String userId) {
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('settings')
+        .doc('preferences')
+        .snapshots()
+        .map((doc) => doc.data() ?? {});
+  }
+
+  Future<void> updateSettings(String userId, Map<String, dynamic> data) async {
+    await _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('settings')
+        .doc('preferences')
+        .set(data, SetOptions(merge: true));
+  }
 }
