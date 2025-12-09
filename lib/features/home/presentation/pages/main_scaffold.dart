@@ -26,8 +26,8 @@ class _MainScaffoldState extends State<MainScaffold> {
     super.initState();
     _pages = [
       const HomePage(),
-      const AssetsPage(),
       const TransactionsListPage(),
+      const AssetsPage(),
       const SettingsPage(),
     ];
   }

@@ -41,18 +41,18 @@ class CustomBottomNav extends StatelessWidget {
             color: AppColors.pastelOrange,
           ),
           _NavIcon(
-            icon: Icons.account_balance_wallet, // Assets
-            label: 'Asset',
+            icon: Icons.bar_chart, // Report/Transactions
+            label: 'Bills',
             isSelected: currentIndex == 1,
             onTap: () => onTap(1),
-            color: AppColors.pastelRed,
+            color: AppColors.pastelBlue,
           ),
           _NavIcon(
-            icon: Icons.bar_chart, // Report/Transactions
-            label: 'Report',
+            icon: Icons.account_balance_wallet, // Assets
+            label: 'Asset',
             isSelected: currentIndex == 2,
             onTap: () => onTap(2),
-            color: AppColors.pastelBlue,
+            color: AppColors.pastelRed,
           ),
           _NavIcon(
             icon: Icons.settings, // Settings
