@@ -288,7 +288,10 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage> {
                               ),
 
                               // Section 5: List
-                              TransactionListSection(transactions: filtered),
+                              TransactionListSection(
+                                transactions: filtered,
+                                currencySymbol: currencySymbol,
+                              ),
                             ],
                           ),
                         ),

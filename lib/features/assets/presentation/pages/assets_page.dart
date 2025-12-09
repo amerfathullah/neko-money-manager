@@ -13,6 +13,7 @@ import '../../../transactions/presentation/pages/transaction_page.dart';
 import '../../../transactions/data/models/transaction_model.dart'; // Keep for enum if needed, or remove if unused. AssetGraphSection doesn't use it anymore.
 // removed transaction_provider.dart
 import '../widgets/add_edit_asset_dialog.dart';
+import '../../../settings/presentation/providers/currency_provider.dart';
 
 class AssetsPage extends ConsumerStatefulWidget {
   const AssetsPage({super.key});
@@ -30,6 +31,8 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
     final ledgersAsync = ref.watch(ledgerProvider);
     final historyAsync = ref.watch(assetHistoryProvider);
     final history = historyAsync.value ?? [];
+    final currencyAsync = ref.watch(currencyProvider);
+    final currencySymbol = currencyAsync.asData?.value ?? '\$';
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8E1), // Cream background
@@ -189,7 +192,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
                               Text(
                                 CurrencyFormatter.format(
                                   totalLiabilities,
-                                  symbol: '',
+                                  symbol: currencySymbol,
                                 ),
                                 style: const TextStyle(
                                   fontSize: 28,
@@ -198,7 +201,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
                                 ),
                               ),
                               Text(
-                                '${CurrencyFormatter.format(net, symbol: '')} ≣',
+                                '${CurrencyFormatter.format(net, symbol: currencySymbol)} ≣',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -224,7 +227,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
                               Text(
                                 CurrencyFormatter.format(
                                   totalAssets,
-                                  symbol: '',
+                                  symbol: currencySymbol,
                                 ),
                                 style: const TextStyle(
                                   fontSize: 28,
@@ -275,6 +278,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
                                       AssetGraphSection(
                                         assets: assets,
                                         assetHistory: history,
+                                        currencySymbol: currencySymbol,
                                       ),
                                       const SizedBox(height: 32),
 
@@ -295,6 +299,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
                                           assets,
                                           isLiabilities: false,
                                         ),
+                                        currencySymbol,
                                       ),
                                       const SizedBox(height: 16),
                                       // Assets Pie Chart
@@ -319,6 +324,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
                                         context,
                                         ref,
                                         _getAssets(assets, isLiabilities: true),
+                                        currencySymbol,
                                       ),
                                       const SizedBox(height: 16),
                                       // Liabilities Pie Chart
@@ -379,6 +385,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
     BuildContext context,
     WidgetRef ref,
     List<Asset> assets,
+    String currencySymbol,
   ) {
     if (assets.isEmpty) {
       return const Padding(
@@ -430,7 +437,10 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  CurrencyFormatter.format(asset.balance, symbol: '\$'),
+                  CurrencyFormatter.format(
+                    asset.balance,
+                    symbol: currencySymbol,
+                  ),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,

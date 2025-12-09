@@ -13,11 +13,13 @@ enum GraphFilterType { net, income, expenses }
 class AssetGraphSection extends StatefulWidget {
   final List<Asset> assets;
   final List<AssetHistoryModel> assetHistory;
+  final String currencySymbol;
 
   const AssetGraphSection({
     super.key,
     required this.assets,
     required this.assetHistory,
+    this.currencySymbol = '\$',
   });
 
   @override
@@ -227,7 +229,8 @@ class _AssetGraphSectionState extends State<AssetGraphSection> {
                                 ),
                                 children: [
                                   TextSpan(
-                                    text: '\$${point.value.toStringAsFixed(0)}',
+                                    text:
+                                        '${widget.currencySymbol}${point.value.toStringAsFixed(0)}',
                                     style: const TextStyle(
                                       color: AppColors.pastelGreen,
                                       fontWeight: FontWeight.normal,

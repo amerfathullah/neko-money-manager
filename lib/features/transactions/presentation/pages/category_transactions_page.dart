@@ -7,10 +7,13 @@ class CategoryTransactionsPage extends StatelessWidget {
   final String categoryName;
   final List<TransactionModel> transactions;
 
+  final String currencySymbol;
+
   const CategoryTransactionsPage({
     super.key,
     required this.categoryName,
     required this.transactions,
+    required this.currencySymbol,
   });
 
   @override
@@ -25,7 +28,10 @@ class CategoryTransactionsPage extends StatelessWidget {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.only(bottom: 32),
-        child: TransactionListSection(transactions: transactions),
+        child: TransactionListSection(
+          transactions: transactions,
+          currencySymbol: currencySymbol,
+        ),
       ),
     );
   }

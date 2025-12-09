@@ -525,6 +525,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                           onTap: () => _showTransactionDetails(
                                             context,
                                             t,
+                                            currencySymbol,
                                           ),
                                           child: Container(
                                             margin: const EdgeInsets.symmetric(
@@ -631,7 +632,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                                   ),
                                                 ),
                                                 Text(
-                                                  '$prefix${CurrencyFormatter.format(t.amount, symbol: '')}',
+                                                  '$prefix${CurrencyFormatter.format(t.amount, symbol: currencySymbol)}',
                                                   style: TextStyle(
                                                     fontSize: 18,
                                                     fontWeight: FontWeight.bold,
@@ -687,6 +688,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   void _showTransactionDetails(
     BuildContext context,
     TransactionModel transaction,
+    String currencySymbol,
   ) {
     showDialog(
       context: context,
@@ -754,7 +756,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                       ),
                     ),
                     Text(
-                      '$prefix${CurrencyFormatter.format(transaction.amount, symbol: '')}',
+                      '$prefix${CurrencyFormatter.format(transaction.amount, symbol: currencySymbol)}',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,

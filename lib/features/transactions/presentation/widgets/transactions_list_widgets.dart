@@ -534,6 +534,7 @@ class TransactionChartSection extends StatelessWidget {
                         transactions: transactions
                             .where((t) => t.categoryName == key)
                             .toList(),
+                        currencySymbol: currencySymbol,
                       ),
                     ),
                   );
@@ -790,8 +791,13 @@ class _TransactionCalendarSectionState
 
 class TransactionListSection extends ConsumerWidget {
   final List<TransactionModel> transactions;
+  final String currencySymbol;
 
-  const TransactionListSection({super.key, required this.transactions});
+  const TransactionListSection({
+    super.key,
+    required this.transactions,
+    this.currencySymbol = '\$',
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -859,7 +865,7 @@ class TransactionListSection extends ConsumerWidget {
                     children: [
                       if (dayIncome > 0)
                         Text(
-                          '+${CurrencyFormatter.format(dayIncome, symbol: '')}',
+                          '+${CurrencyFormatter.format(dayIncome, symbol: currencySymbol)}',
                           style: const TextStyle(
                             color: AppColors.income,
                             fontSize: 12,
@@ -870,7 +876,7 @@ class TransactionListSection extends ConsumerWidget {
                         const SizedBox(width: 8),
                       if (dayExpense > 0)
                         Text(
-                          '-${CurrencyFormatter.format(dayExpense, symbol: '')}',
+                          '-${CurrencyFormatter.format(dayExpense, symbol: currencySymbol)}',
                           style: const TextStyle(
                             color: AppColors.expense,
                             fontSize: 12,
@@ -945,7 +951,7 @@ class TransactionListSection extends ConsumerWidget {
               ),
             ),
             Text(
-              '${isExpense ? '-' : (isIncome ? '+' : '')}${CurrencyFormatter.format(t.amount, symbol: '')}',
+              '${isExpense ? '-' : (isIncome ? '+' : '')}${CurrencyFormatter.format(t.amount, symbol: currencySymbol)}',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: isExpense

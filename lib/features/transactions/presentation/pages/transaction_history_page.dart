@@ -7,6 +7,7 @@ import '../../../assets/data/models/asset.dart';
 import '../../data/models/transaction_model.dart';
 import '../providers/transaction_provider.dart';
 import 'transaction_page.dart';
+import '../../../settings/presentation/providers/currency_provider.dart';
 
 class TransactionHistoryPage extends ConsumerWidget {
   final Asset asset;
@@ -16,6 +17,8 @@ class TransactionHistoryPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final transactionsAsync = ref.watch(transactionProvider);
+    final currencyAsync = ref.watch(currencyProvider);
+    final currencySymbol = currencyAsync.asData?.value ?? '\$';
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8E1),
@@ -56,7 +59,12 @@ class TransactionHistoryPage extends ConsumerWidget {
             itemCount: assetTransactions.length,
             itemBuilder: (context, index) {
               final transaction = assetTransactions[index];
-              return _buildTransactionItem(context, transaction, asset.id);
+              return _buildTransactionItem(
+                context,
+                transaction,
+                asset.id,
+                currencySymbol,
+              );
             },
           );
         },
@@ -68,6 +76,7 @@ class TransactionHistoryPage extends ConsumerWidget {
     BuildContext context,
     TransactionModel t,
     String currentAssetId,
+    String currencySymbol,
   ) {
     // Determine signage and color relative to THIS asset
     double amount = t.amount;
@@ -113,7 +122,7 @@ class TransactionHistoryPage extends ConsumerWidget {
           style: const TextStyle(fontSize: 12, color: Colors.grey),
         ),
         trailing: Text(
-          '$prefix${CurrencyFormatter.format(amount, symbol: '\$')}',
+          '$prefix${CurrencyFormatter.format(amount, symbol: currencySymbol)}',
           style: TextStyle(
             color: color,
             fontWeight: FontWeight.bold,
