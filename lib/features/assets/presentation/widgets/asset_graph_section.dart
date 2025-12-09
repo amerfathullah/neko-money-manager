@@ -418,9 +418,9 @@ class _AssetGraphSectionState extends State<AssetGraphSection> {
         if (_selectedType == GraphFilterType.net) {
           total += balance;
         } else if (_selectedType == GraphFilterType.income) {
-          if (balance >= 0) total += balance;
+          if (!balance.isNegative) total += balance;
         } else if (_selectedType == GraphFilterType.expenses) {
-          if (balance < 0) total += balance;
+          if (balance.isNegative) total += balance;
         }
       }
       results.add(_HistoryPoint(iterator, total));

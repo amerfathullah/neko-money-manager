@@ -59,7 +59,11 @@ void showAddEditAssetDialog(
                     ),
                     enabled: true, // Always allow editing
                   ),
-                  // Warning removed as requested
+                  const SizedBox(height: 8),
+                  const Text(
+                    "If you want to add liability, please input the minus sign (-) before the amount.",
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
                   const SizedBox(height: 16),
                   TextField(
                     controller: remarkController,

@@ -26,8 +26,8 @@ class _AssetPieChartSectionState extends ConsumerState<AssetPieChartSection> {
   Widget build(BuildContext context) {
     // 1. Filter Assets based on isLiabilities
     final relevantAssets = widget.assets.where((a) {
-      if (widget.isLiabilities) return a.balance < 0;
-      return a.balance >= 0;
+      if (widget.isLiabilities) return a.balance.isNegative;
+      return !a.balance.isNegative;
     }).toList();
 
     if (relevantAssets.isEmpty) {

@@ -41,7 +41,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
           double totalLiabilities = 0;
 
           for (var asset in assets) {
-            if (asset.balance >= 0) {
+            if (!asset.balance.isNegative) {
               totalAssets += asset.balance;
             } else {
               totalLiabilities += asset.balance;
@@ -370,8 +370,8 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
 
   List<Asset> _getAssets(List<Asset> assets, {required bool isLiabilities}) {
     return assets.where((a) {
-      if (isLiabilities) return a.balance < 0;
-      return a.balance >= 0;
+      if (isLiabilities) return a.balance.isNegative;
+      return !a.balance.isNegative;
     }).toList();
   }
 
