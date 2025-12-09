@@ -8,6 +8,8 @@ import 'dart:math';
 
 enum GraphTimeRange { oneWeek, oneMonth, threeMonths, sixMonths, oneYear, all }
 
+enum GraphFilterType { net, income, expenses }
+
 class AssetGraphSection extends StatefulWidget {
   final List<Asset> assets;
   final List<AssetHistoryModel> assetHistory;
@@ -24,10 +26,11 @@ class AssetGraphSection extends StatefulWidget {
 
 class _AssetGraphSectionState extends State<AssetGraphSection> {
   GraphTimeRange _selectedRange = GraphTimeRange.oneWeek;
+  GraphFilterType _selectedType = GraphFilterType.net;
 
   @override
   Widget build(BuildContext context) {
-    // 1. Calculate historical Net Worth points based on history
+    // 1. Calculate historical points based on history and filter
     final points = _calculateHistoryPoints();
 
     // 2. Prepare spots for FlChart
@@ -38,17 +41,31 @@ class _AssetGraphSectionState extends State<AssetGraphSection> {
         spots.add(FlSpot(i.toDouble(), points[i].value));
       }
     } else {
-      // Fallback if no history - just show current balance line
-      double currentNet = widget.assets.fold(0.0, (sum, a) => sum + a.balance);
-      spots = [FlSpot(0, currentNet), FlSpot(1, currentNet)];
+      // Fallback if no history - calculate current based on filter
+      double currentVal = 0;
+      for (var a in widget.assets) {
+        if (_selectedType == GraphFilterType.net) {
+          currentVal += a.balance;
+        } else if (_selectedType == GraphFilterType.income) {
+          if (a.balance >= 0) currentVal += a.balance;
+        } else if (_selectedType == GraphFilterType.expenses) {
+          if (a.balance < 0) currentVal += a.balance;
+        }
+      }
+      spots = [FlSpot(0, currentVal), FlSpot(1, currentVal)];
     }
 
     // Min/Max for Y Axis scaling
     double minY = spots.isEmpty ? 0 : spots.map((e) => e.y).reduce(min);
     double maxY = spots.isEmpty ? 100 : spots.map((e) => e.y).reduce(max);
     if (minY == maxY) {
-      minY *= 0.9;
-      maxY = (maxY == 0) ? 100 : maxY * 1.1;
+      if (minY != 0) {
+        minY *= 0.9;
+        maxY *= 1.1;
+      } else {
+        minY = 0;
+        maxY = 100;
+      }
     } else {
       double range = maxY - minY;
       minY -= range * 0.1;
@@ -71,6 +88,7 @@ class _AssetGraphSectionState extends State<AssetGraphSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header Row: Title + Time Range
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -82,10 +100,12 @@ class _AssetGraphSectionState extends State<AssetGraphSection> {
                   color: AppColors.textDark,
                 ),
               ),
-              // Time Range Selector (Compact)
               _buildTimeRangeSelector(),
             ],
           ),
+          const SizedBox(height: 16),
+          // Filter Row: Net | Income | Expenses
+          _buildFilterSelector(),
           const SizedBox(height: 24),
           AspectRatio(
             aspectRatio: 1.70,
@@ -96,7 +116,9 @@ class _AssetGraphSectionState extends State<AssetGraphSection> {
                       gridData: FlGridData(
                         show: true,
                         drawVerticalLine: false,
-                        horizontalInterval: (maxY - minY) / 5,
+                        horizontalInterval: (maxY - minY) / 5 == 0
+                            ? 1
+                            : (maxY - minY) / 5,
                         getDrawingHorizontalLine: (value) {
                           return FlLine(
                             color: const Color(
@@ -118,7 +140,9 @@ class _AssetGraphSectionState extends State<AssetGraphSection> {
                           sideTitles: SideTitles(
                             showTitles: true,
                             reservedSize: 30,
-                            interval: (spots.length / 5).ceilToDouble(),
+                            interval: (spots.length / 5).ceilToDouble() == 0
+                                ? 1
+                                : (spots.length / 5).ceilToDouble(),
                             getTitlesWidget: (value, meta) {
                               int index = value.toInt();
                               if (index < 0 || index >= points.length) {
@@ -263,6 +287,57 @@ class _AssetGraphSectionState extends State<AssetGraphSection> {
         child: Text(
           label,
           style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            color: isSelected ? AppColors.textDark : Colors.grey,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterSelector() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      padding: const EdgeInsets.all(4),
+      child: Row(
+        children: [
+          Expanded(child: _buildFilterButton('Net', GraphFilterType.net)),
+          Expanded(child: _buildFilterButton('Income', GraphFilterType.income)),
+          Expanded(
+            child: _buildFilterButton('Expenses', GraphFilterType.expenses),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterButton(String label, GraphFilterType type) {
+    final isSelected = _selectedType == type;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedType = type),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 2,
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.bold,
             color: isSelected ? AppColors.textDark : Colors.grey,
@@ -337,8 +412,17 @@ class _AssetGraphSectionState extends State<AssetGraphSection> {
         historyIndex++;
       }
 
-      // Sum
-      double total = currentBalances.values.fold(0.0, (sum, val) => sum + val);
+      // Sum based on Filter
+      double total = 0;
+      for (var balance in currentBalances.values) {
+        if (_selectedType == GraphFilterType.net) {
+          total += balance;
+        } else if (_selectedType == GraphFilterType.income) {
+          if (balance >= 0) total += balance;
+        } else if (_selectedType == GraphFilterType.expenses) {
+          if (balance < 0) total += balance;
+        }
+      }
       results.add(_HistoryPoint(iterator, total));
 
       iterator = iterator.add(const Duration(days: 1));
