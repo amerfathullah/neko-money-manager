@@ -15,7 +15,7 @@ class DefaultDataService {
     final mainWalletId = DateTime.now().millisecondsSinceEpoch.toString();
     final mainWallet = Ledger(
       id: mainWalletId,
-      name: 'Main Wallet',
+      name: 'Default Ledger',
       balance: 0.0,
       colorValue: 0xFF42A5F5, // Blue
       isDefault: true,

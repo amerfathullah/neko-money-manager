@@ -7,7 +7,7 @@ import '../../../categories/presentation/pages/categories_page.dart';
 import '../providers/settings_provider.dart';
 import 'premium_page.dart';
 import 'appearance_page.dart';
-import 'wallets_page.dart';
+import 'ledgers_page.dart';
 
 import '../providers/currency_provider.dart';
 
@@ -218,7 +218,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => const WalletsPage(),
+                      builder: (context) => const LedgersPage(),
                     ),
                   );
                 },

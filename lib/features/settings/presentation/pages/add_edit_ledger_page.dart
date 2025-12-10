@@ -6,22 +6,22 @@ import '../../../home/data/models/ledger.dart';
 import '../../../home/presentation/providers/ledger_provider.dart';
 import '../providers/currency_provider.dart';
 
-class AddEditWalletPage extends ConsumerStatefulWidget {
+class AddEditLedgerPage extends ConsumerStatefulWidget {
   final Ledger? ledger;
 
-  const AddEditWalletPage({super.key, this.ledger});
+  const AddEditLedgerPage({super.key, this.ledger});
 
   @override
-  ConsumerState<AddEditWalletPage> createState() => _AddEditWalletPageState();
+  ConsumerState<AddEditLedgerPage> createState() => _AddEditLedgerPageState();
 }
 
-class _AddEditWalletPageState extends ConsumerState<AddEditWalletPage> {
+class _AddEditLedgerPageState extends ConsumerState<AddEditLedgerPage> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
   late TextEditingController _balanceController;
   late Color _selectedColor;
 
-  // Predefined colors for wallets
+  // Predefined colors for ledgers
   final List<Color> _colors = [
     AppColors.pastelPink,
     AppColors.pastelPurple,
@@ -54,7 +54,7 @@ class _AddEditWalletPageState extends ConsumerState<AddEditWalletPage> {
     super.dispose();
   }
 
-  Future<void> _saveWallet() async {
+  Future<void> _saveLedger() async {
     if (_formKey.currentState!.validate()) {
       final name = _nameController.text.trim();
       final balance = double.tryParse(_balanceController.text) ?? 0.0;
@@ -92,7 +92,7 @@ class _AddEditWalletPageState extends ConsumerState<AddEditWalletPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEditing ? 'Edit Wallet' : 'Add Wallet'),
+        title: Text(isEditing ? 'Edit Ledger' : 'Add Ledger'),
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
@@ -112,7 +112,7 @@ class _AddEditWalletPageState extends ConsumerState<AddEditWalletPage> {
               TextFormField(
                 controller: _nameController,
                 decoration: InputDecoration(
-                  labelText: 'Wallet Name',
+                  labelText: 'Ledger Name',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -191,7 +191,7 @@ class _AddEditWalletPageState extends ConsumerState<AddEditWalletPage> {
               ),
               const SizedBox(height: 32),
               ElevatedButton(
-                onPressed: _saveWallet,
+                onPressed: _saveLedger,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).primaryColor,
                   foregroundColor: Colors.white,
@@ -201,7 +201,7 @@ class _AddEditWalletPageState extends ConsumerState<AddEditWalletPage> {
                   ),
                 ),
                 child: Text(
-                  isEditing ? 'Save Changes' : 'Create Wallet',
+                  isEditing ? 'Save Changes' : 'Create Ledger',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

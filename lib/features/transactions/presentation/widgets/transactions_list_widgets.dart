@@ -142,7 +142,7 @@ class TransactionsTopSection extends StatelessWidget {
                           child: Row(
                             children: [
                               const Icon(
-                                Icons.account_balance_wallet,
+                                Icons.book,
                                 size: 20,
                                 color: AppColors.textDark,
                               ),
@@ -556,7 +556,7 @@ class TransactionChartSection extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Icon(
-                            isExpense ? Icons.lunch_dining : Icons.wallet,
+                            isExpense ? Icons.lunch_dining : Icons.book,
                             size: 20,
                             color: color,
                           ),

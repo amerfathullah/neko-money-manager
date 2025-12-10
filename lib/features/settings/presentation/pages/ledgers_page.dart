@@ -4,10 +4,10 @@ import '../../../home/data/models/ledger.dart';
 import '../../../home/presentation/providers/ledger_provider.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../providers/currency_provider.dart';
-import 'add_edit_wallet_page.dart';
+import 'add_edit_ledger_page.dart';
 
-class WalletsPage extends ConsumerWidget {
-  const WalletsPage({super.key});
+class LedgersPage extends ConsumerWidget {
+  const LedgersPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -17,7 +17,7 @@ class WalletsPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Wallets'),
+        title: const Text('Ledgers'),
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
@@ -30,7 +30,7 @@ class WalletsPage extends ConsumerWidget {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => const AddEditWalletPage()),
+            MaterialPageRoute(builder: (context) => const AddEditLedgerPage()),
           );
         },
         child: const Icon(Icons.add),
@@ -40,7 +40,7 @@ class WalletsPage extends ConsumerWidget {
           if (ledgers.isEmpty) {
             return Center(
               child: Text(
-                'No wallets found.\nAdd one to get started!',
+                'No ledgers found.\nAdd one to get started!',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
@@ -92,7 +92,7 @@ class WalletsPage extends ConsumerWidget {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (context) =>
-                                  AddEditWalletPage(ledger: ledger),
+                                  AddEditLedgerPage(ledger: ledger),
                             ),
                           );
                         },
@@ -127,7 +127,7 @@ class WalletsPage extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Wallet?'),
+        title: const Text('Delete Ledger?'),
         content: Text(
           'Are you sure you want to delete "${ledger.name}"? This action cannot be undone.',
         ),

@@ -131,7 +131,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
     if (ledgers == null || ledgers.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('No wallets available. Please create one first.'),
+          content: Text('No ledgers available. Please create one first.'),
         ),
       );
       return;

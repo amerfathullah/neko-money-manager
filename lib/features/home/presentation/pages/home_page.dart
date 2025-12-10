@@ -230,7 +230,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                     child: Row(
                                       children: [
                                         Icon(
-                                          Icons.account_balance_wallet,
+                                          Icons.book,
                                           size: 20,
                                           color: AppColors.textDark,
                                         ),
@@ -428,7 +428,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                       dailyExpense += t.amount;
                                     }
                                     // Transfers - logic depends on view, but for list display usually just show activity.
-                                    // If we want exact daily balance change for 'Selected Wallet', we'd sum signed amounts.
+                                    // If we want exact daily balance change for 'Selected Ledger', we'd sum signed amounts.
                                     // The reference image shows: "+500 -0".
                                     else if (t.type ==
                                         TransactionType.transfer) {
