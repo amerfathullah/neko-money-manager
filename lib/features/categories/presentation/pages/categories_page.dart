@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../data/models/category.dart';
 import '../providers/category_provider.dart';
+import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 import '../widgets/add_edit_category_dialog.dart';
 import '../widgets/category_action_popup.dart';
 
@@ -178,108 +179,77 @@ class _CategoriesPageState extends ConsumerState<CategoriesPage>
 
     // ReorderableListView needs a key to track items properly?
     // It handles internal reordering visually, but we need to update state on drop.
-    return ReorderableListView.builder(
+    return ReorderableGridView.count(
       padding: const EdgeInsets.all(16),
-      itemCount: categories.length,
-      proxyDecorator: (child, index, animation) {
-        return AnimatedBuilder(
-          animation: animation,
-          builder: (BuildContext context, Widget? child) {
-            return Material(
-              color: Colors.transparent,
-              elevation: 0,
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      decoration: BoxDecoration(
-                        color: AppColors.backgroundLight,
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                    ),
-                  ),
-                  child!,
-                ],
-              ),
-            );
-          },
-          child: child,
-        );
+      crossAxisCount: 2,
+      mainAxisSpacing: 12,
+      crossAxisSpacing: 12,
+      childAspectRatio: 2.2, // Adjust aspect ratio for pill shape in grid
+      dragWidgetBuilder: (index, child) {
+        return Material(color: Colors.transparent, elevation: 0, child: child);
       },
       onReorder: (oldIndex, newIndex) {
-        if (oldIndex < newIndex) {
-          newIndex -= 1;
-        }
+        // ReorderableGridView handles index adjustment internally usually, but
+        // let's stick to standard logic.
+        // NOTE: reorderable_grid_view might have different behavior than list view regarding index shifting.
+        // Usually it mimics the standard behavior.
+
         final item = categories.removeAt(oldIndex);
         categories.insert(newIndex, item);
-
-        // Update indices for all items in this list (since it's a subset view, we need to be careful)
-        // This is tricky. We have `categories` which is a subset (only expense or only income).
-        // The indices in `Category` model are likely global or need to be scoped?
-        // If we just update indices 0..n for this subset, it might conflict if we mix types in one collection?
-        // But `where` filter splits them. If we save index 0 for expense[0] and index 0 for income[0],
-        // they might collide if we just sort by index globally?
-        // Wait, if we fetch all and sort by index, expense[0] might be global index 5.
-        // If we reorder expense list, we should probably re-assign indices for THIS TYPE only or globally?
-        // To be safe and simple: Let's assume indices are managed relative to their type?
-        // Or if we use global index, we need to re-index potentially everything?
-        // Best approach: Just re-assign 0, 1, 2... for the items in THIS list and save.
-        // And when loading, sort by index. Since they are separated by type in UI,
-        // having Expense(index:0) and Income(index:0) is fine as long as we filter first then sort.
-        // Yes, `_buildCategoryList` receives filtered list. So we just update indices for these.
 
         final updatedCategories = <Category>[];
         for (int i = 0; i < categories.length; i++) {
           updatedCategories.add(categories[i].copyWith(index: i));
         }
 
-        // Optimistically update provider? Or just call saving?
-        // The provider stream will refresh the UI eventually.
-        // We should call the batch update method.
         ref
             .read(categoryProvider.notifier)
             .updateCategoriesOrder(updatedCategories);
       },
-      itemBuilder: (context, index) {
-        final category = categories[index];
+      children: categories.map((category) {
         return Card(
           key: ValueKey(category.id),
-          margin: const EdgeInsets.only(bottom: 12),
+          margin: EdgeInsets.zero, // Margin handled by grid spacing
           elevation: 0,
-          color: category.color.withValues(
-            alpha: 0.2,
-          ), // Light pastel background matching category color
+          color: category.color.withValues(alpha: 0.2),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24), // Rounded full pill shape
+            borderRadius: BorderRadius.circular(24),
           ),
           child: InkWell(
             borderRadius: BorderRadius.circular(24),
             onTap: () => _showActionPopup(category),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: CircleAvatar(
-                  backgroundColor: Colors.transparent, // Icon sits on card bg
-                  child: Icon(category.icon, color: category.color, size: 28),
-                ),
-                title: Text(
-                  category.name,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    backgroundColor: Colors.transparent,
+                    radius: 16,
+                    child: Icon(category.icon, color: category.color, size: 24),
                   ),
-                ),
-                trailing: const Icon(
-                  Icons.menu,
-                  color: Colors.black54,
-                ), // Burger menu drag handle
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      category.name,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      maxLines: 1,
+                    ),
+                  ),
+                  const Icon(
+                    Icons.drag_handle, // Or menu
+                    color: Colors.black26,
+                    size: 20,
+                  ),
+                ],
               ),
             ),
           ),
         );
-      },
+      }).toList(),
     );
   }
 }
