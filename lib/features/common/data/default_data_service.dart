@@ -18,6 +18,7 @@ class DefaultDataService {
       name: 'Main Wallet',
       balance: 0.0,
       colorValue: 0xFF42A5F5, // Blue
+      isDefault: true,
     );
     final ledgerRef = userDoc.collection('ledgers').doc(mainWalletId);
     batch.set(ledgerRef, mainWallet.toJson());

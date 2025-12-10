@@ -97,14 +97,15 @@ class WalletsPage extends ConsumerWidget {
                           );
                         },
                       ),
-                      IconButton(
-                        icon: const Icon(
-                          Icons.delete,
-                          size: 20,
-                          color: Colors.red,
+                      if (!ledger.isDefault)
+                        IconButton(
+                          icon: const Icon(
+                            Icons.delete,
+                            size: 20,
+                            color: Colors.red,
+                          ),
+                          onPressed: () => _confirmDelete(context, ref, ledger),
                         ),
-                        onPressed: () => _confirmDelete(context, ref, ledger),
-                      ),
                     ],
                   ),
                 ),
