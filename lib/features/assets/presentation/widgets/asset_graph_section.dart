@@ -80,7 +80,7 @@ class _AssetGraphSectionState extends State<AssetGraphSection> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFFFFFCF0),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
@@ -259,10 +259,10 @@ class _AssetGraphSectionState extends State<AssetGraphSection> {
   Widget _buildTimeRangeSelector() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: const Color(0xFFF5E6D3),
         borderRadius: BorderRadius.circular(20),
       ),
-      padding: const EdgeInsets.all(2),
+      padding: const EdgeInsets.all(4),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -282,8 +282,8 @@ class _AssetGraphSectionState extends State<AssetGraphSection> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.transparent,
-          borderRadius: BorderRadius.circular(18),
+          color: isSelected ? const Color(0xFFFFF8E1) : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
           boxShadow: isSelected
               ? [
                   BoxShadow(
@@ -298,7 +298,7 @@ class _AssetGraphSectionState extends State<AssetGraphSection> {
           style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.bold,
-            color: isSelected ? AppColors.textDark : Colors.grey,
+            color: isSelected ? Colors.black87 : Colors.black54,
           ),
         ),
       ),
@@ -309,8 +309,8 @@ class _AssetGraphSectionState extends State<AssetGraphSection> {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(12),
+        color: const Color(0xFFF5E6D3),
+        borderRadius: BorderRadius.circular(20),
       ),
       padding: const EdgeInsets.all(4),
       child: Row(
@@ -333,13 +333,13 @@ class _AssetGraphSectionState extends State<AssetGraphSection> {
         padding: const EdgeInsets.symmetric(vertical: 8),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
+          color: isSelected ? const Color(0xFFFFF8E1) : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
           boxShadow: isSelected
               ? [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 2,
+                    blurRadius: 4,
                   ),
                 ]
               : null,
@@ -349,7 +349,7 @@ class _AssetGraphSectionState extends State<AssetGraphSection> {
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.bold,
-            color: isSelected ? AppColors.textDark : Colors.grey,
+            color: isSelected ? Colors.black87 : Colors.black54,
           ),
         ),
       ),

@@ -56,6 +56,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
           final net = totalAssets + totalLiabilities;
 
           return SafeArea(
+            bottom: false,
             child: Stack(
               children: [
                 // Background Elements (Cat Top Right - reuse from Home)
@@ -262,7 +263,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
                         Container(
                           margin: const EdgeInsets.only(top: 25),
                           decoration: const BoxDecoration(
-                            color: Color(0xFFFFFDF5),
+                            color: Color(0xFFFFFCF0),
                             borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(32),
                               topRight: Radius.circular(32),
@@ -315,7 +316,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
                                       ),
                                       const SizedBox(height: 32),
                                       const BannerAdWidget(),
-                                      const SizedBox(height: 80), // Fab space
+                                      const SizedBox(height: 120), // Fab space
                                     ],
                                   ),
                                 ),

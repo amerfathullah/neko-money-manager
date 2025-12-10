@@ -158,6 +158,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8E1), // Cream background
       body: SafeArea(
+        bottom: false,
         child: Stack(
           children: [
             // Background Elements (e.g., Cat Top Right)
@@ -307,7 +308,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                     Container(
                       margin: const EdgeInsets.only(top: 25),
                       decoration: const BoxDecoration(
-                        color: Color(0xFFFFFDF5),
+                        color: Color(0xFFFFFCF0),
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(32),
                           topRight: Radius.circular(32),
@@ -405,7 +406,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 (context, index) {
                                   if (index >= sortedDates.length) {
                                     return const SizedBox(
-                                      height: 80,
+                                      height: 120,
                                     ); // Bottom padding
                                   }
 
@@ -746,7 +747,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
           ),
-          backgroundColor: const Color(0xFFFFFDF5),
+          backgroundColor: const Color(0xFFFFFCF0),
           child: Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(

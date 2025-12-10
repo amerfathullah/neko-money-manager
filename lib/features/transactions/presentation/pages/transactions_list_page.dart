@@ -224,6 +224,7 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage> {
           final ledgers = ledgersAsync.asData?.value ?? [];
 
           return SafeArea(
+            bottom: false,
             child: Stack(
               children: [
                 // Background Elements
@@ -275,7 +276,7 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage> {
                         Container(
                           margin: const EdgeInsets.only(top: 25),
                           decoration: const BoxDecoration(
-                            color: Color(0xFFFFFDF5),
+                            color: Color(0xFFFFFCF0),
                             borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(32),
                               topRight: Radius.circular(32),
@@ -283,7 +284,10 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage> {
                           ),
                           child: ListView(
                             controller: scrollController,
-                            padding: const EdgeInsets.only(top: 40, bottom: 80),
+                            padding: const EdgeInsets.only(
+                              top: 40,
+                              bottom: 120,
+                            ),
                             children: [
                               // Section 1: Search
                               TransactionSearchBar(
