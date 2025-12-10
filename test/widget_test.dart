@@ -9,9 +9,13 @@ import 'package:neko_money_manager/features/home/presentation/providers/ledger_p
 import 'package:neko_money_manager/features/home/data/models/ledger.dart';
 import 'package:neko_money_manager/features/auth/presentation/providers/auth_provider.dart';
 import 'package:neko_money_manager/features/transactions/presentation/providers/transaction_provider.dart';
+
 import 'package:neko_money_manager/features/transactions/data/models/transaction_model.dart';
 import 'package:neko_money_manager/features/settings/presentation/providers/pro_provider.dart';
 import 'package:neko_money_manager/features/settings/presentation/providers/currency_provider.dart';
+import 'package:neko_money_manager/features/assets/presentation/providers/asset_provider.dart';
+import 'package:neko_money_manager/features/assets/data/models/asset.dart';
+import 'package:neko_money_manager/features/settings/presentation/providers/settings_provider.dart';
 
 // Mocks
 class MockCategoryNotifier extends CategoryNotifier {
@@ -49,6 +53,13 @@ class MockLedgerNotifier extends LedgerNotifier {
         colorValue: 0xFF42A5F5,
       ),
     ]);
+  }
+}
+
+class MockAssetNotifier extends AssetNotifier {
+  @override
+  Stream<List<Asset>> build() {
+    return Stream.value([]);
   }
 }
 
@@ -93,6 +104,13 @@ class MockCurrencyNotifier extends CurrencyNotifier {
   @override
   Future<String> build() async {
     return '\$';
+  }
+}
+
+class MockSettingsNotifier extends SettingsNotifier {
+  @override
+  Stream<SettingsState> build() {
+    return Stream.value(const SettingsState());
   }
 }
 
@@ -153,10 +171,14 @@ void main() {
           ledgerProvider.overrideWith(MockLedgerNotifier.new),
           userIdProvider.overrideWithValue('test_user_id'),
           proProvider.overrideWith(MockProNotifier.new),
+          transactionProvider.overrideWith(MockTransactionNotifier.new),
+          assetProvider.overrideWith(MockAssetNotifier.new),
+          assetHistoryProvider.overrideWith((ref) => Stream.value([])),
           ledgerTransactionsProvider.overrideWith(
             (ref, id) => Stream.value([]),
           ),
           currencyProvider.overrideWith(MockCurrencyNotifier.new),
+          settingsProvider.overrideWith(MockSettingsNotifier.new),
         ],
         child: const MaterialApp(home: MainScaffold()),
       ),
@@ -180,7 +202,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Settings State
-    expect(find.text('PREFERENCES'), findsOneWidget);
+    expect(find.text('Custom'), findsOneWidget);
 
     // Verify FAB is GONE
     expect(find.byIcon(Icons.add), findsNothing);

@@ -59,7 +59,7 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget> {
             child: AdWidget(ad: _bannerAd!),
           );
         }
-        return const SizedBox(height: 50); // Placeholder
+        return const SizedBox.shrink(); // No placeholder needed
       },
       loading: () => const SizedBox.shrink(),
       error: (err, stack) => const SizedBox.shrink(),

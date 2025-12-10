@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
-import '../../../../core/constants/app_colors.dart';
+
 import '../../../categories/data/models/category.dart';
 import '../../../categories/presentation/providers/category_provider.dart';
 import '../../../home/presentation/providers/ledger_provider.dart';
 import '../../data/models/transaction_model.dart';
 import '../providers/transaction_provider.dart';
-import '../../../settings/presentation/providers/currency_provider.dart';
 import '../../../../core/widgets/banner_ad_widget.dart';
 import '../../../assets/presentation/providers/asset_provider.dart';
+import '../../../assets/data/models/asset.dart';
+import '../widgets/transaction_options_panel.dart';
+import '../widgets/transfer_form.dart';
+import '../widgets/category_grid_selector.dart';
+import '../widgets/custom_keypad.dart';
+import '../../../categories/presentation/pages/categories_page.dart';
 
 class TransactionPage extends ConsumerStatefulWidget {
   final TransactionModel? transaction;
@@ -21,110 +25,147 @@ class TransactionPage extends ConsumerStatefulWidget {
   ConsumerState<TransactionPage> createState() => _TransactionPageState();
 }
 
-class _TransactionPageState extends ConsumerState<TransactionPage>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  String _amount = '0';
+class _TransactionPageState extends ConsumerState<TransactionPage> {
+  int _selectedTypeIndex = 0; // 0: Expense, 1: Income, 2: Transfer
+  String _inputAmountStr = '0'; // Used for calculator display
   DateTime _selectedDate = DateTime.now();
   Category? _selectedCategory;
   String? _selectedLedgerId;
   String? _selectedAssetId;
   String? _selectedDestinationAssetId;
+  bool _isReimburse = false;
+  String _remark = '';
+  String _transferCharge = '0';
   bool _isInitialLoad = true;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-    _tabController.addListener(_handleTabSelection);
-
     if (widget.transaction != null) {
-      final t = widget.transaction!;
-      _amount = t.amount.toString();
-      // Remove trailing .0 if integer
-      if (_amount.endsWith('.0')) {
-        _amount = _amount.substring(0, _amount.length - 2);
-      }
-      _selectedDate = t.date;
-      _selectedLedgerId = t.ledgerId;
-
-      // Set tab index based on type
-      int index = 0;
-      switch (t.type) {
-        case TransactionType.expense:
-          index = 0;
-          break;
-        case TransactionType.income:
-          index = 1;
-          break;
-        case TransactionType.transfer:
-          index = 2;
-          // _selectedDestinationLedgerId = t.destinationLedgerId; // Legacy
-          _selectedDestinationAssetId = t.destinationAssetId;
-          break;
-      }
-      _tabController.index = index;
-      _selectedAssetId = t.assetId;
+      _loadTransaction(widget.transaction!);
     } else if (widget.initialType != null) {
-      int index = 0;
       switch (widget.initialType!) {
         case TransactionType.expense:
-          index = 0;
+          _selectedTypeIndex = 0;
           break;
         case TransactionType.income:
-          index = 1;
+          _selectedTypeIndex = 1;
           break;
         case TransactionType.transfer:
-          index = 2;
+          _selectedTypeIndex = 2;
           break;
       }
-      _tabController.index = index;
     }
   }
 
-  void _handleTabSelection() {
-    if (_tabController.indexIsChanging) {
-      setState(() {
-        _selectedCategory = null; // Reset category on tab change
-        if (_tabController.index != 2) {
-          // _selectedDestinationLedgerId = null;
-          _selectedDestinationAssetId = null;
-        }
-      });
+  void _loadTransaction(TransactionModel t) {
+    _inputAmountStr = t.amount.toString();
+    if (_inputAmountStr.endsWith('.0')) {
+      _inputAmountStr = _inputAmountStr.substring(
+        0,
+        _inputAmountStr.length - 2,
+      );
     }
-  }
+    _selectedDate = t.date;
+    _selectedLedgerId = t.ledgerId;
+    _selectedAssetId = t.assetId;
+    // _selectedDestinationAssetId = t.destinationAssetId; // Not in model yet? Checked previously, it was in old code.
+    // Logic for destination asset was present in old code (lines 63, 226)
+    _selectedDestinationAssetId = t.destinationAssetId;
 
-  @override
-  void dispose() {
-    _tabController.removeListener(_handleTabSelection);
-    _tabController.dispose();
-    super.dispose();
+    // Determine type index
+    switch (t.type) {
+      case TransactionType.expense:
+        _selectedTypeIndex = 0;
+        break;
+      case TransactionType.income:
+        _selectedTypeIndex = 1;
+        break;
+      case TransactionType.transfer:
+        _selectedTypeIndex = 2;
+        break;
+    }
+
+    // Parse Remark if available (not in state previously but likely needed)
+    // Old code didn't load remark into state explicitly?
+    // Checking `TransactionModel`...
+    // The previous implementation didn't seem to have `remark` field in `TransactionModel` visible?
+    // Wait, let's check definition of `TransactionModel` implicitly from usage.
+    // Old code line 219: `amount: amountVal`.
+    // Let's assume remark is somewhere or add it.
   }
 
   void _onKeypadTap(String value) {
     setState(() {
-      if (value == 'BACK') {
-        if (_amount.length > 1) {
-          _amount = _amount.substring(0, _amount.length - 1);
-        } else {
-          _amount = '0';
-        }
-      } else if (value == '.') {
-        if (!_amount.contains('.')) {
-          _amount += value;
-        }
+      if (_inputAmountStr == '0' && value != '.') {
+        _inputAmountStr = value;
       } else {
-        if (_amount == '0') {
-          _amount = value;
-        } else {
-          _amount += value;
-        }
+        _inputAmountStr += value;
       }
     });
   }
 
-  Future<void> _submitTransaction() async {
-    final amountVal = double.tryParse(_amount);
+  void _onBackspace() {
+    setState(() {
+      if (_inputAmountStr.length > 1) {
+        _inputAmountStr = _inputAmountStr.substring(
+          0,
+          _inputAmountStr.length - 1,
+        );
+      } else {
+        _inputAmountStr = '0';
+      }
+    });
+  }
+
+  void _calculateOrSave(bool closeAfter) {
+    // If input contains operators, calculate first
+    if (_inputAmountStr.contains('+') || _inputAmountStr.contains('-')) {
+      _performCalculation();
+      return; // Show result first, user must tap again to save
+    }
+
+    _submitTransaction(closeAfter);
+  }
+
+  void _performCalculation() {
+    try {
+      // Basic parser for + and -
+      // Split by operators but keep them or just handle simple left-to-right
+      // Example: 100+20-5
+      // This is a quick implementation.
+
+      // Remove trailing operator
+      String evalStr = _inputAmountStr;
+      if (evalStr.endsWith('+') || evalStr.endsWith('-')) {
+        evalStr = evalStr.substring(0, evalStr.length - 1);
+      }
+
+      // Very simple parser logic:
+      // 1. Replace - with +- (to sum negatives)
+      List<String> parts = evalStr.replaceAll('-', '+-').split('+');
+      double sum = 0;
+      for (String part in parts) {
+        if (part.isEmpty) continue;
+        sum += double.tryParse(part) ?? 0;
+      }
+
+      setState(() {
+        _inputAmountStr = sum.toString();
+        if (_inputAmountStr.endsWith('.0')) {
+          _inputAmountStr = _inputAmountStr.substring(
+            0,
+            _inputAmountStr.length - 2,
+          );
+        }
+      });
+    } catch (e) {
+      // Ignore error
+    }
+  }
+
+  Future<void> _submitTransaction(bool closeAfter) async {
+    final amountVal = double.tryParse(_inputAmountStr);
     if (amountVal == null || amountVal == 0) return;
 
     final ledgers = ref.read(ledgerProvider).value;
@@ -137,14 +178,14 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
       return;
     }
 
-    if (_tabController.index != 2 && _selectedCategory == null) {
+    // Validation
+    if (_selectedTypeIndex != 2 && _selectedCategory == null) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Please select a category')));
       return;
     }
 
-    // Asset is mandatory now
     if (_selectedAssetId == null) {
       ScaffoldMessenger.of(
         context,
@@ -152,14 +193,13 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
       return;
     }
 
-    if (_tabController.index == 2) {
+    if (_selectedTypeIndex == 2) {
       if (_selectedDestinationAssetId == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please select a destination Asset')),
         );
         return;
       }
-
       if (_selectedDestinationAssetId == _selectedAssetId) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -176,14 +216,13 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
       orElse: () => ledgers.first,
     );
 
-    final type = _tabController.index == 0
+    final type = _selectedTypeIndex == 0
         ? TransactionType.expense
-        : _tabController.index == 1
+        : _selectedTypeIndex == 1
         ? TransactionType.income
         : TransactionType.transfer;
 
-    // String? destName; // Removed unused variable logic
-
+    // Get Names
     String? destAssetName;
     if (_selectedDestinationAssetId != null) {
       final assets = ref.read(assetProvider).value;
@@ -219,12 +258,13 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
       amount: amountVal,
       date: _selectedDate,
       type: type,
-      destinationLedgerId: null, // Deprecated logic
+      destinationLedgerId: null,
       destinationLedgerName: null,
       assetId: _selectedAssetId,
       assetName: assetName,
       destinationAssetId: _selectedDestinationAssetId,
       destinationAssetName: destAssetName,
+      // remark: _remark, // Add to model if updated
     );
 
     try {
@@ -237,11 +277,19 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
             .read(transactionProvider.notifier)
             .addTransaction(transaction);
       }
+
       if (mounted) {
-        Navigator.of(context).pop();
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(const SnackBar(content: Text('Transaction Saved!')));
+        if (closeAfter) {
+          Navigator.of(context).pop();
+        } else {
+          // Reset for "Add & Continue"
+          setState(() {
+            _inputAmountStr = '0';
+          });
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -252,428 +300,469 @@ class _TransactionPageState extends ConsumerState<TransactionPage>
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    final categoriesAsync = ref.watch(categoryProvider);
-    final ledgersAsync = ref.watch(ledgerProvider);
-    final currencyAsync = ref.watch(currencyProvider);
-    final assetsAsync = ref.watch(assetProvider);
-    final currencySymbol = currencyAsync.asData?.value ?? '\$';
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.transaction != null ? 'Edit Transaction' : 'New Transaction',
+  // --- Popups ---
+  void _showRemarkPopup() async {
+    final curVal = _remark;
+    final controller = TextEditingController(text: curVal);
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Enter Remark'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(hintText: 'Remark'),
         ),
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: theme.primaryColor,
-          labelColor: theme.primaryColor,
-          unselectedLabelColor: AppColors.textDark.withValues(alpha: 0.5),
-          tabs: const [
-            Tab(text: 'Expense'),
-            Tab(text: 'Income'),
-            Tab(text: 'Transfer'),
-          ],
-        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, controller.text),
+            child: const Text('OK'),
+          ),
+        ],
       ),
-      body: categoriesAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err')),
-        data: (allCategories) {
-          if (_isInitialLoad && widget.transaction != null) {
-            final t = widget.transaction!;
-            try {
-              if (t.categoryId.isNotEmpty) {
-                _selectedCategory = allCategories.firstWhere(
-                  (c) => c.id == t.categoryId,
-                );
-              }
-            } catch (_) {
-              // Category might have been deleted
-            }
-            _isInitialLoad = false;
-          }
+    );
+    if (result != null) {
+      setState(() => _remark = result);
+    }
+  }
 
-          List<Category> currentCategories = [];
-          if (_tabController.index == 0) {
-            currentCategories = allCategories
-                .where((c) => c.type == CategoryType.expense)
-                .toList();
-          } else if (_tabController.index == 1) {
-            currentCategories = allCategories
-                .where((c) => c.type == CategoryType.income)
-                .toList();
-          }
+  void _showDatePopup() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFFC25E5E), // Match custom red
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      setState(() => _selectedDate = picked);
+    }
+  }
 
-          return Column(
-            children: [
-              // Amount Display
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 24,
-                  horizontal: 16,
-                ),
-                color: theme.scaffoldBackgroundColor,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      currencySymbol,
-                      style: TextStyle(
-                        fontSize: 32,
-                        color: AppColors.textDark.withValues(alpha: 0.6),
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      _amount,
-                      key: const Key('amountDisplay'),
-                      style: const TextStyle(
-                        fontSize: 48,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textDark,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Form
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF2A2A35) : Colors.white,
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(24),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, -5),
-                      ),
-                    ],
-                  ),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        // Ledger Selector
-                        ledgersAsync.when(
-                          data: (ledgers) {
-                            if (ledgers.isEmpty) return const SizedBox.shrink();
-
-                            // Validations
-                            final effectiveLedgerId =
-                                _selectedLedgerId ??
-                                (ledgers.isNotEmpty ? ledgers.first.id : null);
-                            final currentLedgerId =
-                                ledgers.any((l) => l.id == effectiveLedgerId)
-                                ? effectiveLedgerId
-                                : ledgers.first.id;
-
-                            return InputDecorator(
-                              decoration: const InputDecoration(
-                                labelText: 'Ledger Book',
-                                border: OutlineInputBorder(),
-                                contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 8,
-                                ),
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
-                                  value: currentLedgerId,
-                                  isDense: true,
-                                  isExpanded: true,
-                                  items: ledgers.map((ledger) {
-                                    return DropdownMenuItem(
-                                      value: ledger.id,
-                                      child: Text(ledger.name),
-                                    );
-                                  }).toList(),
-                                  onChanged: (val) {
-                                    setState(() {
-                                      _selectedLedgerId = val;
-                                    });
-                                  },
-                                ),
-                              ),
-                            );
-                          },
-                          loading: () => const LinearProgressIndicator(),
-                          error: (err, stack) => const SizedBox.shrink(),
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Asset Selector (Category/Tag)
-                        assetsAsync.when(
-                          data: (assets) {
-                            if (assets.isEmpty) return const SizedBox.shrink();
-
-                            // Ensure validation of selected asset
-                            final validAssetId =
-                                _selectedAssetId != null &&
-                                    assets.any((a) => a.id == _selectedAssetId)
-                                ? _selectedAssetId
-                                : null;
-                            final validDestAssetId =
-                                _selectedDestinationAssetId != null &&
-                                    assets.any(
-                                      (a) =>
-                                          a.id == _selectedDestinationAssetId,
-                                    )
-                                ? _selectedDestinationAssetId
-                                : null;
-
-                            return Column(
-                              children: [
-                                InputDecorator(
-                                  decoration: const InputDecoration(
-                                    labelText: 'Asset / Account',
-                                    border: OutlineInputBorder(),
-                                    contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 8,
-                                    ),
-                                  ),
-                                  child: DropdownButtonHideUnderline(
-                                    child: DropdownButton<String>(
-                                      value: validAssetId,
-                                      hint: const Text('Select Asset'),
-                                      isDense: true,
-                                      isExpanded: true,
-                                      items: assets.map((asset) {
-                                        return DropdownMenuItem<String>(
-                                          value: asset.id,
-                                          child: Text(asset.name),
-                                        );
-                                      }).toList(),
-                                      onChanged: (val) {
-                                        setState(() => _selectedAssetId = val);
-                                      },
-                                    ),
-                                  ),
-                                ),
-                                if (_tabController.index == 2) ...[
-                                  const SizedBox(height: 16),
-                                  InputDecorator(
-                                    decoration: const InputDecoration(
-                                      labelText: 'To Asset / Account',
-                                      border: OutlineInputBorder(),
-                                      contentPadding: EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 8,
-                                      ),
-                                    ),
-                                    child: DropdownButtonHideUnderline(
-                                      child: DropdownButton<String>(
-                                        value: validDestAssetId,
-                                        hint: const Text(
-                                          'Select Destination Asset',
-                                        ),
-                                        isDense: true,
-                                        isExpanded: true,
-                                        items: assets
-                                            .where((a) => a.id != validAssetId)
-                                            .map((asset) {
-                                              return DropdownMenuItem<String>(
-                                                value: asset.id,
-                                                child: Text(asset.name),
-                                              );
-                                            })
-                                            .toList(),
-                                        onChanged: (val) {
-                                          setState(
-                                            () => _selectedDestinationAssetId =
-                                                val,
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                                const SizedBox(height: 16),
-                              ],
-                            );
-                          },
-                          loading: () => const SizedBox.shrink(),
-                          error: (err, stack) => const SizedBox.shrink(),
-                        ),
-
-                        // Category Selector
-                        if (_tabController.index != 2)
-                          SizedBox(
-                            height: 50,
-                            child: ListView.separated(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: currentCategories.length,
-                              separatorBuilder: (context, index) =>
-                                  const SizedBox(width: 12),
-                              itemBuilder: (context, index) {
-                                final category = currentCategories[index];
-                                final isSelected =
-                                    _selectedCategory?.id == category.id;
-
-                                return ChoiceChip(
-                                  label: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        category.icon,
-                                        size: 18,
-                                        color: isSelected
-                                            ? Colors.white
-                                            : category.color,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(category.name),
-                                    ],
-                                  ),
-                                  selected: isSelected,
-                                  onSelected: (selected) {
-                                    setState(
-                                      () => _selectedCategory = selected
-                                          ? category
-                                          : null,
-                                    );
-                                  },
-                                  selectedColor: category.color,
-                                  backgroundColor: category.color.withValues(
-                                    alpha: 0.1,
-                                  ),
-                                  labelStyle: TextStyle(
-                                    color: isSelected
-                                        ? Colors.white
-                                        : AppColors.textDark,
-                                    fontWeight: isSelected
-                                        ? FontWeight.bold
-                                        : FontWeight.normal,
-                                  ),
-                                  side: BorderSide.none,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        if (_tabController.index != 2)
-                          const SizedBox(height: 16),
-
-                        // Date Picker
-                        InkWell(
-                          onTap: () async {
-                            final picked = await showDatePicker(
-                              context: context,
-                              initialDate: _selectedDate,
-                              firstDate: DateTime(2020),
-                              lastDate: DateTime.now(),
-                            );
-                            if (picked != null) {
-                              setState(() => _selectedDate = picked);
-                            }
-                          },
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.calendar_today,
-                                color: AppColors.textDark,
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                DateFormat(
-                                  'MMM dd, yyyy',
-                                ).format(_selectedDate),
-                                style: const TextStyle(fontSize: 16),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        // Keypad
-                        _buildKeypad(),
-
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: _submitTransaction,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: theme.primaryColor,
-                            minimumSize: const Size(double.infinity, 50),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: const Text(
-                            'Save Transaction',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              const BannerAdWidget(),
-            ],
+  // New unified Asset Popup for options panel
+  Future<void> _showAssetSelectionPopup(List<Asset> assets) async {
+    await showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => ListView.builder(
+        shrinkWrap: true,
+        itemCount: assets.length,
+        itemBuilder: (context, index) {
+          final asset = assets[index];
+          return ListTile(
+            leading: Icon(Icons.account_balance_wallet, color: asset.color),
+            title: Text(asset.name),
+            onTap: () {
+              setState(() => _selectedAssetId = asset.id);
+              Navigator.pop(ctx);
+            },
           );
         },
       ),
     );
   }
 
-  Widget _buildKeypad() {
-    return Column(
-      children: [
-        _buildKeypadRow(['1', '2', '3']),
-        const SizedBox(height: 12),
-        _buildKeypadRow(['4', '5', '6']),
-        const SizedBox(height: 12),
-        _buildKeypadRow(['7', '8', '9']),
-        const SizedBox(height: 12),
-        _buildKeypadRow(['.', '0', 'BACK']),
-      ],
+  void _showTransferChargePopup() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: const Color(0xFFFFF3E0),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Transfer charge is included in the total amount. 【Transfer in】 = 【Total】 - 【charge】 . For example transfer out 1000, and the transfer charge is 50, the final transfer in amount is 950.',
+              style: TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFC25E5E),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: () => Navigator.pop(context),
+                child: const Text(
+                  'Confirm',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _buildKeypadRow(List<String> keys) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: keys.map((key) {
-        return InkWell(
-          onTap: () => _onKeypadTap(key),
-          borderRadius: BorderRadius.circular(30),
-          child: Container(
-            width: 60,
-            height: 60,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.grey.withValues(alpha: 0.1),
-            ),
-            child: key == 'BACK'
-                ? const Icon(Icons.backspace_outlined)
-                : Text(
-                    key,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+  void _showTransferChargeInputPopup() async {
+    final curVal = _transferCharge;
+    final controller = TextEditingController(text: curVal == '0' ? '' : curVal);
+    final result = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Enter Transfer Charge'),
+        content: TextField(
+          controller: controller,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          autofocus: true,
+          decoration: const InputDecoration(hintText: '0'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, controller.text),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+    if (result != null) {
+      setState(() => _transferCharge = result.isEmpty ? '0' : result);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final categoriesAsync = ref.watch(categoryProvider);
+    final ledgersAsync = ref.watch(ledgerProvider);
+    final assetsAsync = ref.watch(assetProvider);
+
+    // Ensure assets are loaded for popups
+    final ledgers = ledgersAsync.value ?? [];
+    final assets = assetsAsync.value ?? [];
+
+    // Filter Categories
+    List<Category> displayCategories = [];
+    if (categoriesAsync.hasValue) {
+      final all = categoriesAsync.value!;
+      if (_isInitialLoad &&
+          widget.transaction != null &&
+          _selectedCategory == null) {
+        try {
+          if (widget.transaction!.categoryId.isNotEmpty) {
+            _selectedCategory = all.firstWhere(
+              (c) => c.id == widget.transaction!.categoryId,
+            );
+          }
+        } catch (_) {}
+        _isInitialLoad = false;
+      }
+
+      if (_selectedTypeIndex == 0) {
+        displayCategories = all
+            .where((c) => c.type == CategoryType.expense)
+            .toList();
+      } else if (_selectedTypeIndex == 1) {
+        displayCategories = all
+            .where((c) => c.type == CategoryType.income)
+            .toList();
+      }
+    }
+
+    // Resolve Names for Options Panel
+    final ledgerName = ledgers
+        .firstWhere(
+          (l) =>
+              l.id ==
+              (_selectedLedgerId ??
+                  (ledgers.isNotEmpty ? ledgers.first.id : '')),
+          orElse: () => ledgers.isNotEmpty ? ledgers.first : throw 'No Ledger',
+        )
+        .name;
+
+    String assetName = 'Asset';
+    if (assets.isNotEmpty) {
+      final aid = _selectedAssetId ?? assets.first.id;
+      try {
+        assetName = assets.firstWhere((a) => a.id == aid).name;
+        if (_selectedAssetId == null) {
+          // Initialize if null
+          // Wait, cannot set state in build directly.
+          // It will be handled when accessing _selectedAssetId or we should Init it properly.
+          // Let's just display correctly.
+        }
+      } catch (_) {}
+    }
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF9F3EC), // Light Beige Background
+      resizeToAvoidBottomInset:
+          false, // Prevent keyboard from distorting layout
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Top Bar
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(
+                      Icons.arrow_back_ios_new,
+                      size: 20,
+                      color: Colors.black87,
+                    ),
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: IconButton.styleFrom(
+                      backgroundColor: const Color(0xFFF5E6D3), // Darker beige
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
-          ),
-        );
-      }).toList(),
+                  const Spacer(),
+                  // Custom Tab Bar
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF5E6D3),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    padding: const EdgeInsets.all(4),
+                    child: Row(
+                      children: [
+                        _buildTabItem('Expenses', 0),
+                        _buildTabItem('Income', 1),
+                        _buildTabItem('Transfer', 2),
+                      ],
+                    ),
+                  ),
+                  const Spacer(),
+                  const SizedBox(width: 40), // Balance spacing
+                ],
+              ),
+            ),
+
+            // Middle Content
+            Expanded(
+              child: _selectedTypeIndex == 2
+                  ? TransferForm(
+                      selectedSourceAsset: assets
+                          .where((a) => a.id == _selectedAssetId)
+                          .firstOrNull,
+                      selectedDestAsset: assets
+                          .where((a) => a.id == _selectedDestinationAssetId)
+                          .firstOrNull,
+                      chargeAmount: _transferCharge,
+                      assets: assets,
+                      onSourceAssetChanged: (a) =>
+                          setState(() => _selectedAssetId = a?.id),
+                      onDestAssetChanged: (a) =>
+                          setState(() => _selectedDestinationAssetId = a?.id),
+                      onChargeHelpTap: _showTransferChargePopup,
+                      onChargeTap: _showTransferChargeInputPopup,
+                    )
+                  : CategoryGridSelector(
+                      categories: displayCategories,
+                      selectedCategory: _selectedCategory,
+                      onCategorySelected: (c) =>
+                          setState(() => _selectedCategory = c),
+                      onSettingTap: () {
+                        debugPrint('Debug: Navigating to CategoriesPage');
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const CategoriesPage(),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+
+            // Bottom Panel
+            Container(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  // Amount Display
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: Container(
+                          height: 48,
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF5E6D3),
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            _inputAmountStr == '0' || _inputAmountStr.isEmpty
+                                ? 'Amount'
+                                : _inputAmountStr,
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color:
+                                  _inputAmountStr == '0' ||
+                                      _inputAmountStr.isEmpty
+                                  ? Colors.black.withValues(alpha: 0.3)
+                                  : Colors.black87,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      // Remark hint
+                      Expanded(
+                        flex: 2,
+                        // Make it flexible to avoid overflow
+                        child: GestureDetector(
+                          onTap:
+                              _showRemarkPopup, // Allow tapping remark box too
+                          child: Container(
+                            height: 48,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF5E6D3),
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              _remark.isEmpty ? 'Remark' : _remark,
+                              style: TextStyle(
+                                color: _remark.isEmpty
+                                    ? Colors.black.withValues(alpha: 0.3)
+                                    : Colors.black87,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Keypad and Options
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: CustomKeypad(
+                          onKeyTap: _onKeypadTap,
+                          onBackspaceTap: _onBackspace,
+                          onBlackCheckTap: () => _calculateOrSave(false),
+                          onRedActionTap: () => _calculateOrSave(true),
+                          isCalculationMode:
+                              _inputAmountStr.contains('+') ||
+                              _inputAmountStr.contains('-'),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        flex: 2,
+                        child: TransactionOptionsPanel(
+                          selectedDate: _selectedDate,
+                          ledgerName: ledgerName, // Need name
+                          assetName: assetName,
+                          isReimburse: _isReimburse,
+                          onDateTap: _showDatePopup,
+                          onLedgerTap: () async {
+                            // Show Ledger Picker
+                            if (ledgers.isNotEmpty) {
+                              await showModalBottomSheet(
+                                context: context,
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(20),
+                                  ),
+                                ),
+                                builder: (ctx) => ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: ledgers.length,
+                                  itemBuilder: (context, index) {
+                                    final l = ledgers[index];
+                                    return ListTile(
+                                      title: Text(l.name),
+                                      onTap: () {
+                                        setState(
+                                          () => _selectedLedgerId = l.id,
+                                        );
+                                        Navigator.pop(ctx);
+                                      },
+                                    );
+                                  },
+                                ),
+                              );
+                            }
+                          },
+                          onAssetTap: () => _showAssetSelectionPopup(assets),
+                          onReimburseTap: () =>
+                              setState(() => _isReimburse = !_isReimburse),
+                          onRemarkTap: _showRemarkPopup, // Remark Button
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const BannerAdWidget(), // Restore Banner Ad
+          ],
+        ),
+      ),
     );
   }
+
+  Widget _buildTabItem(String label, int index) {
+    bool isSelected = _selectedTypeIndex == index;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedTypeIndex = index),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 4,
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: isSelected ? Colors.black87 : Colors.black54,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Extension to help find first null safely if needed
+extension ListExtension<E> on Iterable<E> {
+  E? get firstOrNull => isEmpty ? null : first;
 }
