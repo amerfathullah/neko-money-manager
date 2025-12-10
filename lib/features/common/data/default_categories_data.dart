@@ -10,6 +10,7 @@ class DefaultCategoriesData {
       iconFontFamily: 'MaterialIcons',
       colorValue: 0xFFFF5252, // Red Accent
       type: CategoryType.expense,
+      index: 0,
     ),
     Category(
       id: 'transportation',
@@ -18,6 +19,7 @@ class DefaultCategoriesData {
       iconFontFamily: 'MaterialIcons',
       colorValue: 0xFF448AFF, // Blue Accent
       type: CategoryType.expense,
+      index: 1,
     ),
     Category(
       id: 'shopping',
@@ -26,6 +28,7 @@ class DefaultCategoriesData {
       iconFontFamily: 'MaterialIcons',
       colorValue: 0xFFFFAB40, // Orange Accent
       type: CategoryType.expense,
+      index: 2,
     ),
     Category(
       id: 'health_personal_care',
@@ -34,6 +37,7 @@ class DefaultCategoriesData {
       iconFontFamily: 'MaterialIcons',
       colorValue: 0xFFF06292, // Pink Light
       type: CategoryType.expense,
+      index: 3,
     ),
     Category(
       id: 'entertainment_leisure',
@@ -42,6 +46,7 @@ class DefaultCategoriesData {
       iconFontFamily: 'MaterialIcons',
       colorValue: 0xFFE040FB, // Purple Accent
       type: CategoryType.expense,
+      index: 4,
     ),
     Category(
       id: 'pets',
@@ -50,6 +55,7 @@ class DefaultCategoriesData {
       iconFontFamily: 'MaterialIcons',
       colorValue: 0xFF795548, // Brown
       type: CategoryType.expense,
+      index: 5,
     ),
     Category(
       id: 'services_miscellaneous',
@@ -58,6 +64,7 @@ class DefaultCategoriesData {
       iconFontFamily: 'MaterialIcons',
       colorValue: 0xFF607D8B, // Blue Grey
       type: CategoryType.expense,
+      index: 6,
     ),
 
     // INCOME
@@ -68,6 +75,7 @@ class DefaultCategoriesData {
       iconFontFamily: 'MaterialIcons',
       colorValue: 0xFF69F0AE, // Green Accent
       type: CategoryType.income,
+      index: 0,
     ),
     Category(
       id: 'investments_savings',
@@ -76,6 +84,7 @@ class DefaultCategoriesData {
       iconFontFamily: 'MaterialIcons',
       colorValue: 0xFF536DFE, // Indigo Accent
       type: CategoryType.income,
+      index: 1,
     ),
     Category(
       id: 'sales_cash',
@@ -84,6 +93,7 @@ class DefaultCategoriesData {
       iconFontFamily: 'MaterialIcons',
       colorValue: 0xFF00B8D4, // Cyan Accent
       type: CategoryType.income,
+      index: 2,
     ),
   ];
 }

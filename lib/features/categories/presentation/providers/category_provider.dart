@@ -27,6 +27,14 @@ class CategoryNotifier extends StreamNotifier<List<Category>> {
     if (userId == null) return;
     await ref.read(categoryRepositoryProvider).deleteCategory(userId, id);
   }
+
+  Future<void> updateCategoriesOrder(List<Category> categories) async {
+    final userId = ref.read(userIdProvider);
+    if (userId == null) return;
+    await ref
+        .read(categoryRepositoryProvider)
+        .updateCategoriesOrder(userId, categories);
+  }
 }
 
 final categoryProvider =

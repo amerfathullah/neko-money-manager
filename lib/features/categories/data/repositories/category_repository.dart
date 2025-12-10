@@ -27,6 +27,22 @@ class CategoryRepository {
         .set(category.toJson());
   }
 
+  Future<void> updateCategoriesOrder(
+    String userId,
+    List<Category> categories,
+  ) async {
+    final batch = _firestore.batch();
+    for (var category in categories) {
+      final docRef = _firestore
+          .collection('users')
+          .doc(userId)
+          .collection(_collection)
+          .doc(category.id);
+      batch.update(docRef, {'index': category.index});
+    }
+    await batch.commit();
+  }
+
   Future<void> deleteCategory(String userId, String categoryId) async {
     await _firestore
         .collection('users')
