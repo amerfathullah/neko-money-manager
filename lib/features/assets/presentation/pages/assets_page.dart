@@ -60,14 +60,14 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
               children: [
                 // Background Elements (Cat Top Right - reuse from Home)
                 Positioned(
-                  top: 0,
-                  right: 0,
+                  top: -20,
+                  right: -20,
                   child: Opacity(
-                    opacity: 0.8,
-                    child: Image.asset(
-                      'assets/images/cat_top_right.png',
-                      width: 120,
-                      errorBuilder: (c, e, s) => const SizedBox.shrink(),
+                    opacity: 0.2,
+                    child: Icon(
+                      Icons.pets,
+                      size: 180,
+                      color: AppColors.pastelOrange,
                     ),
                   ),
                 ),
@@ -323,24 +323,16 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
                             ],
                           ),
                         ),
-                        // Peeking Cat
+                        // Drag Handle
                         Positioned(
-                          top: 0,
-                          child: Image.asset(
-                            'assets/images/cat_peek.png',
-                            width: 60,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Container(
-                                  width: 50,
-                                  height: 30,
-                                  decoration: const BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.vertical(
-                                      top: Radius.circular(20),
-                                    ),
-                                  ),
-                                  child: const Icon(Icons.pets, size: 20),
-                                ),
+                          top: 10,
+                          child: Container(
+                            width: 40,
+                            height: 5,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[300],
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                           ),
                         ),
                       ],

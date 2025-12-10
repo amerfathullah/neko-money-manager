@@ -162,18 +162,14 @@ class _HomePageState extends ConsumerState<HomePage> {
           children: [
             // Background Elements (e.g., Cat Top Right)
             Positioned(
-              top: 0,
-              right: 0,
+              top: -20,
+              right: -20,
               child: Opacity(
-                opacity: 0.6,
-                child: Image.asset(
-                  'assets/images/cat_top_right.png',
-                  width: 120,
-                  errorBuilder: (c, e, s) => const Icon(
-                    Icons.pets,
-                    size: 80,
-                    color: AppColors.pastelOrange,
-                  ),
+                opacity: 0.2,
+                child: Icon(
+                  Icons.pets,
+                  size: 180,
+                  color: AppColors.pastelOrange,
                 ),
               ),
             ),
@@ -376,16 +372,10 @@ class _HomePageState extends ConsumerState<HomePage> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Image.asset(
-                                    'assets/images/cat_balloons.png',
-                                    height: 200,
-                                    errorBuilder:
-                                        (context, error, stackTrace) =>
-                                            const Icon(
-                                              Icons.image,
-                                              size: 100,
-                                              color: AppColors.pastelBlue,
-                                            ),
+                                  const Icon(
+                                    Icons.savings_outlined,
+                                    size: 120,
+                                    color: AppColors.pastelBlue,
                                   ),
                                   const SizedBox(height: 16),
                                   const Text(
@@ -706,22 +696,15 @@ class _HomePageState extends ConsumerState<HomePage> {
                       ),
                     ),
 
-                    // Peeking Cat at Top
+                    // Drag Handle
                     Positioned(
-                      top: 0,
-                      child: Image.asset(
-                        'assets/images/cat_peek.png',
-                        width: 60,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          width: 50,
-                          height: 30,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.vertical(
-                              top: Radius.circular(20),
-                            ),
-                          ),
-                          child: const Icon(Icons.pets, size: 20),
+                      top: 10,
+                      child: Container(
+                        width: 40,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(10),
                         ),
                       ),
                     ),
