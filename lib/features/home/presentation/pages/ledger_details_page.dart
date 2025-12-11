@@ -7,6 +7,7 @@ import '../../data/models/ledger.dart';
 import '../../../transactions/data/models/transaction_model.dart';
 import '../../../transactions/presentation/providers/transaction_provider.dart';
 import '../../../settings/presentation/providers/currency_provider.dart';
+import '../../../settings/presentation/providers/settings_provider.dart';
 import '../../../settings/presentation/pages/add_edit_ledger_page.dart';
 import '../../../home/presentation/providers/ledger_provider.dart';
 import '../../../categories/presentation/providers/category_provider.dart';
@@ -34,7 +35,9 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
   @override
   Widget build(BuildContext context) {
     final currencyAsync = ref.watch(currencyProvider);
+    final settingsAsync = ref.watch(settingsProvider);
     final currencySymbol = currencyAsync.asData?.value ?? '\$';
+    final useComma = settingsAsync.asData?.value.useCommaSeparator ?? false;
 
     final transactionsAsync = ref.watch(
       ledgerTransactionsProvider(widget.ledger.id),
@@ -64,18 +67,20 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
                             ? _buildRecordLayout(
                                 filteredTransactions,
                                 currencySymbol,
+                                useComma,
                               )
                             : _buildStatisticTab(
                                 filteredTransactions,
                                 currencySymbol,
                                 ref.watch(categoryProvider).asData?.value ?? [],
+                                useComma,
                               ),
                       ),
 
                       // Bottom Summary (Only for Record Tab usually, but image implies it's persistent or attached)
                       // Image shows it on "Record" tab.
                       if (_selectedTabIndex == 0)
-                        _buildBottomSummary(summary, currencySymbol),
+                        _buildBottomSummary(summary, currencySymbol, useComma),
                     ],
                   );
                 },
@@ -217,6 +222,7 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
   Widget _buildRecordLayout(
     List<TransactionModel> transactions,
     String currencySymbol,
+    bool useComma,
   ) {
     if (transactions.isEmpty) {
       return const Center(
@@ -234,16 +240,15 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
     return TransactionTimeline(
       transactions: transactions,
       currencySymbol: currencySymbol,
-      useComma:
-          true, // Defaulting to true as per other pages, or could check settings if I update build.
+      useComma: useComma,
     );
   }
 
   Widget _buildStatisticTab(
     List<TransactionModel> transactions,
     String currencySymbol,
-    List<Category>
-    categories, // Need to import Category if not available, or use dynamic if lazy (better to import)
+    List<Category> categories,
+    bool useComma,
   ) {
     // Reuse existing logic
     if (transactions.isEmpty) return const Center(child: Text('No data'));
@@ -279,6 +284,7 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
   Widget _buildBottomSummary(
     Map<String, double> summary,
     String currencySymbol,
+    bool useComma,
   ) {
     final expense = summary['expense'] ?? 0.0;
     final income = summary['income'] ?? 0.0;
@@ -340,7 +346,11 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
                     ],
                   ),
                   Text(
-                    CurrencyFormatter.format(expense, symbol: ''),
+                    CurrencyFormatter.format(
+                      expense,
+                      symbol: currencySymbol,
+                      useGrouping: useComma,
+                    ),
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -348,7 +358,11 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
                     ),
                   ),
                   Text(
-                    CurrencyFormatter.format(net, symbol: ''),
+                    CurrencyFormatter.format(
+                      net,
+                      symbol: currencySymbol,
+                      useGrouping: useComma,
+                    ),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -377,7 +391,11 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
                     ],
                   ),
                   Text(
-                    CurrencyFormatter.format(income, symbol: ''),
+                    CurrencyFormatter.format(
+                      income,
+                      symbol: currencySymbol,
+                      useGrouping: useComma,
+                    ),
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,

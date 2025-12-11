@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../data/models/asset.dart';
 import '../providers/asset_provider.dart';
+import '../../../../features/settings/presentation/providers/currency_provider.dart';
 
 class AddEditAssetPage extends ConsumerStatefulWidget {
   final Asset? asset;
@@ -163,6 +164,9 @@ class _AddEditAssetPageState extends ConsumerState<AddEditAssetPage> {
 
   @override
   Widget build(BuildContext context) {
+    final currencyAsync = ref.watch(currencyProvider);
+    final currencySymbol = currencyAsync.asData?.value ?? '\$';
+
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8E1),
       appBar: AppBar(
@@ -396,9 +400,9 @@ class _AddEditAssetPageState extends ConsumerState<AddEditAssetPage> {
                           borderRadius: BorderRadius.circular(16),
                         ),
                         alignment: Alignment.center,
-                        child: const Text(
-                          '\$',
-                          style: TextStyle(
+                        child: Text(
+                          currencySymbol,
+                          style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: Colors.black54,

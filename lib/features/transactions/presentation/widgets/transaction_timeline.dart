@@ -171,7 +171,7 @@ class TransactionTimeline extends ConsumerWidget {
                       children: [
                         if (income > 0)
                           Text(
-                            '+${CurrencyFormatter.format(income, symbol: '', useGrouping: useComma)}',
+                            '+${CurrencyFormatter.format(income, symbol: currencySymbol, useGrouping: useComma)}',
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               color: AppColors.textDark,
@@ -181,7 +181,7 @@ class TransactionTimeline extends ConsumerWidget {
                         if (income > 0 && expense > 0) const SizedBox(width: 8),
                         if (expense > 0)
                           Text(
-                            '-${CurrencyFormatter.format(expense, symbol: '', useGrouping: useComma)}',
+                            '-${CurrencyFormatter.format(expense, symbol: currencySymbol, useGrouping: useComma)}',
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               color: AppColors.expense,

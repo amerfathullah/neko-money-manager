@@ -316,6 +316,7 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage>
                                   () => _calendarIsExpenseView = val,
                                 ),
                                 firstDayOfWeek: firstDayOfWeek,
+                                currencySymbol: currencySymbol,
                               ),
 
                               // Section 5: List

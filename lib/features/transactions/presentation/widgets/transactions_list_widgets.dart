@@ -183,7 +183,7 @@ class TransactionsTopSection extends StatelessWidget {
                   Text(
                     CurrencyFormatter.format(
                       totalIncome,
-                      symbol: '',
+                      symbol: currencySymbol,
                       useGrouping: useComma,
                     ),
                     style: const TextStyle(
@@ -466,7 +466,7 @@ class TransactionChartSection extends StatelessWidget {
                             Text(
                               CurrencyFormatter.format(
                                 value,
-                                symbol: '',
+                                symbol: currencySymbol,
                                 useGrouping: useComma,
                               ),
                               style: const TextStyle(
@@ -517,7 +517,10 @@ class TransactionCalendarSection extends StatefulWidget {
     required this.isExpenseView,
     required this.onViewChanged,
     required this.firstDayOfWeek,
+    required this.currencySymbol,
   });
+
+  final String currencySymbol;
 
   @override
   State<TransactionCalendarSection> createState() =>
@@ -683,7 +686,7 @@ class _TransactionCalendarSectionState
           ),
           if ((amount ?? 0) > 0)
             Text(
-              NumberFormat.compact().format(amount),
+              '${widget.isExpenseView ? '-' : '+'}${widget.currencySymbol}${NumberFormat.compact().format((amount ?? 0).abs())}',
               style: TextStyle(
                 fontSize: 8,
                 color: widget.isExpenseView

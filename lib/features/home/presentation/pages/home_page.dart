@@ -408,7 +408,7 @@ class _SummaryItem extends StatelessWidget {
         Text(
           CurrencyFormatter.format(
             amount,
-            symbol: isExpense ? currency : '',
+            symbol: currency,
             useGrouping: useComma,
           ),
           style: TextStyle(
