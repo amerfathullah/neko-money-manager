@@ -7,12 +7,12 @@ import '../providers/asset_provider.dart';
 import '../../../../core/widgets/banner_ad_widget.dart';
 import '../widgets/asset_graph_section.dart';
 
-import '../../../home/presentation/providers/ledger_provider.dart';
 import '../../../transactions/presentation/pages/transaction_page.dart';
 import '../../../transactions/data/models/transaction_model.dart';
 import '../widgets/asset_chart_section.dart';
 import '../../../settings/presentation/providers/currency_provider.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
+import '../../../home/presentation/widgets/ledger_selector.dart';
 
 class AssetsPage extends ConsumerStatefulWidget {
   const AssetsPage({super.key});
@@ -22,12 +22,10 @@ class AssetsPage extends ConsumerStatefulWidget {
 }
 
 class _AssetsPageState extends ConsumerState<AssetsPage> {
-  String? _selectedLedgerId; // Visual consistency only for now
-
   @override
   Widget build(BuildContext context) {
     final assetsAsync = ref.watch(assetProvider);
-    final ledgersAsync = ref.watch(ledgerProvider);
+
     final historyAsync = ref.watch(assetHistoryProvider);
     final history = historyAsync.value ?? [];
     final currencyAsync = ref.watch(currencyProvider);
@@ -70,77 +68,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage> {
                       padding: const EdgeInsets.symmetric(horizontal: 24.0),
                       child: Row(
                         children: [
-                          ledgersAsync.when(
-                            data: (ledgers) => Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.pastelOrange.withValues(
-                                  alpha: 0.3,
-                                ),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: DropdownButtonHideUnderline(
-                                child: DropdownButton<String?>(
-                                  value: _selectedLedgerId,
-                                  isDense: true,
-                                  icon: const Icon(
-                                    Icons.arrow_drop_down,
-                                    color: AppColors.textDark,
-                                    size: 20,
-                                  ),
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.textDark,
-                                  ),
-                                  borderRadius: BorderRadius.circular(20),
-                                  dropdownColor: const Color(0xFFFFFDF5),
-                                  items: [
-                                    const DropdownMenuItem<String?>(
-                                      value: null,
-                                      child: Row(
-                                        children: [
-                                          Icon(
-                                            Icons.book,
-                                            size: 20,
-                                            color: AppColors.textDark,
-                                          ),
-                                          SizedBox(width: 8),
-                                          Text('All ledgers'),
-                                        ],
-                                      ),
-                                    ),
-                                    ...ledgers.map(
-                                      (l) => DropdownMenuItem<String?>(
-                                        value: l.id,
-                                        child: Row(
-                                          children: [
-                                            Icon(
-                                              Icons.account_balance_wallet,
-                                              size: 20,
-                                              color: AppColors.textDark,
-                                            ),
-                                            SizedBox(width: 8),
-                                            Text(l.name),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                  onChanged: (val) {
-                                    setState(() {
-                                      _selectedLedgerId = val;
-                                    });
-                                  },
-                                ),
-                              ),
-                            ),
-                            loading: () =>
-                                const SizedBox(width: 120, height: 40),
-                            error: (err, stack) => const SizedBox.shrink(),
-                          ),
+                          const LedgerSelector(),
 
                           const Spacer(),
 

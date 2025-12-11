@@ -8,6 +8,7 @@ import '../../../../core/utils/currency_formatter.dart';
 import '../../../settings/presentation/providers/currency_provider.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
 import '../providers/ledger_provider.dart';
+import '../widgets/ledger_selector.dart';
 
 import '../../../transactions/presentation/widgets/transaction_timeline.dart';
 
@@ -19,15 +20,13 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
-  String? _selectedLedgerId; // null means "All Ledgers"
-
   @override
   Widget build(BuildContext context) {
-    final ledgersAsync = ref.watch(ledgerProvider);
     final transactionsAsync = ref.watch(transactionProvider);
     final currencyAsync = ref.watch(currencyProvider);
     final settingsAsync = ref.watch(settingsProvider);
     final currencySymbol = currencyAsync.asData?.value ?? '\$';
+    final selectedLedgerId = ref.watch(selectedLedgerProvider);
 
     // Settings defaults
     final settings = settingsAsync.asData?.value ?? const SettingsState();
@@ -86,13 +85,13 @@ class _HomePageState extends ConsumerState<HomePage> {
       var allTransactions = transactionsAsync.value!;
 
       // 1. Filter by Ledger
-      if (_selectedLedgerId != null) {
+      if (selectedLedgerId != null) {
         ledgerFilteredTransactions = allTransactions.where((t) {
           if (t.type.toString().contains('transfer')) {
-            return t.ledgerId == _selectedLedgerId ||
-                t.destinationLedgerId == _selectedLedgerId;
+            return t.ledgerId == selectedLedgerId ||
+                t.destinationLedgerId == selectedLedgerId;
           }
-          return t.ledgerId == _selectedLedgerId;
+          return t.ledgerId == selectedLedgerId;
         }).toList();
       } else {
         ledgerFilteredTransactions = allTransactions;
@@ -110,7 +109,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             t.date.isBefore(rangeEndEod.add(const Duration(seconds: 1)));
 
         if (isInCurrentPeriod) {
-          if (_selectedLedgerId == null) {
+          if (selectedLedgerId == null) {
             // Global View
             if (isExpense) {
               currentMonthExpense += t.amount;
@@ -121,17 +120,17 @@ class _HomePageState extends ConsumerState<HomePage> {
           } else {
             // Specific Ledger View
             if (isExpense) {
-              if (t.ledgerId == _selectedLedgerId) {
+              if (t.ledgerId == selectedLedgerId) {
                 currentMonthExpense += t.amount;
               }
             } else if (isIncome) {
-              if (t.ledgerId == _selectedLedgerId) {
+              if (t.ledgerId == selectedLedgerId) {
                 currentMonthIncome += t.amount;
               }
             } else if (isTransfer) {
-              if (t.ledgerId == _selectedLedgerId) {
+              if (t.ledgerId == selectedLedgerId) {
                 currentMonthExpense += t.amount; // Outgoing
-              } else if (t.destinationLedgerId == _selectedLedgerId) {
+              } else if (t.destinationLedgerId == selectedLedgerId) {
                 currentMonthIncome += t.amount; // Incoming
               }
             }
@@ -174,76 +173,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                   padding: const EdgeInsets.symmetric(horizontal: 24.0),
                   child: Row(
                     children: [
-                      ledgersAsync.when(
-                        data: (ledgers) => Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.pastelOrange.withValues(
-                              alpha: 0.3,
-                            ),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<String?>(
-                              value: _selectedLedgerId,
-                              isDense: true,
-                              icon: const Icon(
-                                Icons.arrow_drop_down,
-                                color: AppColors.textDark,
-                                size: 20,
-                              ),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textDark,
-                              ),
-                              borderRadius: BorderRadius.circular(20),
-                              dropdownColor: const Color(0xFFFFFDF5),
-                              items: [
-                                const DropdownMenuItem<String?>(
-                                  value: null,
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.book,
-                                        size: 20,
-                                        color: AppColors.textDark,
-                                      ),
-                                      SizedBox(width: 8),
-                                      Text('All ledgers'),
-                                    ],
-                                  ),
-                                ),
-                                ...ledgers.map(
-                                  (l) => DropdownMenuItem<String?>(
-                                    value: l.id,
-                                    child: Row(
-                                      children: [
-                                        Icon(
-                                          Icons.book,
-                                          size: 20,
-                                          color: AppColors.textDark,
-                                        ),
-                                        SizedBox(width: 8),
-                                        Text(l.name),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                              onChanged: (val) {
-                                setState(() {
-                                  _selectedLedgerId = val;
-                                });
-                              },
-                            ),
-                          ),
-                        ),
-                        loading: () => const SizedBox(width: 120, height: 40),
-                        error: (err, stack) => const SizedBox.shrink(),
-                      ),
+                      const LedgerSelector(),
 
                       const Spacer(),
 

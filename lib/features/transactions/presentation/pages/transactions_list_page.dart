@@ -20,7 +20,6 @@ class TransactionsListPage extends ConsumerStatefulWidget {
 }
 
 class _TransactionsListPageState extends ConsumerState<TransactionsListPage> {
-  String? _selectedLedgerId;
   TransactionTimeRange _timeRange = TransactionTimeRange.monthly;
   final DateTime _selectedDate =
       DateTime.now(); // Anchor date for daily/monthly/annual
@@ -152,6 +151,7 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage> {
     final settingsAsync = ref.watch(settingsProvider);
     final categoriesAsync = ref.watch(categoryProvider);
     final categories = categoriesAsync.asData?.value ?? [];
+    final selectedLedgerId = ref.watch(selectedLedgerProvider);
 
     final currencySymbol = currencyAsync.asData?.value ?? '\$';
 
@@ -170,13 +170,13 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage> {
         data: (allTransactions) {
           // 1. Filter by Ledger
           List<TransactionModel> filtered = allTransactions;
-          if (_selectedLedgerId != null) {
+          if (selectedLedgerId != null) {
             filtered = filtered.where((t) {
               if (t.type == TransactionType.transfer) {
-                return t.ledgerId == _selectedLedgerId ||
-                    t.destinationLedgerId == _selectedLedgerId;
+                return t.ledgerId == selectedLedgerId ||
+                    t.destinationLedgerId == selectedLedgerId;
               }
-              return t.ledgerId == _selectedLedgerId;
+              return t.ledgerId == selectedLedgerId;
             }).toList();
           }
 
@@ -215,9 +215,9 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage> {
             if (t.type == TransactionType.expense) totalExpense += t.amount;
             if (t.type == TransactionType.transfer) {
               // Per wallet total logic?
-              if (_selectedLedgerId != null) {
-                if (t.ledgerId == _selectedLedgerId) totalExpense += t.amount;
-                if (t.destinationLedgerId == _selectedLedgerId) {
+              if (selectedLedgerId != null) {
+                if (t.ledgerId == selectedLedgerId) totalExpense += t.amount;
+                if (t.destinationLedgerId == selectedLedgerId) {
                   totalIncome += t.amount;
                 }
               }
@@ -236,13 +236,13 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage> {
                 Column(
                   children: [
                     TransactionsTopSection(
-                      selectedLedgerId: _selectedLedgerId,
+                      selectedLedgerId: selectedLedgerId,
                       ledgers: ledgers,
                       timeRange: _timeRange,
                       selectedDate: _selectedDate,
                       customDateRange: _customDateRange,
                       onLedgerChanged: (val) =>
-                          setState(() => _selectedLedgerId = val),
+                          ref.read(selectedLedgerProvider.notifier).set(val),
                       onTimeRangeChanged: _updateTimeRange,
                       onCustomDateRangePressed: _pickCustomDateRange,
                       totalIncome: totalIncome,
@@ -296,7 +296,7 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage> {
                                       (t) =>
                                           t.type == TransactionType.expense ||
                                           (t.type == TransactionType.transfer &&
-                                              t.ledgerId == _selectedLedgerId),
+                                              t.ledgerId == selectedLedgerId),
                                     )
                                     .toList(),
                                 currencySymbol: currencySymbol,
@@ -314,7 +314,7 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage> {
                                           t.type == TransactionType.income ||
                                           (t.type == TransactionType.transfer &&
                                               t.destinationLedgerId ==
-                                                  _selectedLedgerId),
+                                                  selectedLedgerId),
                                     )
                                     .toList(),
                                 currencySymbol: currencySymbol,

@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../data/models/transaction_model.dart';
+import '../../../home/presentation/widgets/ledger_selector.dart';
 import '../pages/category_transactions_page.dart';
 import '../pages/transaction_page.dart';
 import '../../../../features/categories/data/models/category.dart';
@@ -75,80 +76,7 @@ class TransactionsTopSection extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Ledger Dropdown
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.pastelOrange.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String?>(
-                    value: selectedLedgerId,
-                    isDense: true,
-                    icon: const Icon(
-                      Icons.arrow_drop_down,
-                      color: AppColors.textDark,
-                      size: 20,
-                    ),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textDark,
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    dropdownColor: const Color(0xFFFFFDF5),
-                    items: [
-                      const DropdownMenuItem(
-                        value: null,
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.book,
-                              size: 20,
-                              color: AppColors.textDark,
-                            ),
-                            SizedBox(width: 8),
-                            Text(
-                              'All ledgers',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textDark,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Map ledgers from props
-                      ...ledgers.map(
-                        (l) => DropdownMenuItem(
-                          value: l.id,
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.book,
-                                size: 20,
-                                color: AppColors.textDark,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                l.name,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textDark,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                    onChanged: onLedgerChanged,
-                  ),
-                ),
-              ),
+              const LedgerSelector(),
 
               // Time Range Button
               InkWell(

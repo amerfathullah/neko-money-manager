@@ -38,3 +38,17 @@ class LedgerNotifier extends StreamNotifier<List<Ledger>> {
 final ledgerProvider = StreamNotifierProvider<LedgerNotifier, List<Ledger>>(
   LedgerNotifier.new,
 );
+
+class SelectedLedgerNotifier extends Notifier<String?> {
+  @override
+  String? build() => null;
+
+  void set(String? value) {
+    state = value;
+  }
+}
+
+final selectedLedgerProvider =
+    NotifierProvider<SelectedLedgerNotifier, String?>(
+      SelectedLedgerNotifier.new,
+    );
