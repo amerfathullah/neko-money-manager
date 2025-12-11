@@ -114,51 +114,58 @@ class TransactionTimeline extends ConsumerWidget {
                     Expanded(
                       child: Row(
                         children: [
-                          RichText(
-                            text: TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: DateFormat(
-                                    'MMM',
-                                  ).format(date).substring(0, 1),
-                                  style: const TextStyle(
-                                    color: AppColors.expense, // Highlight color
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 24,
-                                    fontFamily: 'Roboto',
+                          Flexible(
+                            child: RichText(
+                              overflow: TextOverflow.ellipsis,
+                              text: TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: DateFormat(
+                                      'MMM',
+                                    ).format(date).substring(0, 1),
+                                    style: const TextStyle(
+                                      color:
+                                          AppColors.expense, // Highlight color
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20,
+                                      fontFamily: 'Roboto',
+                                    ),
                                   ),
-                                ),
-                                TextSpan(
-                                  text:
-                                      '${DateFormat('MMM').format(date).substring(1)} ${DateFormat('dd').format(date)}',
-                                  style: const TextStyle(
-                                    color: AppColors.textDark,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 24,
-                                    fontFamily: 'Roboto',
+                                  TextSpan(
+                                    text:
+                                        '${DateFormat('MMM').format(date).substring(1)} ${DateFormat('dd').format(date)}',
+                                    style: const TextStyle(
+                                      color: AppColors.textDark,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20,
+                                      fontFamily: 'Roboto',
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                           const SizedBox(width: 12),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(
-                                0xFFEFE6D5,
-                              ), // Beige/Sand pill background
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              DateFormat('EEE').format(date),
-                              style: const TextStyle(
-                                color: AppColors.textDark,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
+                          Flexible(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(
+                                  0xFFEFE6D5,
+                                ), // Beige/Sand pill background
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                DateFormat('EEE').format(date),
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: AppColors.textDark,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
                               ),
                             ),
                           ),
@@ -171,7 +178,7 @@ class TransactionTimeline extends ConsumerWidget {
                       children: [
                         if (income > 0)
                           Text(
-                            '+${CurrencyFormatter.format(income, symbol: currencySymbol, useGrouping: useComma)}',
+                            '+${CurrencyFormatter.format(income, symbol: '', useGrouping: useComma)}',
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               color: AppColors.textDark,
@@ -181,7 +188,7 @@ class TransactionTimeline extends ConsumerWidget {
                         if (income > 0 && expense > 0) const SizedBox(width: 8),
                         if (expense > 0)
                           Text(
-                            '-${CurrencyFormatter.format(expense, symbol: currencySymbol, useGrouping: useComma)}',
+                            '-${CurrencyFormatter.format(expense, symbol: '', useGrouping: useComma)}',
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               color: AppColors.expense,

@@ -81,7 +81,7 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
       extendBody: true, // Important for floating nav
       body: PageView(
         controller: _pageController,
-        physics: const NeverScrollableScrollPhysics(), // Disable swipe gesture
+        // physics: const NeverScrollableScrollPhysics(), // Enable swipe
         onPageChanged: _onPageChanged,
         children: _pages,
       ),

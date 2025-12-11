@@ -222,8 +222,8 @@ class _HomePageState extends ConsumerState<HomePage>
 
             // Draggable Sheet (Peek Cat & Container)
             DraggableScrollableSheet(
-              initialChildSize: 0.7,
-              minChildSize: 0.7,
+              initialChildSize: 0.75,
+              minChildSize: 0.75,
               maxChildSize: 1.0,
               builder: (context, scrollController) {
                 return Stack(
