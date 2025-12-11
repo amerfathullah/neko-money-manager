@@ -348,6 +348,7 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage> {
                                 physics:
                                     const NeverScrollableScrollPhysics(), // Since it's inside a ListView
                                 shrinkWrap: true,
+                                backgroundColor: const Color(0xFFFFFCF0),
                               ),
                             ],
                           ),

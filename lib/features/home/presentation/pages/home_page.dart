@@ -412,6 +412,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                   useComma: useComma,
                                   shrinkWrap: true,
                                   physics: const NeverScrollableScrollPhysics(),
+                                  backgroundColor: const Color(0xFFFFFCF0),
                                 ),
                               ),
                             ),

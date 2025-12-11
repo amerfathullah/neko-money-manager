@@ -19,6 +19,7 @@ class TransactionTimeline extends ConsumerWidget {
   final bool shrinkWrap;
   final EdgeInsetsGeometry? padding;
   final bool useComma;
+  final Color? backgroundColor;
 
   const TransactionTimeline({
     super.key,
@@ -28,6 +29,7 @@ class TransactionTimeline extends ConsumerWidget {
     this.shrinkWrap = true,
     this.padding,
     this.useComma = false,
+    this.backgroundColor,
   });
 
   @override
@@ -63,12 +65,40 @@ class TransactionTimeline extends ConsumerWidget {
         final dayTransactions = grouped[dateKey]!;
         final date = dayTransactions.first.date;
 
+        // Sort transactions by date descending to ensure time flow
+        dayTransactions.sort((a, b) => b.date.compareTo(a.date));
+
         // Calculate Day Totals
         double income = 0;
         double expense = 0;
         for (var t in dayTransactions) {
           if (t.type == TransactionType.income) income += t.amount;
           if (t.type == TransactionType.expense) expense += t.amount;
+        }
+
+        // Build list with hour grouping
+        final List<Widget> transactionWidgets = [];
+        int? lastHour;
+
+        for (var t in dayTransactions) {
+          bool showTime = false;
+          if (lastHour == null || t.date.hour != lastHour) {
+            showTime = true;
+            lastHour = t.date.hour;
+          }
+
+          transactionWidgets.add(
+            _buildTimelineItem(
+              context,
+              t,
+              currencySymbol,
+              categories,
+              assets,
+              ledgers,
+              useComma,
+              showTime,
+            ),
+          );
         }
 
         return Column(
@@ -191,17 +221,7 @@ class TransactionTimeline extends ConsumerWidget {
             // I will implement `_buildTimelineItem` logic inside this widget.
 
             // Transactions Timeline
-            ...dayTransactions.map(
-              (t) => _buildTimelineItem(
-                context,
-                t,
-                currencySymbol,
-                categories,
-                assets,
-                ledgers,
-                useComma,
-              ),
-            ),
+            ...transactionWidgets,
           ],
         );
       },
@@ -216,6 +236,7 @@ class TransactionTimeline extends ConsumerWidget {
     List<Asset> assets,
     List<Ledger> ledgers,
     bool useComma,
+    bool showTime,
   ) {
     final isExpense = t.type == TransactionType.expense;
     final category = categories.firstWhere(
@@ -274,41 +295,44 @@ class TransactionTimeline extends ConsumerWidget {
                     child: Container(width: 2, color: category.color),
                   ),
                   // Time and Arrow (Foreground with Mask)
-                  Positioned(
-                    top: 0,
-                    bottom: 16,
-                    left: 0,
-                    right: 0,
-                    child: Center(
-                      child: Container(
-                        color: const Color(
-                          0xFFFFF8E1,
-                        ), // Mask line with background color
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // Time Text
-                            Text(
-                              DateFormat('HH:mm').format(t.date),
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: AppColors.textDark,
-                                fontWeight: FontWeight.bold,
+                  if (showTime)
+                    Positioned(
+                      top: 0,
+                      bottom: 16,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: Container(
+                          color:
+                              backgroundColor ??
+                              const Color(
+                                0xFFFFF8E1,
+                              ), // Mask line with background color
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Time Text
+                              Text(
+                                DateFormat('HH:00').format(t.date),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: AppColors.textDark,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 4),
-                            // Triangle Arrow
-                            const Icon(
-                              Icons.play_arrow,
-                              size: 16,
-                              color: Color(0xFFBF4C58),
-                            ),
-                          ],
+                              const SizedBox(width: 4),
+                              // Triangle Arrow
+                              const Icon(
+                                Icons.play_arrow,
+                                size: 16,
+                                color: Color(0xFFBF4C58),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -317,9 +341,11 @@ class TransactionTimeline extends ConsumerWidget {
             Expanded(
               child: Container(
                 margin: const EdgeInsets.only(bottom: 16),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
+                padding: const EdgeInsets.only(
+                  left: 12,
+                  right: 12,
+                  top: 4,
+                  bottom: 8,
                 ),
                 decoration: BoxDecoration(
                   color: category.color.withValues(
@@ -346,6 +372,7 @@ class TransactionTimeline extends ConsumerWidget {
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           // Category Name
                           Text(
@@ -356,7 +383,7 @@ class TransactionTimeline extends ConsumerWidget {
                               color: AppColors.textDark,
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 4),
                           // Bottom Row: Time Pill, Asset, Ledger, etc.
                           Wrap(
                             spacing: 8,
