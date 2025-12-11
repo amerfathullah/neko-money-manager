@@ -93,6 +93,8 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
     // Wait, let's check definition of `TransactionModel` implicitly from usage.
     // Old code line 219: `amount: amountVal`.
     // Let's assume remark is somewhere or add it.
+    // Load Reimbursement status
+    _isReimburse = t.isReimbursement;
   }
 
   void _onKeypadTap(String value) {
@@ -264,7 +266,8 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
       assetName: assetName,
       destinationAssetId: _selectedDestinationAssetId,
       destinationAssetName: destAssetName,
-      // remark: _remark, // Add to model if updated
+      remarks: _remark,
+      isReimbursement: _isReimburse,
     );
 
     try {
