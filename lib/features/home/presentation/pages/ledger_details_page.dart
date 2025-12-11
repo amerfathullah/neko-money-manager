@@ -14,6 +14,7 @@ import '../../../categories/data/models/category.dart';
 // Import for TransactionTimeRange if accessible, otherwise define local or move enum to core
 import '../../../transactions/presentation/widgets/transactions_list_widgets.dart';
 import '../../../transactions/presentation/widgets/transaction_timeline.dart';
+import '../../../transactions/presentation/widgets/time_filter_popup.dart';
 
 class LedgerDetailsPage extends ConsumerStatefulWidget {
   final Ledger ledger;
@@ -25,8 +26,8 @@ class LedgerDetailsPage extends ConsumerStatefulWidget {
 }
 
 class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
-  final TransactionTimeRange _timeRange = TransactionTimeRange.monthly;
-  final DateTime _selectedDate = DateTime.now();
+  TransactionTimeRange _timeRange = TransactionTimeRange.monthly;
+  DateTime _selectedDate = DateTime.now();
   DateTimeRange? _customDateRange;
   int _selectedTabIndex = 0; // 0: Record, 1: Statistic
 
@@ -179,17 +180,35 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
   Widget _buildDateFilter() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: InkWell(
-        onTap: _showTimeRangeMenu,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              _getDateLabel(),
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+      child: Center(
+        child: InkWell(
+          onTap: _showTimeRangeMenu,
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppColors.pastelBlue.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(20),
             ),
-            const Icon(Icons.arrow_drop_down),
-          ],
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.calendar_month,
+                  size: 20,
+                  color: AppColors.textDark,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  _getDateLabel(),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textDark,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -422,14 +441,46 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
   }
 
   String _getDateLabel() {
-    if (_timeRange == TransactionTimeRange.monthly) {
-      return DateFormat('MMMM yyyy').format(_selectedDate);
+    switch (_timeRange) {
+      case TransactionTimeRange.daily:
+        return DateFormat('dd MMM yyyy').format(_selectedDate);
+      case TransactionTimeRange.weekly:
+        final startOfWeek = _selectedDate.subtract(
+          Duration(days: _selectedDate.weekday - 1),
+        );
+        final endOfWeek = startOfWeek.add(const Duration(days: 6));
+        return '${DateFormat('dd MMM').format(startOfWeek)} - ${DateFormat('dd MMM').format(endOfWeek)}';
+      case TransactionTimeRange.monthly:
+        return DateFormat('MMMM yyyy').format(_selectedDate);
+      case TransactionTimeRange.annual:
+        return DateFormat('yyyy').format(_selectedDate);
+      case TransactionTimeRange.custom:
+        if (_customDateRange != null) {
+          return '${DateFormat('dd MMM').format(_customDateRange!.start)} - ${DateFormat('dd MMM').format(_customDateRange!.end)}';
+        }
+        return 'Custom Range';
+      case TransactionTimeRange.all:
+        return 'All Time';
     }
-    return 'Date Filter'; // Simplification for now
   }
 
-  void _showTimeRangeMenu() {
-    // Implement Time Range Logic if needed, or stick to monthly default
+  void _showTimeRangeMenu() async {
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (ctx) => TimeFilterPopup(
+        initialRange: _timeRange,
+        initialSelectedDate: _selectedDate,
+        initialCustomDateRange: _customDateRange,
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        _timeRange = result['range'] as TransactionTimeRange;
+        _selectedDate = result['date'] as DateTime;
+        _customDateRange = result['customRange'] as DateTimeRange?;
+      });
+    }
   }
 
   void _showSettingsMenu(BuildContext context) {

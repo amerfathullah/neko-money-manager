@@ -8,6 +8,7 @@ import '../../data/models/transaction_model.dart';
 import '../../../home/presentation/widgets/ledger_selector.dart';
 import '../pages/category_transactions_page.dart';
 import '../pages/transaction_page.dart';
+import 'time_filter_popup.dart';
 import '../../../../features/categories/data/models/category.dart';
 
 // --- ENUMS ---
@@ -22,8 +23,8 @@ class TransactionsTopSection extends StatelessWidget {
   final DateTimeRange? customDateRange; // For custom
   final DateTime selectedDate; // For daily/monthly/annual anchors
   final Function(String?) onLedgerChanged;
-  final Function(TransactionTimeRange) onTimeRangeChanged;
-  final VoidCallback onCustomDateRangePressed;
+  final Function(TransactionTimeRange, DateTime, DateTimeRange?)
+  onFilterChanged;
   final double totalIncome;
   final double totalExpense;
   final String currencySymbol;
@@ -36,8 +37,7 @@ class TransactionsTopSection extends StatelessWidget {
     required this.timeRange,
     required this.selectedDate,
     required this.onLedgerChanged,
-    required this.onTimeRangeChanged,
-    required this.onCustomDateRangePressed,
+    required this.onFilterChanged,
     required this.totalIncome,
     required this.totalExpense,
     required this.currencySymbol,
@@ -48,9 +48,13 @@ class TransactionsTopSection extends StatelessWidget {
   String get _dateDisplay {
     switch (timeRange) {
       case TransactionTimeRange.daily:
-        return DateFormat('MMM dd yyyy').format(selectedDate);
+        return DateFormat('dd MMM yyyy').format(selectedDate);
       case TransactionTimeRange.weekly:
-        return 'Week ${DateFormat('w').format(selectedDate)}';
+        final startOfWeek = selectedDate.subtract(
+          Duration(days: selectedDate.weekday - 1),
+        );
+        final endOfWeek = startOfWeek.add(const Duration(days: 6));
+        return '${DateFormat('dd MMM').format(startOfWeek)} - ${DateFormat('dd MMM').format(endOfWeek)}';
       case TransactionTimeRange.monthly:
         return DateFormat('MMM yyyy').format(selectedDate);
       case TransactionTimeRange.annual:
@@ -94,6 +98,7 @@ class TransactionsTopSection extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       const Icon(
                         Icons.calendar_month,
@@ -108,21 +113,6 @@ class TransactionsTopSection extends StatelessWidget {
                           color: AppColors.textDark,
                         ),
                       ),
-                      /* The dropdown arrow is not standard on other buttons, but seems useful here due to context. 
-                         However, user asked for "same size". 
-                         "Budget" button just has (Icon + Label). "Transfer" has (Icon + Label).
-                         If I keep the arrow, it might make it wider. 
-                         Looking at "Budget" button code in HomePage:
-                         _TopPill(icon: Icons.attach_money, label: 'Budget', ...)
-                         Row(Icon(20), Space(8), Text(bold)).
-                         I will replicate that EXACT structure. 
-                         However, "Time Filter" usually implies a selection, so maybe the arrow is desired?
-                         But strictly "same size" implies similar structure.
-                         Let's stick to the visual standard of the other two which do NOT have an arrow. 
-                         Actually, wait. The user said "Time filter button", which implies changing it. 
-                         Let's keep it clean: Icon + Text. 
-                         The user will tap it to change. 
-                      */
                     ],
                   ),
                 ),
@@ -212,45 +202,22 @@ class TransactionsTopSection extends StatelessWidget {
   }
 
   void _showTimeRangeMenu(BuildContext context) async {
-    final result = await showModalBottomSheet<TransactionTimeRange>(
+    final result = await showDialog<Map<String, dynamic>>(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildTimeOption(ctx, 'Daily', TransactionTimeRange.daily),
-          _buildTimeOption(ctx, 'Weekly', TransactionTimeRange.weekly),
-          _buildTimeOption(ctx, 'Monthly', TransactionTimeRange.monthly),
-          _buildTimeOption(ctx, 'Annual', TransactionTimeRange.annual),
-          _buildTimeOption(ctx, 'Custom', TransactionTimeRange.custom),
-          _buildTimeOption(ctx, 'All', TransactionTimeRange.all),
-        ],
+      builder: (ctx) => TimeFilterPopup(
+        initialRange: timeRange,
+        initialSelectedDate: selectedDate,
+        initialCustomDateRange: customDateRange,
       ),
     );
 
     if (result != null) {
-      if (result == TransactionTimeRange.custom) {
-        onCustomDateRangePressed();
-      } else {
-        onTimeRangeChanged(result);
-      }
+      onFilterChanged(
+        result['range'] as TransactionTimeRange,
+        result['date'] as DateTime,
+        result['customRange'] as DateTimeRange?,
+      );
     }
-  }
-
-  ListTile _buildTimeOption(
-    BuildContext context,
-    String title,
-    TransactionTimeRange value,
-  ) {
-    return ListTile(
-      title: Text(title),
-      onTap: () => Navigator.pop(context, value),
-      trailing: timeRange == value
-          ? const Icon(Icons.check, color: AppColors.textDark)
-          : null,
-    );
   }
 }
 

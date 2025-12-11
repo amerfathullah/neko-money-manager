@@ -25,7 +25,7 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage>
   bool get wantKeepAlive => true;
 
   TransactionTimeRange _timeRange = TransactionTimeRange.monthly;
-  final DateTime _selectedDate =
+  DateTime _selectedDate =
       DateTime.now(); // Anchor date for daily/monthly/annual
   DateTimeRange? _customDateRange;
   final TextEditingController _searchController = TextEditingController();
@@ -46,30 +46,6 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage>
   void dispose() {
     _searchController.dispose();
     super.dispose();
-  }
-
-  void _updateTimeRange(TransactionTimeRange range) {
-    setState(() {
-      _timeRange = range;
-    });
-  }
-
-  Future<void> _pickCustomDateRange() async {
-    final now = DateTime.now();
-    final picked = await showDateRangePicker(
-      context: context,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-      initialDateRange:
-          _customDateRange ??
-          DateTimeRange(start: now.subtract(const Duration(days: 7)), end: now),
-    );
-    if (picked != null) {
-      setState(() {
-        _customDateRange = picked;
-        _timeRange = TransactionTimeRange.custom;
-      });
-    }
   }
 
   bool _isTransactionInTimeRange(
@@ -248,8 +224,13 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage>
                       customDateRange: _customDateRange,
                       onLedgerChanged: (val) =>
                           ref.read(selectedLedgerProvider.notifier).set(val),
-                      onTimeRangeChanged: _updateTimeRange,
-                      onCustomDateRangePressed: _pickCustomDateRange,
+                      onFilterChanged: (range, date, customRange) {
+                        setState(() {
+                          _timeRange = range;
+                          _selectedDate = date;
+                          _customDateRange = customRange;
+                        });
+                      },
                       totalIncome: totalIncome,
                       totalExpense: totalExpense,
                       currencySymbol: currencySymbol,
