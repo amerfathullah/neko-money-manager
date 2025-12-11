@@ -9,6 +9,8 @@ import '../../../transactions/presentation/providers/transaction_provider.dart';
 import '../../../settings/presentation/providers/currency_provider.dart';
 import '../../../settings/presentation/pages/add_edit_ledger_page.dart';
 import '../../../home/presentation/providers/ledger_provider.dart';
+import '../../../categories/presentation/providers/category_provider.dart';
+import '../../../categories/data/models/category.dart';
 // Import for TransactionTimeRange if accessible, otherwise define local or move enum to core
 import '../../../transactions/presentation/widgets/transactions_list_widgets.dart';
 import '../../../transactions/presentation/widgets/transaction_timeline.dart';
@@ -65,6 +67,7 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
                             : _buildStatisticTab(
                                 filteredTransactions,
                                 currencySymbol,
+                                ref.watch(categoryProvider).asData?.value ?? [],
                               ),
                       ),
 
@@ -220,6 +223,8 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
   Widget _buildStatisticTab(
     List<TransactionModel> transactions,
     String currencySymbol,
+    List<Category>
+    categories, // Need to import Category if not available, or use dynamic if lazy (better to import)
   ) {
     // Reuse existing logic
     if (transactions.isEmpty) return const Center(child: Text('No data'));
@@ -234,6 +239,7 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
                 .toList(),
             currencySymbol: currencySymbol,
             useComma: true,
+            categories: categories,
           ),
           const Divider(),
           TransactionChartSection(
@@ -244,6 +250,7 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
                 .toList(),
             currencySymbol: currencySymbol,
             useComma: true,
+            categories: categories,
           ),
         ],
       ),

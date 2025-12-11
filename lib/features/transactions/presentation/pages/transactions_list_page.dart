@@ -8,6 +8,7 @@ import '../providers/transaction_provider.dart';
 import '../../../../features/home/presentation/providers/ledger_provider.dart';
 import '../../../settings/presentation/providers/currency_provider.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
+import '../../../../features/categories/presentation/providers/category_provider.dart';
 import '../widgets/transactions_list_widgets.dart';
 import '../widgets/transaction_timeline.dart';
 
@@ -150,6 +151,8 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage> {
     final transactionsAsync = ref.watch(transactionProvider);
     final currencyAsync = ref.watch(currencyProvider);
     final settingsAsync = ref.watch(settingsProvider);
+    final categoriesAsync = ref.watch(categoryProvider);
+    final categories = categoriesAsync.asData?.value ?? [];
 
     final currencySymbol = currencyAsync.asData?.value ?? '\$';
 
@@ -311,6 +314,7 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage> {
                                     .toList(),
                                 currencySymbol: currencySymbol,
                                 useComma: useComma,
+                                categories: categories,
                               ),
 
                               // Section 3: Income
@@ -328,6 +332,7 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage> {
                                     .toList(),
                                 currencySymbol: currencySymbol,
                                 useComma: useComma,
+                                categories: categories,
                               ),
 
                               // Section 4: Calendar

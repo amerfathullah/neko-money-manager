@@ -7,6 +7,7 @@ import '../../../../core/utils/currency_formatter.dart';
 import '../../data/models/transaction_model.dart';
 import '../pages/category_transactions_page.dart';
 import '../pages/transaction_page.dart';
+import '../../../../features/categories/data/models/category.dart';
 
 // --- ENUMS ---
 enum TransactionTimeRange { daily, weekly, monthly, annual, custom, all }
@@ -382,6 +383,7 @@ class TransactionChartSection extends StatelessWidget {
   final List<TransactionModel> transactions;
   final String currencySymbol;
   final bool useComma;
+  final List<Category> categories;
 
   const TransactionChartSection({
     super.key,
@@ -390,6 +392,7 @@ class TransactionChartSection extends StatelessWidget {
     required this.transactions,
     required this.currencySymbol,
     required this.useComma,
+    required this.categories,
   });
 
   @override
@@ -523,6 +526,21 @@ class TransactionChartSection extends StatelessWidget {
             final value = categoryTotals[key]!;
             final percent = total > 0 ? (value / total) : 0.0;
 
+            // Find category for icon
+            final category = categories.firstWhere(
+              (c) => c.name == key,
+              orElse: () => Category(
+                id: 'unknown',
+                name: 'Unknown',
+                iconCodePoint: isExpense
+                    ? Icons.lunch_dining.codePoint
+                    : Icons.book.codePoint,
+                iconFontFamily: 'MaterialIcons',
+                colorValue: Colors.grey.toARGB32(),
+                type: isExpense ? CategoryType.expense : CategoryType.income,
+              ),
+            );
+
             return InkWell(
               onTap: () {
                 if (key != 'Uncategorized') {
@@ -548,18 +566,14 @@ class TransactionChartSection extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        // Icon (placeholder)
+                        // Icon
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
                             color: color.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Icon(
-                            isExpense ? Icons.lunch_dining : Icons.book,
-                            size: 20,
-                            color: color,
-                          ),
+                          child: Icon(category.icon, size: 20, color: color),
                         ),
                         const SizedBox(width: 12),
                         Text(

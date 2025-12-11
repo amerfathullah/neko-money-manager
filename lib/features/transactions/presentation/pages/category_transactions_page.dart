@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../data/models/transaction_model.dart';
-import '../widgets/transactions_list_widgets.dart';
+import '../widgets/transaction_timeline.dart';
 
 class CategoryTransactionsPage extends StatelessWidget {
   final String categoryName;
@@ -28,13 +28,13 @@ class CategoryTransactionsPage extends StatelessWidget {
         elevation: 0,
         foregroundColor: AppColors.textDark,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.only(bottom: 32),
-        child: TransactionListSection(
-          transactions: transactions,
-          currencySymbol: currencySymbol,
-          useComma: useComma,
-        ),
+      body: TransactionTimeline(
+        transactions: transactions,
+        currencySymbol: currencySymbol,
+        useComma: useComma,
+        shrinkWrap: false,
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+        physics: const AlwaysScrollableScrollPhysics(),
       ),
     );
   }
