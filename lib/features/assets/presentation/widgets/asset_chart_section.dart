@@ -36,27 +36,6 @@ class AssetChartSection extends StatelessWidget {
     final sortedAssets = List<Asset>.from(assets)
       ..sort((a, b) => b.balance.abs().compareTo(a.balance.abs()));
 
-    // Define palettes
-    final List<Color> assetPalette = [
-      const Color(0xFF4DB6AC), // Teal
-      const Color(0xFF4DD0E1), // Cyan
-      const Color(0xFF81C784), // Green
-      const Color(0xFF64B5F6), // Blue
-      const Color(0xFF7986CB), // Indigo
-      const Color(0xFFAED581), // Light Green
-    ];
-
-    final List<Color> liabilityPalette = [
-      const Color(0xFFE57373), // Red
-      const Color(0xFFFFB74D), // Orange
-      const Color(0xFFEF5350), // Red 400
-      const Color(0xFFFFA726), // Orange 400
-      const Color(0xFFE53935), // Red 600
-      const Color(0xFFFB8C00), // Orange 600
-    ];
-
-    final palette = isLiabilities ? liabilityPalette : assetPalette;
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 0.0, vertical: 16),
       child: Column(
@@ -94,11 +73,9 @@ class AssetChartSection extends StatelessWidget {
                     sectionsSpace: 0,
                     centerSpaceRadius: 30,
                     sections: sortedAssets.map((asset) {
-                      final index = sortedAssets.indexOf(asset);
-                      final color = palette[index % palette.length];
                       final value = asset.balance.abs();
                       return PieChartSectionData(
-                        color: color,
+                        color: asset.color,
                         value: value,
                         radius: 40,
                         showTitle: false,
@@ -112,8 +89,7 @@ class AssetChartSection extends StatelessWidget {
               Expanded(
                 child: Column(
                   children: sortedAssets.take(5).map((asset) {
-                    final index = sortedAssets.indexOf(asset);
-                    final color = palette[index % palette.length];
+                    final color = asset.color;
                     final value = asset.balance.abs();
                     final percent = total == 0 ? 0.0 : (value / total) * 100;
                     return Padding(
@@ -156,8 +132,7 @@ class AssetChartSection extends StatelessWidget {
           const SizedBox(height: 16),
           // Asset List (Bars)
           ...sortedAssets.map((asset) {
-            final index = sortedAssets.indexOf(asset);
-            final color = palette[index % palette.length];
+            final color = asset.color;
             final value = asset.balance.abs();
             final percent = total == 0 ? 0.0 : (value / total);
 
@@ -184,16 +159,7 @@ class AssetChartSection extends StatelessWidget {
                             shape: BoxShape.circle,
                           ),
                           alignment: Alignment.center,
-                          child: Text(
-                            asset.name.isNotEmpty
-                                ? asset.name.substring(0, 1).toUpperCase()
-                                : '?',
-                            style: TextStyle(
-                              color: color,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
+                          child: Icon(asset.icon, color: color, size: 20),
                         ),
                         const SizedBox(width: 12),
                         Text(

@@ -90,12 +90,18 @@ class TransferForm extends StatelessWidget {
                 items: assets.map((asset) {
                   return DropdownMenuItem(
                     value: asset,
-                    child: Text(
-                      asset.name,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
+                    child: Row(
+                      children: [
+                        Icon(asset.icon, color: asset.color, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          asset.name,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
                     ),
                   );
                 }).toList(),

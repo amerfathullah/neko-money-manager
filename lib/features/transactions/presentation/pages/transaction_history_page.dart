@@ -8,6 +8,7 @@ import '../../data/models/transaction_model.dart';
 import '../providers/transaction_provider.dart';
 import 'transaction_page.dart';
 import '../../../settings/presentation/providers/currency_provider.dart';
+import '../../../assets/presentation/pages/add_edit_asset_page.dart';
 
 class TransactionHistoryPage extends ConsumerWidget {
   final Asset asset;
@@ -27,6 +28,18 @@ class TransactionHistoryPage extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         foregroundColor: AppColors.textDark,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => AddEditAssetPage(asset: asset),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: transactionsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),

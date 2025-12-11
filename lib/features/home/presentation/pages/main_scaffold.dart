@@ -7,7 +7,7 @@ import '../../../transactions/presentation/pages/transactions_list_page.dart';
 import '../../../transactions/presentation/pages/transaction_page.dart';
 import '../../../assets/presentation/pages/assets_page.dart';
 import '../../../../core/constants/app_colors.dart';
-import '../../../assets/presentation/widgets/add_edit_asset_dialog.dart';
+import '../../../assets/presentation/pages/add_edit_asset_page.dart';
 
 import '../widgets/custom_bottom_nav.dart';
 
@@ -52,7 +52,9 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
       };
     } else if (_currentIndex == 2) {
       onFabPressed = () {
-        showAddEditAssetDialog(context, ref, null);
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (context) => const AddEditAssetPage()),
+        );
       };
     }
 

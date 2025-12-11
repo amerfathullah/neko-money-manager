@@ -370,7 +370,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
         itemBuilder: (context, index) {
           final asset = assets[index];
           return ListTile(
-            leading: Icon(Icons.account_balance_wallet, color: asset.color),
+            leading: Icon(asset.icon, color: asset.color),
             title: Text(asset.name),
             onTap: () {
               setState(() => _selectedAssetId = asset.id);

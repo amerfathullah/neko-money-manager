@@ -331,14 +331,8 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
       ),
     );
 
-    // Determine Asset Icon (Simulated logic as Asset doesn't have icon yet)
-    // Use generic savings/bank icon based on name or default
-    IconData assetIcon = Icons.account_balance;
-    if (asset.name.toLowerCase().contains('cash')) assetIcon = Icons.wallet;
-    if (asset.name.toLowerCase().contains('card')) {
-      assetIcon = Icons.credit_card;
-    }
-    if (asset.name.toLowerCase().contains('sav')) assetIcon = Icons.savings;
+    // Use Asset Icon
+    final assetIcon = asset.icon;
 
     return IntrinsicHeight(
       child: Row(
