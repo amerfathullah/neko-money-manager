@@ -248,23 +248,51 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
               padding: const EdgeInsets.symmetric(vertical: 12.0),
               child: Row(
                 children: [
+                  // Styled Date Header: "Dec 08" + "Mon" Pill
                   RichText(
                     text: TextSpan(
-                      style: const TextStyle(
-                        color: AppColors.textDark,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Roboto',
-                      ),
                       children: [
-                        TextSpan(text: '${DateFormat('MMM dd').format(date)} '),
                         TextSpan(
-                          text: DateFormat('EEE').format(date),
+                          text: DateFormat('MMM').format(date).substring(0, 1),
                           style: const TextStyle(
-                            color: Colors.grey,
-                            fontWeight: FontWeight.normal,
+                            color: AppColors.expense, // Highlight color
+                            fontWeight: FontWeight.bold,
+                            fontSize: 24,
+                            fontFamily: 'Roboto',
+                          ),
+                        ),
+                        TextSpan(
+                          text:
+                              '${DateFormat('MMM').format(date).substring(1)} ${DateFormat('dd').format(date)}',
+                          style: const TextStyle(
+                            color: AppColors.textDark,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 24,
+                            fontFamily: 'Roboto',
                           ),
                         ),
                       ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(
+                        0xFFEFE6D5,
+                      ), // Beige/Sand pill background
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      DateFormat('EEE').format(date),
+                      style: const TextStyle(
+                        color: AppColors.textDark,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
                     ),
                   ),
                   const Spacer(),
@@ -274,6 +302,7 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: AppColors.textDark,
+                        fontSize: 20,
                       ),
                     ),
                   if (income > 0 && expense > 0) const SizedBox(width: 8),
@@ -283,6 +312,7 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: AppColors.expense,
+                        fontSize: 20,
                       ),
                     ),
                 ],
@@ -346,28 +376,57 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
         children: [
           // Time Column (Left)
           SizedBox(
-            width: 50,
-            child: Column(
+            width: 80,
+            child: Stack(
+              alignment: Alignment.center,
               children: [
-                Text(
-                  DateFormat('HH:mm').format(t.date),
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: AppColors.textDark,
-                    fontWeight: FontWeight.bold,
+                // Dashed Line (Background)
+                Positioned(
+                  top: 0,
+                  bottom: 0,
+                  // Center aligned by default in Stack with Alignment.center?
+                  // No, Positioned with top/bottom/left/right overrides.
+                  // If we want centered line, use Center widget or Align.
+                  child: Container(width: 2, color: category.color),
+                ),
+                // Time and Arrow (Foreground with Mask)
+                // Use Positioned to exclude the bottom 16px (Card margin)
+                // This ensures the Center of this area aligns with the Visual Center of the Card
+                Positioned(
+                  top: 0,
+                  bottom: 16,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Container(
+                      color: const Color(
+                        0xFFFFF8E1,
+                      ), // Mask line with background color
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Time Text
+                          Text(
+                            DateFormat('HH:mm').format(t.date),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: AppColors.textDark,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          // Triangle Arrow
+                          const Icon(
+                            Icons.play_arrow,
+                            size: 16,
+                            color: Color(0xFFBF4C58),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-                Expanded(
-                  child: Container(
-                    width: 4, // Thicker line
-                    color: category.color.withValues(
-                      alpha: 0.3,
-                    ), // Line matches category? Or just standard pastel
-                    margin: const EdgeInsets.symmetric(vertical: 4),
-                  ),
-                ),
-                // Arrow
-                Icon(Icons.play_arrow, size: 12, color: category.color),
               ],
             ),
           ),
