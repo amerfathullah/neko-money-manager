@@ -334,6 +334,12 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
     // Use Asset Icon
     final assetIcon = asset.icon;
 
+    // Use Ledger from transaction
+    final transactionLedger = ledgers.firstWhere(
+      (l) => l.id == t.ledgerId,
+      orElse: () => widget.ledger,
+    );
+
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -447,15 +453,16 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
                             Container(
                               padding: const EdgeInsets.all(4),
                               decoration: BoxDecoration(
-                                color: widget.ledger.color.withValues(
+                                color: transactionLedger.color.withValues(
                                   alpha: 0.2,
                                 ),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
-                                widget.ledger.icon,
+                                transactionLedger.icon ??
+                                    Icons.account_balance_wallet,
                                 size: 16,
-                                color: widget.ledger.color,
+                                color: transactionLedger.color,
                               ),
                             ),
                             // Reimbursement Icon
@@ -495,7 +502,7 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
                       fontWeight: FontWeight.bold,
                       fontSize: 18, // Larger
                       color: isExpense
-                          ? const Color(0xFFD32F2F)
+                          ? AppColors.expense
                           : AppColors
                                 .textDark, // Red for expense, Dark for income
                     ),
@@ -548,7 +555,7 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
   ) {
     final expense = summary['expense'] ?? 0.0;
     final income = summary['income'] ?? 0.0;
-    final count = 356; // Placeholder or calculate count
+    final net = income - expense;
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -566,7 +573,10 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
                   color: widget.ledger.color.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(widget.ledger.icon, color: widget.ledger.color),
+                child: Icon(
+                  widget.ledger.icon ?? Icons.account_balance_wallet,
+                  color: widget.ledger.color,
+                ),
               ),
               const SizedBox(width: 12),
               Text(
@@ -611,7 +621,7 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
                     ),
                   ),
                   Text(
-                    '$count ≡',
+                    CurrencyFormatter.format(net, symbol: ''),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
