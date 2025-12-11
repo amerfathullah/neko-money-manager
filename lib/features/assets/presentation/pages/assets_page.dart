@@ -21,9 +21,14 @@ class AssetsPage extends ConsumerStatefulWidget {
   ConsumerState<AssetsPage> createState() => _AssetsPageState();
 }
 
-class _AssetsPageState extends ConsumerState<AssetsPage> {
+class _AssetsPageState extends ConsumerState<AssetsPage>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final assetsAsync = ref.watch(assetProvider);
 
     final historyAsync = ref.watch(assetHistoryProvider);

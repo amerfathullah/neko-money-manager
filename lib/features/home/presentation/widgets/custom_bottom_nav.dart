@@ -88,8 +88,8 @@ class _NavIcon extends StatelessWidget {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeOutQuart,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected ? color : Colors.transparent,
@@ -97,12 +97,17 @@ class _NavIcon extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(
-              icon,
-              color: isSelected
-                  ? AppColors.textDark
-                  : AppColors.textDark.withValues(alpha: 0.4),
-              size: 24,
+            AnimatedScale(
+              scale: isSelected ? 1.1 : 1.0,
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOutBack,
+              child: Icon(
+                icon,
+                color: isSelected
+                    ? AppColors.textDark
+                    : AppColors.textDark.withValues(alpha: 0.4),
+                size: 24,
+              ),
             ),
             if (isSelected) ...[
               const SizedBox(width: 8),

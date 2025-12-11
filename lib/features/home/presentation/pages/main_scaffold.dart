@@ -20,12 +20,13 @@ class MainScaffold extends ConsumerStatefulWidget {
 
 class _MainScaffoldState extends ConsumerState<MainScaffold> {
   int _currentIndex = 0;
-
+  late final PageController _pageController;
   late final List<Widget> _pages;
 
   @override
   void initState() {
     super.initState();
+    _pageController = PageController(initialPage: _currentIndex);
     _pages = [
       const HomePage(),
       const TransactionsListPage(),
@@ -34,7 +35,25 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
     ];
   }
 
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
   void _onTabTapped(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+    // Animate to the selected page
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  void _onPageChanged(int index) {
     setState(() {
       _currentIndex = index;
     });
@@ -60,7 +79,12 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
 
     return Scaffold(
       extendBody: true, // Important for floating nav
-      body: IndexedStack(index: _currentIndex, children: _pages),
+      body: PageView(
+        controller: _pageController,
+        physics: const NeverScrollableScrollPhysics(), // Disable swipe gesture
+        onPageChanged: _onPageChanged,
+        children: _pages,
+      ),
       bottomNavigationBar: CustomBottomNav(
         currentIndex: _currentIndex,
         onTap: _onTabTapped,

@@ -228,12 +228,12 @@ void main() {
 
     // Dropdown should show "Main Wallet" from mock
     expect(
-      find.text('Main Wallet').last,
+      find.text('Test Ledger').last,
       findsOneWidget,
     ); // .last because it might be in the list below too, but finding it in dropdown overlay is key
 
     // Select Main Wallet
-    await tester.tap(find.text('Main Wallet').last);
+    await tester.tap(find.text('Test Ledger').last);
     await tester.pumpAndSettle();
 
     // Now "Main Wallet" should be displayed in the dropdown pill area

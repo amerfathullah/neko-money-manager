@@ -19,7 +19,11 @@ class TransactionsListPage extends ConsumerStatefulWidget {
       _TransactionsListPageState();
 }
 
-class _TransactionsListPageState extends ConsumerState<TransactionsListPage> {
+class _TransactionsListPageState extends ConsumerState<TransactionsListPage>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   TransactionTimeRange _timeRange = TransactionTimeRange.monthly;
   final DateTime _selectedDate =
       DateTime.now(); // Anchor date for daily/monthly/annual
@@ -145,6 +149,7 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final ledgersAsync = ref.watch(ledgerProvider);
     final transactionsAsync = ref.watch(transactionProvider);
     final currencyAsync = ref.watch(currencyProvider);

@@ -284,7 +284,7 @@ class TransactionTimeline extends ConsumerWidget {
           children: [
             // Time Column (Left)
             SizedBox(
-              width: 80,
+              width: 100,
               child: Stack(
                 alignment: Alignment.center,
                 children: [
@@ -292,6 +292,7 @@ class TransactionTimeline extends ConsumerWidget {
                   Positioned(
                     top: 0,
                     bottom: 0,
+                    left: 35,
                     child: Container(width: 2, color: category.color),
                   ),
                   // Time and Arrow (Foreground with Mask)
@@ -309,26 +310,29 @@ class TransactionTimeline extends ConsumerWidget {
                                 0xFFFFF8E1,
                               ), // Mask line with background color
                           padding: const EdgeInsets.symmetric(vertical: 4),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // Time Text
-                              Text(
-                                DateFormat('HH:00').format(t.date),
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  color: AppColors.textDark,
-                                  fontWeight: FontWeight.bold,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Time Text
+                                Text(
+                                  DateFormat('HH:00').format(t.date),
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    color: AppColors.textDark,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 4),
-                              // Triangle Arrow
-                              const Icon(
-                                Icons.play_arrow,
-                                size: 16,
-                                color: Color(0xFFBF4C58),
-                              ),
-                            ],
+                                const SizedBox(width: 4),
+                                // Triangle Arrow
+                                const Icon(
+                                  Icons.play_arrow,
+                                  size: 16,
+                                  color: Color(0xFFBF4C58),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
