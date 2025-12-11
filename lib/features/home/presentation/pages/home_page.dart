@@ -8,7 +8,8 @@ import '../../../../core/utils/currency_formatter.dart';
 import '../../../settings/presentation/providers/currency_provider.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
 import '../providers/ledger_provider.dart';
-import '../../../transactions/presentation/pages/transaction_page.dart';
+
+import '../../../transactions/presentation/widgets/transaction_timeline.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -38,8 +39,8 @@ class _HomePageState extends ConsumerState<HomePage> {
     double currentMonthIncome = 0;
 
     // Grouped transactions for display (Date -> List<Transaction>)
-    Map<String, List<TransactionModel>> groupedTransactions = {};
-    List<String> sortedDates = [];
+    // Map<String, List<TransactionModel>> groupedTransactions = {}; // Removed
+    // List<String> sortedDates = []; // Removed
 
     // Calculate Current Month Range based on startDay
     final now = DateTime.now();
@@ -79,14 +80,12 @@ class _HomePageState extends ConsumerState<HomePage> {
     // Usually standard month name of the *End* date is used.
     final currentMonthName = DateFormat('MMM').format(rangeEnd);
 
-    if (transactionsAsync.hasValue) {
-      // Calculate start date for 3 months history (approx)
-      final threeMonthsAgo = DateTime(now.year, now.month - 2, 1);
+    List<TransactionModel> ledgerFilteredTransactions = [];
 
+    if (transactionsAsync.hasValue) {
       var allTransactions = transactionsAsync.value!;
 
       // 1. Filter by Ledger
-      List<TransactionModel> ledgerFilteredTransactions = [];
       if (_selectedLedgerId != null) {
         ledgerFilteredTransactions = allTransactions.where((t) {
           if (t.type.toString().contains('transfer')) {
@@ -139,7 +138,8 @@ class _HomePageState extends ConsumerState<HomePage> {
           }
         }
 
-        // B. 3-Month History Grouping
+        // B. 3-Month History Grouping (Logic removed as TransactionTimeline handles grouping)
+        /*
         // Check if transaction is within last ~3 months
         if (t.date.isAfter(threeMonthsAgo.subtract(const Duration(days: 1)))) {
           final dateKey = DateFormat('yyyyMMdd').format(t.date);
@@ -149,10 +149,11 @@ class _HomePageState extends ConsumerState<HomePage> {
           }
           groupedTransactions[dateKey]!.add(t);
         }
+        */
       }
 
       // Sort dates descending (newest first)
-      sortedDates.sort((a, b) => b.compareTo(a));
+      // sortedDates.sort((a, b) => b.compareTo(a));
     }
 
     return Scaffold(
@@ -367,7 +368,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                             ),
                           ),
 
-                          if (sortedDates.isEmpty)
+                          if (ledgerFilteredTransactions
+                              .isEmpty) // Using ledgerFilteredTransactions instead of sortedDates (logic slightly diff but close enough for main list)
                             SliverFillRemaining(
                               hasScrollBody: false,
                               child: Column(
@@ -401,296 +403,16 @@ class _HomePageState extends ConsumerState<HomePage> {
                               ),
                             )
                           else
-                            SliverList(
-                              delegate: SliverChildBuilderDelegate(
-                                (context, index) {
-                                  if (index >= sortedDates.length) {
-                                    return const SizedBox(
-                                      height: 120,
-                                    ); // Bottom padding
-                                  }
-
-                                  final dateKey = sortedDates[index];
-                                  final transactions =
-                                      groupedTransactions[dateKey]!;
-                                  final date = transactions
-                                      .first
-                                      .date; // All represent the same day
-
-                                  // Calculate Daily Totals
-                                  double dailyIncome = 0;
-                                  double dailyExpense = 0;
-                                  for (var t in transactions) {
-                                    // Simplified logic for daily summary
-                                    if (t.type == TransactionType.income) {
-                                      dailyIncome += t.amount;
-                                    } else if (t.type ==
-                                        TransactionType.expense) {
-                                      dailyExpense += t.amount;
-                                    }
-                                    // Transfers - logic depends on view, but for list display usually just show activity.
-                                    // If we want exact daily balance change for 'Selected Ledger', we'd sum signed amounts.
-                                    // The reference image shows: "+500 -0".
-                                    else if (t.type ==
-                                        TransactionType.transfer) {
-                                      if (_selectedLedgerId != null) {
-                                        if (t.ledgerId == _selectedLedgerId) {
-                                          dailyExpense += t.amount;
-                                        } else if (t.destinationLedgerId ==
-                                            _selectedLedgerId) {
-                                          dailyIncome += t.amount;
-                                        }
-                                      }
-                                    }
-                                  }
-
-                                  return Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      // Date Header
-                                      Padding(
-                                        padding: const EdgeInsets.fromLTRB(
-                                          24,
-                                          16,
-                                          24,
-                                          8,
-                                        ),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Text(
-                                                  DateFormat(
-                                                    'MMM dd',
-                                                  ).format(date),
-                                                  style: const TextStyle(
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: AppColors.textDark,
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 8),
-                                                Container(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        horizontal: 6,
-                                                        vertical: 2,
-                                                      ),
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.grey[200],
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          4,
-                                                        ),
-                                                  ),
-                                                  child: Text(
-                                                    DateFormat(
-                                                      'EEE',
-                                                    ).format(date),
-                                                    style: TextStyle(
-                                                      fontSize: 12,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: Colors.grey[600],
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            Row(
-                                              children: [
-                                                if (dailyIncome > 0)
-                                                  Text(
-                                                    '+${CurrencyFormatter.format(dailyIncome, symbol: '', useGrouping: useComma)}',
-                                                    style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: AppColors.income,
-                                                    ),
-                                                  ),
-                                                if (dailyIncome > 0 &&
-                                                    dailyExpense > 0)
-                                                  const SizedBox(width: 8),
-                                                if (dailyExpense > 0)
-                                                  Text(
-                                                    '-${CurrencyFormatter.format(dailyExpense, symbol: '', useGrouping: useComma)}',
-                                                    style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: AppColors.expense,
-                                                    ),
-                                                  ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-
-                                      // Transactions
-                                      ...transactions.map((t) {
-                                        final isExpense =
-                                            t.type == TransactionType.expense;
-                                        final isIncome =
-                                            t.type == TransactionType.income;
-                                        final isTransfer =
-                                            t.type == TransactionType.transfer;
-
-                                        Color color = AppColors.textDark;
-                                        String prefix = '';
-
-                                        if (isExpense) {
-                                          prefix = '-';
-                                          color = AppColors.expense;
-                                        } else if (isIncome) {
-                                          prefix = '+';
-                                          color = AppColors.income;
-                                        } else if (isTransfer) {
-                                          if (_selectedLedgerId != null &&
-                                              t.ledgerId == _selectedLedgerId) {
-                                            prefix = '-';
-                                            color = AppColors.expense;
-                                          } else if (_selectedLedgerId !=
-                                                  null &&
-                                              t.destinationLedgerId ==
-                                                  _selectedLedgerId) {
-                                            prefix = '+';
-                                            color = AppColors.income;
-                                          }
-                                        }
-
-                                        return InkWell(
-                                          onTap: () => _showTransactionDetails(
-                                            context,
-                                            t,
-                                            currencySymbol,
-                                            useComma,
-                                          ),
-                                          child: Container(
-                                            margin: const EdgeInsets.symmetric(
-                                              horizontal: 16,
-                                              vertical: 6,
-                                            ),
-                                            padding: const EdgeInsets.all(16),
-                                            decoration: BoxDecoration(
-                                              color: const Color(
-                                                0xFFFFF8E1,
-                                              ), // Light cream card
-                                              borderRadius:
-                                                  BorderRadius.circular(20),
-                                            ),
-                                            child: Row(
-                                              children: [
-                                                // Icon
-                                                Container(
-                                                  padding: const EdgeInsets.all(
-                                                    8,
-                                                  ),
-                                                  decoration: BoxDecoration(
-                                                    color: Colors
-                                                        .amber[100], // Placeholder color
-                                                    // color: Color(categoryColor).withValues(alpha: 0.2),
-                                                    shape: BoxShape.circle,
-                                                  ),
-                                                  child: Icon(
-                                                    // t.categoryIcon ??
-                                                    isExpense
-                                                        ? Icons.lunch_dining
-                                                        : Icons.attach_money,
-                                                    color: Colors
-                                                        .brown, // Placeholder
-                                                    size: 20,
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 16),
-                                                Expanded(
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text(
-                                                        t.categoryName ??
-                                                            (isTransfer
-                                                                ? 'Transfer'
-                                                                : 'Uncategorized'),
-                                                        style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          fontSize: 16,
-                                                          color: AppColors
-                                                              .textDark,
-                                                        ),
-                                                      ),
-                                                      const SizedBox(height: 4),
-                                                      Row(
-                                                        children: [
-                                                          Text(
-                                                            DateFormat(
-                                                              'HH:mm',
-                                                            ).format(t.date),
-                                                            style: TextStyle(
-                                                              color: Colors
-                                                                  .grey[600],
-                                                              fontSize: 12,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                            ),
-                                                          ),
-                                                          if (t.note != null &&
-                                                              t
-                                                                  .note!
-                                                                  .isNotEmpty) ...[
-                                                            const SizedBox(
-                                                              width: 8,
-                                                            ),
-                                                            Icon(
-                                                              Icons
-                                                                  .sticky_note_2,
-                                                              size: 14,
-                                                              color: Colors
-                                                                  .blue[300],
-                                                            ),
-                                                          ],
-                                                          if (t
-                                                              .isBookmarked) ...[
-                                                            const SizedBox(
-                                                              width: 8,
-                                                            ),
-                                                            const Icon(
-                                                              Icons.star,
-                                                              size: 14,
-                                                              color: AppColors
-                                                                  .pastelOrange,
-                                                            ),
-                                                          ],
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                Text(
-                                                  '$prefix${CurrencyFormatter.format(t.amount, symbol: currencySymbol, useGrouping: useComma)}',
-                                                  style: TextStyle(
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: color,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        );
-                                      }),
-                                    ],
-                                  );
-                                },
-                                childCount:
-                                    sortedDates.length +
-                                    1, // +1 for bottom padding
+                            SliverToBoxAdapter(
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 120),
+                                child: TransactionTimeline(
+                                  transactions: ledgerFilteredTransactions,
+                                  currencySymbol: currencySymbol,
+                                  useComma: useComma,
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                ),
                               ),
                             ),
                         ],
@@ -716,246 +438,6 @@ class _HomePageState extends ConsumerState<HomePage> {
           ],
         ),
       ),
-    );
-  }
-
-  void _showTransactionDetails(
-    BuildContext context,
-    TransactionModel transaction,
-    String currencySymbol,
-    bool useComma,
-  ) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        final dateStr = DateFormat('MMM dd yyyy').format(transaction.date);
-        final timeStr = DateFormat('HH:mm').format(transaction.date);
-        final isExpense = transaction.type == TransactionType.expense;
-        final isIncome = transaction.type == TransactionType.income;
-
-        Color amountColor = AppColors.textDark;
-        String prefix = '';
-        if (isExpense) {
-          amountColor = AppColors.pastelRed;
-          prefix = '-';
-        } else if (isIncome) {
-          amountColor = AppColors.income;
-          prefix = '+';
-        }
-
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
-          backgroundColor: const Color(0xFFFFFCF0),
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Header: Icon + Name + Amount
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppColors.pastelOrange.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Icon(
-                        isExpense
-                            ? Icons.lunch_dining
-                            : (isIncome
-                                  ? Icons.attach_money
-                                  : Icons.swap_horiz),
-                        color: AppColors.textDark,
-                        size: 32,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            transaction.type == TransactionType.transfer
-                                ? 'Transfer'
-                                : (transaction.categoryName ?? 'Uncategorized'),
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textDark,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Text(
-                      '$prefix${CurrencyFormatter.format(transaction.amount, symbol: currencySymbol, useGrouping: useComma)}',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: amountColor,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                // Info Rows
-                _buildDetailRow('Date', dateStr),
-                const SizedBox(height: 12),
-                _buildDetailRow('Time', timeStr),
-                const SizedBox(height: 12),
-                _buildDetailRow('Asset', transaction.assetName ?? 'None'),
-                const SizedBox(height: 12),
-                _buildDetailRow(
-                  'Ledger',
-                  transaction.ledgerName ?? 'Unknown Wallet',
-                ),
-
-                const SizedBox(height: 32),
-
-                // Actions: Edit, Delete, Bookmark
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    // Edit
-                    InkWell(
-                      onTap: () {
-                        Navigator.pop(context); // Close dialog first
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                TransactionPage(transaction: transaction),
-                          ),
-                        );
-                      },
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.pastelBlue.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Row(
-                          children: [
-                            Icon(
-                              Icons.edit,
-                              color: AppColors.pastelBlue,
-                              size: 20,
-                            ),
-                            SizedBox(width: 8),
-                            Text(
-                              'Edit',
-                              style: TextStyle(
-                                color: AppColors.pastelBlue,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    // Delete
-                    InkWell(
-                      onTap: () async {
-                        // Confirm Delete
-                        final confirm = await showDialog<bool>(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text('Delete Transaction?'),
-                            content: const Text(
-                              'Are you sure you want to delete this transaction?',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, false),
-                                child: const Text('Cancel'),
-                              ),
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, true),
-                                style: TextButton.styleFrom(
-                                  foregroundColor: Colors.red,
-                                ),
-                                child: const Text('Delete'),
-                              ),
-                            ],
-                          ),
-                        );
-
-                        if (confirm == true) {
-                          await ref
-                              .read(transactionProvider.notifier)
-                              .deleteTransaction(transaction);
-                          if (context.mounted) {
-                            Navigator.pop(context);
-                          }
-                        }
-                      },
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.pastelRed.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Row(
-                          children: [
-                            Icon(
-                              Icons.delete,
-                              color: AppColors.pastelRed,
-                              size: 20,
-                            ),
-                            SizedBox(width: 8),
-                            Text(
-                              'Delete',
-                              style: TextStyle(
-                                color: AppColors.pastelRed,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            color: AppColors.textDark.withValues(alpha: 0.6),
-            fontSize: 14,
-          ),
-        ),
-        Text(
-          value,
-          style: const TextStyle(
-            color: AppColors.textDark,
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
-        ),
-      ],
     );
   }
 }

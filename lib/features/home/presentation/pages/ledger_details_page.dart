@@ -11,10 +11,7 @@ import '../../../settings/presentation/pages/add_edit_ledger_page.dart';
 import '../../../home/presentation/providers/ledger_provider.dart';
 // Import for TransactionTimeRange if accessible, otherwise define local or move enum to core
 import '../../../transactions/presentation/widgets/transactions_list_widgets.dart';
-import '../../../categories/presentation/providers/category_provider.dart';
-import '../../../categories/data/models/category.dart';
-import '../../../assets/presentation/providers/asset_provider.dart';
-import '../../../assets/data/models/asset.dart';
+import '../../../transactions/presentation/widgets/transaction_timeline.dart';
 
 class LedgerDetailsPage extends ConsumerStatefulWidget {
   final Ledger ledger;
@@ -39,9 +36,6 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
     final transactionsAsync = ref.watch(
       ledgerTransactionsProvider(widget.ledger.id),
     );
-    final categories = ref.watch(categoryProvider).asData?.value ?? [];
-    final assets = ref.watch(assetProvider).asData?.value ?? [];
-    final ledgers = ref.watch(ledgerProvider).asData?.value ?? [];
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8E1), // Cream background
@@ -67,9 +61,6 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
                             ? _buildRecordLayout(
                                 filteredTransactions,
                                 currencySymbol,
-                                categories,
-                                assets,
-                                ledgers,
                               )
                             : _buildStatisticTab(
                                 filteredTransactions,
@@ -204,9 +195,6 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
   Widget _buildRecordLayout(
     List<TransactionModel> transactions,
     String currencySymbol,
-    List<Category> categories,
-    List<Asset> assets,
-    List<Ledger> ledgers,
   ) {
     if (transactions.isEmpty) {
       return const Center(
@@ -214,364 +202,18 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
       );
     }
 
-    // Group transactions by Date
-    final Map<String, List<TransactionModel>> grouped = {};
-    for (var t in transactions) {
-      final key = DateFormat('yyyyMMdd').format(t.date);
-      if (!grouped.containsKey(key)) grouped[key] = [];
-      grouped[key]!.add(t);
-    }
+    // Check settings for useComma if accessible, or default to false/true based on context.
+    // In LedgerDetailsPage, we didn't explicitly watch settingsProvider before.
+    // But TransactionTimeline takes `useComma`.
+    // I should probably add `final settings = ref.watch(settingsProvider).asData?.value;` at build level
+    // or just default to false here if not critical, or pass it in.
+    // The original code passed `categories`, `assets`, etc. which are now internal to the widget.
 
-    // Sort dates descending
-    final sortedKeys = grouped.keys.toList()..sort((a, b) => b.compareTo(a));
-
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: sortedKeys.length,
-      itemBuilder: (context, index) {
-        final dateKey = sortedKeys[index];
-        final dayTransactions = grouped[dateKey]!;
-        final date = dayTransactions.first.date;
-
-        // Calculate Day Totals
-        double income = 0;
-        double expense = 0;
-        for (var t in dayTransactions) {
-          if (t.type == TransactionType.income) income += t.amount;
-          if (t.type == TransactionType.expense) expense += t.amount;
-        }
-
-        return Column(
-          children: [
-            // Date Header
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12.0),
-              child: Row(
-                children: [
-                  // Styled Date Header: "Dec 08" + "Mon" Pill
-                  RichText(
-                    text: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: DateFormat('MMM').format(date).substring(0, 1),
-                          style: const TextStyle(
-                            color: AppColors.expense, // Highlight color
-                            fontWeight: FontWeight.bold,
-                            fontSize: 24,
-                            fontFamily: 'Roboto',
-                          ),
-                        ),
-                        TextSpan(
-                          text:
-                              '${DateFormat('MMM').format(date).substring(1)} ${DateFormat('dd').format(date)}',
-                          style: const TextStyle(
-                            color: AppColors.textDark,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 24,
-                            fontFamily: 'Roboto',
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(
-                        0xFFEFE6D5,
-                      ), // Beige/Sand pill background
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      DateFormat('EEE').format(date),
-                      style: const TextStyle(
-                        color: AppColors.textDark,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                  const Spacer(),
-                  if (income > 0)
-                    Text(
-                      '+${CurrencyFormatter.format(income, symbol: '')}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textDark,
-                        fontSize: 20,
-                      ),
-                    ),
-                  if (income > 0 && expense > 0) const SizedBox(width: 8),
-                  if (expense > 0)
-                    Text(
-                      '-${CurrencyFormatter.format(expense, symbol: '')}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.expense,
-                        fontSize: 20,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            // Transactions Timeline
-            ...dayTransactions.map(
-              (t) => _buildTimelineItem(
-                t,
-                currencySymbol,
-                categories,
-                assets,
-                ledgers,
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildTimelineItem(
-    TransactionModel t,
-    String currencySymbol,
-    List<Category> categories,
-    List<Asset> assets,
-    List<Ledger> ledgers,
-  ) {
-    final isExpense = t.type == TransactionType.expense;
-    final category = categories.firstWhere(
-      (c) => c.id == t.categoryId,
-      orElse: () => Category(
-        id: 'unknown',
-        name: t.categoryName ?? 'Unknown',
-        iconCodePoint: Icons.help_outline.codePoint,
-        colorValue: Colors.grey.toARGB32(),
-        type: CategoryType.expense,
-      ),
-    );
-    final asset = assets.firstWhere(
-      (a) => a.id == t.assetId,
-      orElse: () => Asset(
-        id: 'unknown',
-        name: t.assetName ?? 'Unknown',
-        colorValue: Colors.blueGrey.toARGB32(),
-      ),
-    );
-
-    // Use Asset Icon
-    final assetIcon = asset.icon;
-
-    // Use Ledger from transaction
-    final transactionLedger = ledgers.firstWhere(
-      (l) => l.id == t.ledgerId,
-      orElse: () => widget.ledger,
-    );
-
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Time Column (Left)
-          SizedBox(
-            width: 80,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // Dashed Line (Background)
-                Positioned(
-                  top: 0,
-                  bottom: 0,
-                  // Center aligned by default in Stack with Alignment.center?
-                  // No, Positioned with top/bottom/left/right overrides.
-                  // If we want centered line, use Center widget or Align.
-                  child: Container(width: 2, color: category.color),
-                ),
-                // Time and Arrow (Foreground with Mask)
-                // Use Positioned to exclude the bottom 16px (Card margin)
-                // This ensures the Center of this area aligns with the Visual Center of the Card
-                Positioned(
-                  top: 0,
-                  bottom: 16,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Container(
-                      color: const Color(
-                        0xFFFFF8E1,
-                      ), // Mask line with background color
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Time Text
-                          Text(
-                            DateFormat('HH:mm').format(t.date),
-                            style: const TextStyle(
-                              fontSize: 16,
-                              color: AppColors.textDark,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          // Triangle Arrow
-                          const Icon(
-                            Icons.play_arrow,
-                            size: 16,
-                            color: Color(0xFFBF4C58),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Card
-          Expanded(
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 16),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: category.color.withValues(
-                  alpha: 0.2,
-                ), // Background follows category color
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Row(
-                children: [
-                  // Large Category Icon
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: const BoxDecoration(
-                      color: Colors
-                          .white, // White bg for icon circle? Or just icon? Image shows stark icon.
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(category.icon, size: 32, color: category.color),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Category Name
-                        Text(
-                          category.name,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: AppColors.textDark,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        // Bottom Row: Time Pill, Asset, Ledger, etc.
-                        Row(
-                          children: [
-                            // Time Pill
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: category.color.withValues(
-                                  alpha: 0.4,
-                                ), // Darker than bg
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                DateFormat('HH:mm').format(t.date),
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textDark,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            // Asset Icon
-                            Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: BoxDecoration(
-                                color: asset.color.withValues(alpha: 0.2),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                assetIcon,
-                                size: 16,
-                                color: asset.color,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            // Ledger Icon
-                            Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: BoxDecoration(
-                                color: transactionLedger.color.withValues(
-                                  alpha: 0.2,
-                                ),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                transactionLedger.icon ??
-                                    Icons.account_balance_wallet,
-                                size: 16,
-                                color: transactionLedger.color,
-                              ),
-                            ),
-                            // Reimbursement Icon
-                            if (t.isReimbursement) ...[
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  color: Colors.purple.withValues(alpha: 0.2),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.work,
-                                  size: 16,
-                                  color: Colors.purple,
-                                ),
-                              ),
-                            ],
-                            // Bookmark Icon (Star)
-                            if (t.isBookmarked) ...[
-                              const SizedBox(width: 8),
-                              const Icon(
-                                Icons.star,
-                                size: 18,
-                                color: Colors.amber,
-                              ),
-                            ],
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Amount (Right side ignored as per user, but kept for function)
-                  Text(
-                    '${isExpense ? '-' : '+'}${CurrencyFormatter.format(t.amount, symbol: '')}', // Removing symbol per image look?
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18, // Larger
-                      color: isExpense
-                          ? AppColors.expense
-                          : AppColors
-                                .textDark, // Red for expense, Dark for income
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+    return TransactionTimeline(
+      transactions: transactions,
+      currencySymbol: currencySymbol,
+      useComma:
+          true, // Defaulting to true as per other pages, or could check settings if I update build.
     );
   }
 

@@ -9,6 +9,7 @@ import '../../../../features/home/presentation/providers/ledger_provider.dart';
 import '../../../settings/presentation/providers/currency_provider.dart';
 import '../../../settings/presentation/providers/settings_provider.dart';
 import '../widgets/transactions_list_widgets.dart';
+import '../widgets/transaction_timeline.dart';
 
 class TransactionsListPage extends ConsumerStatefulWidget {
   const TransactionsListPage({super.key});
@@ -340,10 +341,13 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage> {
                               ),
 
                               // Section 5: List
-                              TransactionListSection(
+                              TransactionTimeline(
                                 transactions: filtered,
                                 currencySymbol: currencySymbol,
                                 useComma: useComma,
+                                physics:
+                                    const NeverScrollableScrollPhysics(), // Since it's inside a ListView
+                                shrinkWrap: true,
                               ),
                             ],
                           ),
