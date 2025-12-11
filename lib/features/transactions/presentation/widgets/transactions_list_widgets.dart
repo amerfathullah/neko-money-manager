@@ -44,23 +44,6 @@ class TransactionsTopSection extends StatelessWidget {
     this.customDateRange,
   });
 
-  String get _timeRangeLabel {
-    switch (timeRange) {
-      case TransactionTimeRange.daily:
-        return 'Daily';
-      case TransactionTimeRange.weekly:
-        return 'Weekly';
-      case TransactionTimeRange.monthly:
-        return 'Monthly';
-      case TransactionTimeRange.annual:
-        return 'Annual';
-      case TransactionTimeRange.custom:
-        return 'Custom';
-      case TransactionTimeRange.all:
-        return 'All';
-    }
-  }
-
   String get _dateDisplay {
     switch (timeRange) {
       case TransactionTimeRange.daily:
@@ -96,7 +79,7 @@ class TransactionsTopSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
-                  vertical: 4,
+                  vertical: 8,
                 ),
                 decoration: BoxDecoration(
                   color: AppColors.pastelOrange.withValues(alpha: 0.3),
@@ -105,9 +88,11 @@ class TransactionsTopSection extends StatelessWidget {
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String?>(
                     value: selectedLedgerId,
+                    isDense: true,
                     icon: const Icon(
                       Icons.arrow_drop_down,
                       color: AppColors.textDark,
+                      size: 20,
                     ),
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
@@ -173,7 +158,7 @@ class TransactionsTopSection extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
+                    horizontal: 16,
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
@@ -184,33 +169,32 @@ class TransactionsTopSection extends StatelessWidget {
                     children: [
                       const Icon(
                         Icons.calendar_month,
-                        size: 18,
+                        size: 20,
                         color: AppColors.textDark,
                       ),
                       const SizedBox(width: 8),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _timeRangeLabel,
-                            style: const TextStyle(
-                              fontSize: 10,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          Text(
-                            _dateDisplay,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
+                      Text(
+                        _dateDisplay,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textDark,
+                        ),
                       ),
-                      const Icon(
-                        Icons.arrow_drop_down,
-                        color: AppColors.textDark,
-                      ),
+                      /* The dropdown arrow is not standard on other buttons, but seems useful here due to context. 
+                         However, user asked for "same size". 
+                         "Budget" button just has (Icon + Label). "Transfer" has (Icon + Label).
+                         If I keep the arrow, it might make it wider. 
+                         Looking at "Budget" button code in HomePage:
+                         _TopPill(icon: Icons.attach_money, label: 'Budget', ...)
+                         Row(Icon(20), Space(8), Text(bold)).
+                         I will replicate that EXACT structure. 
+                         However, "Time Filter" usually implies a selection, so maybe the arrow is desired?
+                         But strictly "same size" implies similar structure.
+                         Let's stick to the visual standard of the other two which do NOT have an arrow. 
+                         Actually, wait. The user said "Time filter button", which implies changing it. 
+                         Let's keep it clean: Icon + Text. 
+                         The user will tap it to change. 
+                      */
                     ],
                   ),
                 ),

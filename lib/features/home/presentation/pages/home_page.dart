@@ -162,19 +162,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         bottom: false,
         child: Stack(
           children: [
-            // Background Elements (e.g., Cat Top Right)
-            Positioned(
-              top: -20,
-              right: -20,
-              child: Opacity(
-                opacity: 0.2,
-                child: Icon(
-                  Icons.pets,
-                  size: 180,
-                  color: AppColors.pastelOrange,
-                ),
-              ),
-            ),
+            // Background Elements (Cat Top Right) - REMOVED
 
             // Top Content (Fixed)
             Column(
@@ -190,7 +178,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                         data: (ledgers) => Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 16,
-                            vertical: 4,
+                            vertical: 8,
                           ),
                           decoration: BoxDecoration(
                             color: AppColors.pastelOrange.withValues(
@@ -201,9 +189,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                           child: DropdownButtonHideUnderline(
                             child: DropdownButton<String?>(
                               value: _selectedLedgerId,
+                              isDense: true,
                               icon: const Icon(
                                 Icons.arrow_drop_down,
                                 color: AppColors.textDark,
+                                size: 20,
                               ),
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_colors.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -231,19 +230,7 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage> {
             bottom: false,
             child: Stack(
               children: [
-                // Background Elements
-                Positioned(
-                  top: -20,
-                  right: -20,
-                  child: Opacity(
-                    opacity: 0.2,
-                    child: Icon(
-                      Icons.pets,
-                      size: 150,
-                      color: AppColors.pastelOrange,
-                    ),
-                  ),
-                ),
+                // Background Elements - REMOVED
 
                 // Top Section
                 Column(
