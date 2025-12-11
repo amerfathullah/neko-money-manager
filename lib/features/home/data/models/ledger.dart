@@ -1,29 +1,47 @@
-import 'dart:ui';
+import 'package:flutter/material.dart';
 
 class Ledger {
   final String id;
   final String name;
-  final double balance;
   final int colorValue; // Store color as int (ARGB)
   final bool isDefault;
+  final int? iconPoint;
+  final String? iconFamily;
+  final String? iconPackage;
+  final String? remark;
 
   const Ledger({
     required this.id,
     required this.name,
-    required this.balance,
     required this.colorValue,
     this.isDefault = false,
+    this.iconPoint,
+    this.iconFamily,
+    this.iconPackage,
+    this.remark,
   });
 
   Color get color => Color(colorValue);
+
+  IconData? get icon {
+    if (iconPoint == null) return null;
+    return IconData(
+      iconPoint!,
+      fontFamily: iconFamily,
+      fontPackage: iconPackage,
+    );
+  }
 
   factory Ledger.fromJson(Map<String, dynamic> json) {
     return Ledger(
       id: json['id'] as String,
       name: json['name'] as String,
-      balance: (json['balance'] as num).toDouble(),
       colorValue: json['colorValue'] as int,
       isDefault: json['isDefault'] as bool? ?? false,
+      iconPoint: json['iconPoint'] as int?,
+      iconFamily: json['iconFamily'] as String?,
+      iconPackage: json['iconPackage'] as String?,
+      remark: json['remark'] as String?,
     );
   }
 
@@ -31,25 +49,34 @@ class Ledger {
     return {
       'id': id,
       'name': name,
-      'balance': balance,
       'colorValue': colorValue,
       'isDefault': isDefault,
+      'iconPoint': iconPoint,
+      'iconFamily': iconFamily,
+      'iconPackage': iconPackage,
+      'remark': remark,
     };
   }
 
   Ledger copyWith({
     String? id,
     String? name,
-    double? balance,
     int? colorValue,
     bool? isDefault,
+    int? iconPoint,
+    String? iconFamily,
+    String? iconPackage,
+    String? remark,
   }) {
     return Ledger(
       id: id ?? this.id,
       name: name ?? this.name,
-      balance: balance ?? this.balance,
       colorValue: colorValue ?? this.colorValue,
       isDefault: isDefault ?? this.isDefault,
+      iconPoint: iconPoint ?? this.iconPoint,
+      iconFamily: iconFamily ?? this.iconFamily,
+      iconPackage: iconPackage ?? this.iconPackage,
+      remark: remark ?? this.remark,
     );
   }
 
@@ -60,17 +87,23 @@ class Ledger {
     return other is Ledger &&
         other.id == id &&
         other.name == name &&
-        other.balance == balance &&
         other.colorValue == colorValue &&
-        other.isDefault == isDefault;
+        other.isDefault == isDefault &&
+        other.iconPoint == iconPoint &&
+        other.iconFamily == iconFamily &&
+        other.iconPackage == iconPackage &&
+        other.remark == remark;
   }
 
   @override
   int get hashCode {
     return id.hashCode ^
         name.hashCode ^
-        balance.hashCode ^
         colorValue.hashCode ^
-        isDefault.hashCode;
+        isDefault.hashCode ^
+        iconPoint.hashCode ^
+        iconFamily.hashCode ^
+        iconPackage.hashCode ^
+        remark.hashCode;
   }
 }

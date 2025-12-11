@@ -8,6 +8,7 @@ class LedgerCard extends StatelessWidget {
   final Color color;
   final String currencySymbol;
   final VoidCallback onTap;
+  final IconData? icon;
 
   const LedgerCard({
     super.key,
@@ -16,6 +17,7 @@ class LedgerCard extends StatelessWidget {
     required this.color,
     required this.currencySymbol,
     required this.onTap,
+    this.icon,
   });
 
   @override
@@ -42,7 +44,7 @@ class LedgerCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                Icons.wallet,
+                icon ?? Icons.account_balance_wallet,
                 color: AppColors.textDark.withValues(alpha: 0.7),
                 size: 26,
               ),

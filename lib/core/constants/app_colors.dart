@@ -5,8 +5,8 @@ class AppColors {
   static const Color pastelPink = Color(0xFFFFB7B2);
   static const Color pastelRed = Color(0xFFFF9AA2);
   static const Color pastelOrange = Color(0xFFFFDAC1);
-  static const Color pastelYellow = Color(0xFFFFF7BC);
-  static const Color pastelGreen = Color(0xFFE2F0CB);
+  static const Color pastelYellow = Color(0xFFFFE082); // Amber 200
+  static const Color pastelGreen = Color(0xFFA5D6A7); // Green 200
   static const Color pastelMint = Color(0xFFB5EAD7);
   static const Color pastelBlue = Color(0xFFC7CEEA);
   static const Color pastelPurple = Color(0xFFE0BBE4);

@@ -48,9 +48,9 @@ class MockLedgerNotifier extends LedgerNotifier {
     return Stream.value([
       const Ledger(
         id: '1',
-        name: 'Main Wallet',
-        balance: 1000.0,
-        colorValue: 0xFF42A5F5,
+        name: 'Test Ledger',
+        colorValue: 0xFF000000,
+        isDefault: true,
       ),
     ]);
   }

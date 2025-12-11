@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../home/data/models/ledger.dart';
 import '../../../home/presentation/providers/ledger_provider.dart';
-import '../../../../core/utils/currency_formatter.dart';
-import '../providers/currency_provider.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../home/presentation/pages/ledger_details_page.dart';
 import 'add_edit_ledger_page.dart';
 
 class LedgersPage extends ConsumerWidget {
@@ -12,8 +11,6 @@ class LedgersPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ledgersAsync = ref.watch(ledgerProvider);
-    final currencyAsync = ref.watch(currencyProvider);
-    final currencySymbol = currencyAsync.asData?.value ?? '\$';
 
     return Scaffold(
       appBar: AppBar(
@@ -46,66 +43,91 @@ class LedgersPage extends ConsumerWidget {
               ),
             );
           }
-          return ListView.builder(
+          return GridView.builder(
             padding: const EdgeInsets.all(16),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              childAspectRatio: 0.7,
+            ),
             itemCount: ledgers.length,
             itemBuilder: (context, index) {
               final ledger = ledgers[index];
-              return Card(
-                elevation: 0,
-                color: Theme.of(context).cardColor,
-                margin: const EdgeInsets.only(bottom: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  leading: CircleAvatar(
-                    backgroundColor: ledger.color.withValues(alpha: 0.2),
-                    child: Icon(
-                      Icons.account_balance_wallet,
-                      color: ledger.color,
+              return InkWell(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => LedgerDetailsPage(ledger: ledger),
                     ),
-                  ),
-                  title: Text(
-                    ledger.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(
-                    CurrencyFormatter.format(
-                      ledger.balance,
-                      symbol: currencySymbol,
-                    ),
-                    style: TextStyle(
-                      color: Theme.of(context).textTheme.bodySmall?.color,
-                    ),
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
+                  );
+                },
+                borderRadius: BorderRadius.circular(20),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Column(
                     children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit, size: 20),
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  AddEditLedgerPage(ledger: ledger),
-                            ),
-                          );
-                        },
-                      ),
-                      if (!ledger.isDefault)
-                        IconButton(
-                          icon: const Icon(
-                            Icons.delete,
-                            size: 20,
-                            color: Colors.red,
+                      // Top colored section
+                      Expanded(
+                        flex: 2,
+                        child: Container(
+                          color: ledger.color, // Vibrant top
+                          child: Stack(
+                            children: [
+                              // Bookmark
+                              Positioned(
+                                top: -4,
+                                left: 8,
+                                child: Icon(
+                                  Icons.bookmark,
+                                  color: Colors.black.withValues(alpha: 0.2),
+                                  size: 32,
+                                ),
+                              ),
+                              // Main Icon
+                              Center(
+                                child: Icon(
+                                  ledger.icon ?? Icons.account_balance_wallet,
+                                  size: 48,
+                                  color: Colors.white.withValues(alpha: 0.9),
+                                  // Adding a subtle shadow to icon to make it pop like a sticker
+                                  shadows: [
+                                    Shadow(
+                                      offset: const Offset(0, 2),
+                                      blurRadius: 4,
+                                      color: Colors.black.withValues(
+                                        alpha: 0.2,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
-                          onPressed: () => _confirmDelete(context, ref, ledger),
                         ),
+                      ),
+                      // Bottom pastel section
+                      Expanded(
+                        flex: 1,
+                        child: Container(
+                          color: ledger.color.withValues(
+                            alpha: 0.2,
+                          ), // Pastel bottom
+                          alignment: Alignment.center,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Text(
+                            ledger.name,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textDark,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -117,36 +139,5 @@ class LedgersPage extends ConsumerWidget {
         error: (err, stack) => Center(child: Text('Error: $err')),
       ),
     );
-  }
-
-  Future<void> _confirmDelete(
-    BuildContext context,
-    WidgetRef ref,
-    Ledger ledger,
-  ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Ledger?'),
-        content: Text(
-          'Are you sure you want to delete "${ledger.name}"? This action cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && context.mounted) {
-      await ref.read(ledgerProvider.notifier).deleteLedger(ledger.id);
-    }
   }
 }
