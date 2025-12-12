@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,7 +31,8 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget> {
 
     return isProAsync.when(
       data: (isPro) {
-        if (isPro) return const SizedBox.shrink(); // No ad for Pro users
+        if (kIsWeb || isPro)
+          return const SizedBox.shrink(); // No ad for Pro users or Web
 
         if (_bannerAd == null && !_isAdLoaded) {
           _bannerAd = BannerAd(
