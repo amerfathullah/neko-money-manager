@@ -201,14 +201,14 @@ class _HomePageState extends ConsumerState<HomePage>
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       _SummaryItem(
-                        label: '$currentMonthName · Expenses',
+                        label: '$currentMonthName - Expenses',
                         amount: currentMonthExpense,
                         currency: currencySymbol,
                         isExpense: true,
                         useComma: useComma,
                       ),
                       _SummaryItem(
-                        label: '$currentMonthName · Income',
+                        label: '$currentMonthName - Income',
                         amount: currentMonthIncome,
                         currency: currencySymbol,
                         isExpense: false,

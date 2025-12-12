@@ -17,6 +17,7 @@ class AppTheme {
       textTheme: GoogleFonts.outfitTextTheme().apply(
         bodyColor: AppColors.textDark,
         displayColor: AppColors.textDark,
+        fontFamilyFallback: ['NotoSans', 'NotoColorEmoji', 'NotoSansSymbols'],
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.backgroundLight,
@@ -75,6 +76,7 @@ class AppTheme {
       textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme).apply(
         bodyColor: AppColors.textLight,
         displayColor: AppColors.textLight,
+        fontFamilyFallback: ['NotoSans', 'NotoColorEmoji', 'NotoSansSymbols'],
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.backgroundDark,

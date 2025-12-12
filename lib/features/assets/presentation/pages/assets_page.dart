@@ -129,7 +129,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage>
                                 ),
                               ),
                               Text(
-                                '${CurrencyFormatter.format(net, symbol: currencySymbol, useGrouping: useComma)} ≣',
+                                CurrencyFormatter.format(net, symbol: currencySymbol, useGrouping: useComma),
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,

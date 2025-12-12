@@ -31,8 +31,9 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget> {
 
     return isProAsync.when(
       data: (isPro) {
-        if (kIsWeb || isPro)
-          return const SizedBox.shrink(); // No ad for Pro users or Web
+        if (kIsWeb || isPro) {
+          return const SizedBox.shrink();
+        }
 
         if (_bannerAd == null && !_isAdLoaded) {
           _bannerAd = BannerAd(

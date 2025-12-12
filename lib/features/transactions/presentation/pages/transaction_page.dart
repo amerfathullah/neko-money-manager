@@ -395,7 +395,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
-              'Transfer charge is included in the total amount. 【Transfer in】 = 【Total】 - 【charge】 . For example transfer out 1000, and the transfer charge is 50, the final transfer in amount is 950.',
+              'Transfer charge is included in the total amount. [Transfer in] = [Total] - [charge] . For example transfer out 1000, and the transfer charge is 50, the final transfer in amount is 950.',
               style: TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 20),

@@ -197,7 +197,6 @@ class _AddEditLedgerPageState extends ConsumerState<AddEditLedgerPage> {
                     child: const Text(
                       'Recommend',
                       style: TextStyle(
-                        fontFamily: 'Roboto',
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textDark,

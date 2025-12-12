@@ -86,7 +86,6 @@ class _BackupPageState extends ConsumerState<BackupPage> {
                   child: Text(
                     jsonString,
                     style: const TextStyle(
-                      fontFamily: 'monospace',
                       fontSize: 10,
                     ),
                   ),

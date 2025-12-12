@@ -128,7 +128,6 @@ class TransactionTimeline extends ConsumerWidget {
                                           AppColors.expense, // Highlight color
                                       fontWeight: FontWeight.bold,
                                       fontSize: 18,
-                                      fontFamily: 'Roboto',
                                     ),
                                   ),
                                   TextSpan(
@@ -138,7 +137,6 @@ class TransactionTimeline extends ConsumerWidget {
                                       color: AppColors.textDark,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 18,
-                                      fontFamily: 'Roboto',
                                     ),
                                   ),
                                 ],
@@ -252,6 +250,7 @@ class TransactionTimeline extends ConsumerWidget {
         id: 'unknown',
         name: t.categoryName ?? 'Unknown',
         iconCodePoint: Icons.help_outline.codePoint,
+        iconFontFamily: 'MaterialIcons',
         colorValue: Colors.grey.toARGB32(),
         type: CategoryType.expense,
       ),
