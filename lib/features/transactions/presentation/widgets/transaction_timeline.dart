@@ -10,7 +10,7 @@ import '../../../assets/presentation/providers/asset_provider.dart';
 import '../../../home/presentation/providers/ledger_provider.dart';
 import '../../../home/data/models/ledger.dart';
 import '../../data/models/transaction_model.dart';
-import '../../presentation/pages/transaction_page.dart';
+import 'transaction_details_dialog.dart';
 
 class TransactionTimeline extends ConsumerWidget {
   final List<TransactionModel> transactions;
@@ -280,9 +280,15 @@ class TransactionTimeline extends ConsumerWidget {
 
     return InkWell(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => TransactionPage(transaction: t)),
+        showDialog(
+          context: context,
+          builder: (context) => TransactionDetailsDialog(
+            transaction: t,
+            category: category,
+            asset: asset,
+            ledger: transactionLedger,
+            currencySymbol: currencySymbol,
+          ),
         );
       },
       child: IntrinsicHeight(
@@ -381,10 +387,7 @@ class TransactionTimeline extends ConsumerWidget {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: backgroundColor ??
-                              const Color(
-                                0xFFFFF8E1,
-                              ),
+                        color: backgroundColor ?? const Color(0xFFFFF8E1),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(

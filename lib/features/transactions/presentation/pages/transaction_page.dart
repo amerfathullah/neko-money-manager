@@ -95,6 +95,9 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
     // Let's assume remark is somewhere or add it.
     // Load Reimbursement status
     _isReimburse = t.isReimbursement;
+
+    // Load Remark
+    _remark = t.remarks ?? '';
   }
 
   void _onKeypadTap(String value) {

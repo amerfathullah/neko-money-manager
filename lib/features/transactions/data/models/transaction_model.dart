@@ -88,4 +88,47 @@ class TransactionModel {
       'isReimbursement': isReimbursement,
     };
   }
+
+  TransactionModel copyWith({
+    String? id,
+    String? ledgerId,
+    String? categoryId,
+    String? categoryName,
+    String? ledgerName,
+    double? amount,
+    DateTime? date,
+    String? note,
+    TransactionType? type,
+    String? destinationLedgerId,
+    String? destinationLedgerName,
+    bool? isBookmarked,
+    String? assetId,
+    String? assetName,
+    String? destinationAssetId,
+    String? destinationAssetName,
+    String? remarks,
+    bool? isReimbursement,
+  }) {
+    return TransactionModel(
+      id: id ?? this.id,
+      ledgerId: ledgerId ?? this.ledgerId,
+      categoryId: categoryId ?? this.categoryId,
+      categoryName: categoryName ?? this.categoryName,
+      ledgerName: ledgerName ?? this.ledgerName,
+      amount: amount ?? this.amount,
+      date: date ?? this.date,
+      note: note ?? this.note,
+      type: type ?? this.type,
+      destinationLedgerId: destinationLedgerId ?? this.destinationLedgerId,
+      destinationLedgerName:
+          destinationLedgerName ?? this.destinationLedgerName,
+      isBookmarked: isBookmarked ?? this.isBookmarked,
+      assetId: assetId ?? this.assetId,
+      assetName: assetName ?? this.assetName,
+      destinationAssetId: destinationAssetId ?? this.destinationAssetId,
+      destinationAssetName: destinationAssetName ?? this.destinationAssetName,
+      remarks: remarks ?? this.remarks,
+      isReimbursement: isReimbursement ?? this.isReimbursement,
+    );
+  }
 }
