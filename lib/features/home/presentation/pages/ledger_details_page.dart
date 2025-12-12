@@ -79,8 +79,7 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
 
                       // Bottom Summary (Only for Record Tab usually, but image implies it's persistent or attached)
                       // Image shows it on "Record" tab.
-                      if (_selectedTabIndex == 0)
-                        _buildBottomSummary(summary, currencySymbol, useComma),
+                      _buildBottomSummary(summary, currencySymbol, useComma),
                     ],
                   );
                 },
