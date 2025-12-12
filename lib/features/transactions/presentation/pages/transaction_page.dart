@@ -687,6 +687,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
                           ledgerName: ledgerName, // Need name
                           assetName: assetName,
                           isReimburse: _isReimburse,
+                          isReimburseEnabled: _selectedTypeIndex == 0,
                           onDateTap: _showDatePopup,
                           onLedgerTap: () async {
                             // Show Ledger Picker
@@ -738,7 +739,12 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
   Widget _buildTabItem(String label, int index) {
     bool isSelected = _selectedTypeIndex == index;
     return GestureDetector(
-      onTap: () => setState(() => _selectedTypeIndex = index),
+      onTap: () => setState(() {
+        _selectedTypeIndex = index;
+        if (_selectedTypeIndex != 0) {
+          _isReimburse = false;
+        }
+      }),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         decoration: BoxDecoration(

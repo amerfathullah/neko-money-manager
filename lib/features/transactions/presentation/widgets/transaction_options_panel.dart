@@ -6,6 +6,7 @@ class TransactionOptionsPanel extends StatelessWidget {
   final String ledgerName;
   final String assetName;
   final bool isReimburse;
+  final bool isReimburseEnabled; // Add this
   final VoidCallback onDateTap;
   final VoidCallback onLedgerTap;
   final VoidCallback onAssetTap;
@@ -18,6 +19,7 @@ class TransactionOptionsPanel extends StatelessWidget {
     required this.ledgerName,
     required this.assetName,
     required this.isReimburse,
+    this.isReimburseEnabled = true, // Default to true
     required this.onDateTap,
     required this.onLedgerTap,
     required this.onAssetTap,
@@ -60,9 +62,16 @@ class TransactionOptionsPanel extends StatelessWidget {
           label: 'Reimburse',
           icon: Icons.work_outline,
           text: 'Reimburse',
-          color: const Color(0xFFF3E5F5), // Light Purple
-          iconColor: const Color(0xFF7B1FA2),
-          onTap: onReimburseTap,
+          color: isReimburseEnabled
+              ? const Color(0xFFF3E5F5)
+              : Colors.grey.shade200, // Light Purple or Grey if disabled
+          iconColor: isReimburseEnabled
+              ? const Color(0xFF7B1FA2)
+              : Colors.grey, // Purple or Grey
+          textColor: isReimburseEnabled ? null : Colors.grey,
+          onTap: isReimburseEnabled
+              ? onReimburseTap
+              : () {}, // No-op if disabled
           isSelected: isReimburse,
         ),
       ],
