@@ -606,7 +606,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
                       Expanded(
                         flex: 3,
                         child: Container(
-                          height: 48,
+                          height: 40,
                           padding: const EdgeInsets.symmetric(horizontal: 24),
                           decoration: BoxDecoration(
                             color: const Color(0xFFF5E6D3),
@@ -638,7 +638,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
                           onTap:
                               _showRemarkPopup, // Allow tapping remark box too
                           child: Container(
-                            height: 48,
+                            height: 40,
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             decoration: BoxDecoration(
                               color: const Color(0xFFF5E6D3),
@@ -740,7 +740,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
     return GestureDetector(
       onTap: () => setState(() => _selectedTypeIndex = index),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFFFFF8E1) : Colors.transparent,
           borderRadius: BorderRadius.circular(16),

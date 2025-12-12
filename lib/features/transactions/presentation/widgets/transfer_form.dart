@@ -25,28 +25,32 @@ class TransferForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const SizedBox(height: 16),
-        _buildAssetSelector(
-          label: 'Asset from',
-          selectedAsset: selectedSourceAsset,
-          onChanged: onSourceAssetChanged,
-          assets: assets,
-        ),
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: 8),
-          child: Icon(Icons.swap_vert, size: 32, color: Colors.grey),
-        ),
-        _buildAssetSelector(
-          label: 'Asset to',
-          selectedAsset: selectedDestAsset,
-          onChanged: onDestAssetChanged,
-          assets: assets.where((a) => a.id != selectedSourceAsset?.id).toList(),
-        ),
-        const SizedBox(height: 24),
-        _buildChargeField(),
-      ],
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          const SizedBox(height: 16),
+          _buildAssetSelector(
+            label: 'Asset from',
+            selectedAsset: selectedSourceAsset,
+            onChanged: onSourceAssetChanged,
+            assets: assets,
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 8),
+            child: Icon(Icons.swap_vert, size: 32, color: Colors.grey),
+          ),
+          _buildAssetSelector(
+            label: 'Asset to',
+            selectedAsset: selectedDestAsset,
+            onChanged: onDestAssetChanged,
+            assets: assets
+                .where((a) => a.id != selectedSourceAsset?.id)
+                .toList(),
+          ),
+          const SizedBox(height: 24),
+          _buildChargeField(),
+        ],
+      ),
     );
   }
 

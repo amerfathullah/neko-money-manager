@@ -37,7 +37,7 @@ class TransactionOptionsPanel extends StatelessWidget {
           iconColor: const Color(0xFF2E5C5F),
           onTap: onDateTap,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         _buildOptionButton(
           label: 'Ledger',
           icon: Icons.book, // Replace with custom asset if available
@@ -46,7 +46,7 @@ class TransactionOptionsPanel extends StatelessWidget {
           iconColor: const Color(0xFFA65200),
           onTap: onLedgerTap,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         _buildOptionButton(
           label: 'Asset',
           icon: Icons.account_balance_wallet,
@@ -55,7 +55,7 @@ class TransactionOptionsPanel extends StatelessWidget {
           iconColor: const Color(0xFFE65100),
           onTap: onAssetTap,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         _buildOptionButton(
           label: 'Reimburse',
           icon: Icons.work_outline,
@@ -96,7 +96,7 @@ class TransactionOptionsPanel extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(20),
         child: Ink(
-          height: 48,
+          height: 40,
           decoration: BoxDecoration(
             color: color,
             borderRadius: BorderRadius.circular(20),

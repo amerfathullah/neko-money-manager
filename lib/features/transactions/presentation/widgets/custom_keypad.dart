@@ -21,11 +21,11 @@ class CustomKeypad extends StatelessWidget {
     return Column(
       children: [
         _buildRow(['1', '2', '3', '+']),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         _buildRow(['4', '5', '6', '-']),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         _buildRow(['7', '8', '9', 'BACK']),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         _buildBottomRow(),
       ],
     );
@@ -55,8 +55,8 @@ class CustomKeypad extends StatelessWidget {
                 onTap: onBlackCheckTap,
                 borderRadius: BorderRadius.circular(30),
                 child: Container(
-                  width: 48,
-                  height: 48,
+                  width: 40,
+                  height: 40,
                   alignment: Alignment.center,
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
@@ -64,7 +64,7 @@ class CustomKeypad extends StatelessWidget {
                   ),
                   child: const Icon(
                     Icons.check, // Or check with dash
-                    size: 32,
+                    size: 28,
                     color: Colors.black87,
                   ),
                 ),
@@ -81,8 +81,8 @@ class CustomKeypad extends StatelessWidget {
                 onTap: onRedActionTap,
                 borderRadius: BorderRadius.circular(20),
                 child: Container(
-                  width: 48,
-                  height: 48,
+                  width: 40,
+                  height: 40,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: const Color(0xFFC25E5E), // Muted red/maroon
@@ -93,7 +93,7 @@ class CustomKeypad extends StatelessWidget {
                         ? Icons.drag_handle
                         : Icons
                               .check, // drag_handle looks like equal sign approx, or use FontAwesome eq
-                    size: 32,
+                    size: 28,
                     color: Colors.white,
                   ),
                 ),
@@ -114,8 +114,8 @@ class CustomKeypad extends StatelessWidget {
             onTap: onBackspaceTap,
             borderRadius: BorderRadius.circular(30),
             child: Container(
-              width: 48,
-              height: 48,
+              width: 40,
+              height: 40,
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
@@ -137,8 +137,8 @@ class CustomKeypad extends StatelessWidget {
           onTap: () => onKeyTap(key),
           borderRadius: BorderRadius.circular(30),
           child: Container(
-            width: 48,
-            height: 48,
+            width: 40,
+            height: 40,
             alignment: Alignment.center,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
@@ -149,13 +149,13 @@ class CustomKeypad extends StatelessWidget {
             child: isOperator
                 ? Icon(
                     key == '+' ? Icons.add : Icons.remove,
-                    size: 32,
+                    size: 28,
                     color: Colors.black87,
                   )
                 : Text(
                     key,
                     style: const TextStyle(
-                      fontSize: 28,
+                      fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                     ),
