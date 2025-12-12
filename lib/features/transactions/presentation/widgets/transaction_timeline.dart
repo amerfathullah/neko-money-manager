@@ -127,7 +127,7 @@ class TransactionTimeline extends ConsumerWidget {
                                       color:
                                           AppColors.expense, // Highlight color
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 20,
+                                      fontSize: 18,
                                       fontFamily: 'Roboto',
                                     ),
                                   ),
@@ -137,7 +137,7 @@ class TransactionTimeline extends ConsumerWidget {
                                     style: const TextStyle(
                                       color: AppColors.textDark,
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 20,
+                                      fontSize: 18,
                                       fontFamily: 'Roboto',
                                     ),
                                   ),
@@ -182,7 +182,7 @@ class TransactionTimeline extends ConsumerWidget {
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               color: AppColors.textDark,
-                              fontSize: 20,
+                              fontSize: 18,
                             ),
                           ),
                         if (income > 0 && expense > 0) const SizedBox(width: 8),
@@ -192,7 +192,7 @@ class TransactionTimeline extends ConsumerWidget {
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               color: AppColors.expense,
-                              fontSize: 20,
+                              fontSize: 18,
                             ),
                           ),
                       ],
@@ -290,8 +290,9 @@ class TransactionTimeline extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Time Column (Left)
+            // Time Column (Left)
             SizedBox(
-              width: 100,
+              width: 60,
               child: Stack(
                 alignment: Alignment.center,
                 children: [
@@ -299,14 +300,17 @@ class TransactionTimeline extends ConsumerWidget {
                   Positioned(
                     top: 0,
                     bottom: 0,
-                    left: 35,
-                    child: Container(width: 2, color: category.color),
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: Container(width: 2, color: category.color),
+                    ),
                   ),
-                  // Time and Arrow (Foreground with Mask)
+                  // Time (Foreground with Mask)
                   if (showTime)
                     Positioned(
                       top: 0,
-                      bottom: 16,
+                      bottom: 10, // Matches card bottom margin
                       left: 0,
                       right: 0,
                       child: Center(
@@ -317,30 +321,37 @@ class TransactionTimeline extends ConsumerWidget {
                                 0xFFFFF8E1,
                               ), // Mask line with background color
                           padding: const EdgeInsets.symmetric(vertical: 4),
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                // Time Text
-                                Text(
-                                  DateFormat('HH:00').format(t.date),
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    color: AppColors.textDark,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                // Triangle Arrow
-                                const Icon(
-                                  Icons.play_arrow,
-                                  size: 16,
-                                  color: Color(0xFFBF4C58),
-                                ),
-                              ],
+                          child: Text(
+                            DateFormat('HH:00').format(t.date),
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: AppColors.textDark,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            // Arrow Column
+            SizedBox(
+              width: 20,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  if (showTime)
+                    Positioned(
+                      top: 0,
+                      bottom: 10, // Matches card bottom margin
+                      left: 0,
+                      right: 0,
+                      child: const Center(
+                        child: Icon(
+                          Icons.play_arrow,
+                          size: 12,
+                          color: Color(0xFFBF4C58),
                         ),
                       ),
                     ),
@@ -351,10 +362,10 @@ class TransactionTimeline extends ConsumerWidget {
             // Card
             Expanded(
               child: Container(
-                margin: const EdgeInsets.only(bottom: 16),
+                margin: const EdgeInsets.only(bottom: 10),
                 padding: const EdgeInsets.only(
-                  left: 12,
-                  right: 12,
+                  left: 8,
+                  right: 8,
                   top: 4,
                   bottom: 8,
                 ),
@@ -375,11 +386,11 @@ class TransactionTimeline extends ConsumerWidget {
                       ),
                       child: Icon(
                         category.icon,
-                        size: 32,
+                        size: 24,
                         color: category.color,
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -390,23 +401,22 @@ class TransactionTimeline extends ConsumerWidget {
                             category.name,
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
-                              fontSize: 16,
+                              fontSize: 14,
                               color: AppColors.textDark,
                             ),
                           ),
                           const SizedBox(height: 4),
                           // Bottom Row: Time Pill, Asset, Ledger, etc.
                           Wrap(
-                            spacing: 8,
-                            runSpacing: 4,
+                            spacing: 4,
+                            runSpacing: 2,
                             crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
-                              // Time Pill (Redundant if time is on left, but user design has it?)
-                              // Checking original code: Yes, it has it.
+                              // Time Pill
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
+                                  horizontal: 4,
+                                  vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
                                   color: category.color.withValues(alpha: 0.4),
@@ -423,7 +433,7 @@ class TransactionTimeline extends ConsumerWidget {
                               ),
                               // Asset Icon
                               Container(
-                                padding: const EdgeInsets.all(4),
+                                padding: const EdgeInsets.all(2),
                                 decoration: BoxDecoration(
                                   color: asset.color.withValues(alpha: 0.2),
                                   shape: BoxShape.circle,
@@ -436,7 +446,7 @@ class TransactionTimeline extends ConsumerWidget {
                               ),
                               // Ledger Icon
                               Container(
-                                padding: const EdgeInsets.all(4),
+                                padding: const EdgeInsets.all(2),
                                 decoration: BoxDecoration(
                                   color: transactionLedger.color.withValues(
                                     alpha: 0.2,
@@ -453,15 +463,17 @@ class TransactionTimeline extends ConsumerWidget {
                               // Reimbursement Icon
                               if (t.isReimbursement) ...[
                                 Container(
-                                  padding: const EdgeInsets.all(4),
+                                  padding: const EdgeInsets.all(2),
                                   decoration: BoxDecoration(
-                                    color: Colors.purple.withValues(alpha: 0.2),
+                                    color: AppColors.pastelPurple.withValues(
+                                      alpha: 0.2,
+                                    ),
                                     shape: BoxShape.circle,
                                   ),
                                   child: const Icon(
                                     Icons.work,
                                     size: 16,
-                                    color: Colors.purple,
+                                    color: AppColors.pastelPurple,
                                   ),
                                 ),
                               ],
@@ -469,7 +481,7 @@ class TransactionTimeline extends ConsumerWidget {
                               if (t.isBookmarked) ...[
                                 const Icon(
                                   Icons.star,
-                                  size: 18,
+                                  size: 16,
                                   color: Colors.amber,
                                 ),
                               ],
@@ -483,7 +495,7 @@ class TransactionTimeline extends ConsumerWidget {
                       '${isExpense ? '-' : '+'}${CurrencyFormatter.format(t.amount, symbol: '', useGrouping: useComma)}',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 18,
+                        fontSize: 16,
                         color: isExpense
                             ? AppColors.expense
                             : AppColors.textDark,
