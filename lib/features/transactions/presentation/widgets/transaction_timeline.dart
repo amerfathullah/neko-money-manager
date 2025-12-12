@@ -380,8 +380,11 @@ class TransactionTimeline extends ConsumerWidget {
                     // Large Category Icon
                     Container(
                       padding: const EdgeInsets.all(8),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
+                      decoration: BoxDecoration(
+                        color: backgroundColor ??
+                              const Color(
+                                0xFFFFF8E1,
+                              ),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
