@@ -12,6 +12,7 @@ import '../../../settings/presentation/pages/add_edit_ledger_page.dart';
 import '../../../home/presentation/providers/ledger_provider.dart';
 import '../../../categories/presentation/providers/category_provider.dart';
 import '../../../categories/data/models/category.dart';
+import '../../../../features/auth/presentation/providers/auth_provider.dart';
 // Import for TransactionTimeRange if accessible, otherwise define local or move enum to core
 import '../../../transactions/presentation/widgets/transactions_list_widgets.dart';
 import '../../../transactions/presentation/widgets/transaction_timeline.dart';
@@ -128,12 +129,8 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
               ],
             ),
           ),
-          // Settings / More
-          IconButton(
-            onPressed: () {
-              // Show default menu or settings
-              _showSettingsMenu(context);
-            },
+          // Settings Menu
+          PopupMenuButton<String>(
             icon: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
@@ -146,6 +143,90 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
                 color: AppColors.textDark,
               ),
             ),
+            color: const Color(0xFFFFF8E1), // Cream background
+            elevation: 4,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+            ),
+            offset: const Offset(0, 48), // Offset to appear below icon
+            onSelected: (value) {
+              if (value == 'edit') {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => AddEditLedgerPage(ledger: widget.ledger),
+                  ),
+                );
+              } else if (value == 'delete') {
+                _confirmDelete();
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem<String>(
+                value: 'edit',
+                height: 56,
+                child: Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: const Color(
+                          0xFFF5E4D0,
+                        ), // Darker beige to match image
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.edit,
+                        size: 20,
+                        color: AppColors.textDark,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    const Text(
+                      'Edit',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: AppColors.textDark,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (!widget.ledger.isDefault)
+                PopupMenuItem<String>(
+                  value: 'delete',
+                  height: 56,
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: const Color(
+                            0xFFF5E4D0,
+                          ), // Darker beige to match image
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.delete, // Filled trash can
+                          size: 20,
+                          color: AppColors.textDark,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      const Text(
+                        'Delete',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: AppColors.textDark,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
           ),
         ],
       ),
@@ -500,47 +581,139 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
     }
   }
 
-  void _showSettingsMenu(BuildContext context) {
-    showModalBottomSheet(
+  Future<void> _confirmDelete() async {
+    final userId = ref.read(userIdProvider);
+    if (userId == null) return;
+
+    await showDialog(
       context: context,
-      builder: (ctx) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ListTile(
-            leading: const Icon(Icons.edit),
-            title: const Text('Edit Ledger'),
-            onTap: () {
-              Navigator.pop(ctx);
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => AddEditLedgerPage(ledger: widget.ledger),
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+        backgroundColor: const Color(0xFFFFF8E1), // Cream
+        insetPadding: const EdgeInsets.all(24),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Option 1: Delete Ledger + Records
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFF5E4D0), // Beige
+                    foregroundColor: AppColors.textDark,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 16,
+                      horizontal: 16,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  onPressed: () async {
+                    Navigator.pop(ctx);
+                    // 1. Fetch all transactions (no limit)
+                    // Note: Optimally we should have a getTransactionsByLedgerFuture without limit
+                    final allTxs = await ref
+                        .read(transactionRepositoryProvider)
+                        .getAllTransactions(userId);
+
+                    final txsToDelete = allTxs
+                        .where((t) => t.ledgerId == widget.ledger.id)
+                        .toList();
+
+                    // 2. Delete each
+                    final notifier = ref.read(transactionProvider.notifier);
+                    for (final tx in txsToDelete) {
+                      await notifier.deleteTransaction(tx);
+                    }
+
+                    // 3. Delete Ledger
+                    await ref
+                        .read(ledgerProvider.notifier)
+                        .deleteLedger(widget.ledger.id);
+
+                    if (mounted) Navigator.pop(context);
+                  },
+                  child: const Text(
+                    'Delete the ledger and the records in the ledger',
+                    textAlign: TextAlign.left,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textDark,
+                    ),
+                  ),
                 ),
-              );
-            },
-          ),
-          if (!widget.ledger.isDefault)
-            ListTile(
-              leading: const Icon(Icons.delete, color: Colors.red),
-              title: const Text(
-                'Delete Ledger',
-                style: TextStyle(color: Colors.red),
               ),
-              onTap: () {
-                Navigator.pop(ctx);
-                _confirmDelete(context);
-              },
-            ),
-        ],
+              const SizedBox(height: 16),
+
+              // Option 2: Delete Ledger Only
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFF5E4D0), // Beige
+                    foregroundColor: AppColors.textDark,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 16,
+                      horizontal: 16,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  onPressed: () async {
+                    Navigator.pop(ctx);
+                    await ref
+                        .read(ledgerProvider.notifier)
+                        .deleteLedger(widget.ledger.id);
+                    if (mounted) Navigator.pop(context);
+                  },
+                  child: const Text(
+                    'Delete the ledger but keep the records in the ledger',
+                    textAlign: TextAlign.left,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+
+              // Cancel
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFC25E5E), // Red
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
-  }
-
-  Future<void> _confirmDelete(BuildContext context) async {
-    // Deletion Logic
-    await ref.read(ledgerProvider.notifier).deleteLedger(widget.ledger.id);
-    if (mounted) {
-      // ignore: use_build_context_synchronously
-      Navigator.pop(context);
-    }
   }
 }
