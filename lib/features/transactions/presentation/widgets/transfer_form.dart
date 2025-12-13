@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/constants/app_colors.dart';
 import '../../../assets/data/models/asset.dart';
 
 class TransferForm extends StatelessWidget {
@@ -64,7 +65,7 @@ class TransferForm extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 32),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF3E0), // Very light orange/beige
+        color: AppColors.inputBeige, // Very light orange/beige
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -123,7 +124,7 @@ class TransferForm extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 32),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF3E0),
+        color: AppColors.inputBeige,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(

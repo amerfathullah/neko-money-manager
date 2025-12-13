@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/constants/app_colors.dart';
 
 class CustomKeypad extends StatelessWidget {
   final VoidCallback onBlackCheckTap;
@@ -85,7 +86,7 @@ class CustomKeypad extends StatelessWidget {
                   height: 40,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFC25E5E), // Muted red/maroon
+                    color: AppColors.destructiveRed, // Muted red/maroon
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Icon(
@@ -143,7 +144,7 @@ class CustomKeypad extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isOperator
-                  ? const Color(0xFFF5E6D3)
+                  ? AppColors.inputBeige
                   : Colors.transparent, // Match Amount field color
             ),
             child: isOperator

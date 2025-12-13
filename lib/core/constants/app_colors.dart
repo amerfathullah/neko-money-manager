@@ -27,4 +27,22 @@ class AppColors {
   static const Color expense = Color(0xFFFF9AA2); // Pastel Red
   static const Color income = Color(0xFFB5EAD7); // Pastel Mint
   static const Color transfer = Color(0xFFC7CEEA); // Pastel Blue
+
+  // Specific UI Colors
+  static const Color surfaceCream = Color(0xFFFFFCF0);
+  static const Color containerBeige = Color(0xFFEFE6D5);
+  static const Color buttonBeige = Color(0xFFF5E4D0);
+  static const Color borderBeige = Color(0xFFEEE0CD);
+  static const Color destructiveRed = Color(0xFFC25E5E);
+  static const Color timelineArrow = Color(0xFFBF4C58);
+  static const Color inputBeige = Color(0xFFF5E6D3);
+  static const Color deepRed = Color(0xFFB71C1C);
+
+  static const Color pastelCyan = Color(0xFFD0F4F7);
+  static const Color textCyan = Color(0xFF2E5C5F);
+  static const Color textOrange = Color(0xFFA65200);
+  static const Color textDeepOrange = Color(0xFFE65100);
+  static const Color pastelPurpleLight = Color(0xFFF3E5F5);
+  static const Color textPurple = Color(0xFF7B1FA2);
+  static const Color indianRed = Color(0xFFCD5C5C);
 }

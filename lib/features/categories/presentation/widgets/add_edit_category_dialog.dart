@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/constants/app_colors.dart';
 
 import '../../data/models/category.dart';
 
@@ -128,7 +129,7 @@ class _AddEditCategoryDialogState extends State<AddEditCategoryDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: const Color(0xFFFFF8E1), // Light beige match
+      backgroundColor: AppColors.backgroundLight, // Light beige match
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Container(
         padding: const EdgeInsets.all(24),
@@ -153,7 +154,7 @@ class _AddEditCategoryDialogState extends State<AddEditCategoryDialog> {
                 ),
                 Container(
                   decoration: BoxDecoration(
-                    color: const Color(0xFFD32F2F), // Muted red close button
+                    color: AppColors.destructiveRed, // Muted red close button
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Material(
@@ -284,7 +285,7 @@ class _AddEditCategoryDialogState extends State<AddEditCategoryDialog> {
                                   height: 48,
                                   decoration: BoxDecoration(
                                     color: isSelected
-                                        ? const Color(0xFFFFCC80)
+                                        ? AppColors.pastelOrange
                                         : Colors.white.withValues(alpha: 0.5),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
@@ -319,7 +320,7 @@ class _AddEditCategoryDialogState extends State<AddEditCategoryDialog> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFCD5C5C), // Indian Red
+                backgroundColor: AppColors.indianRed, // Indian Red
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),

@@ -17,7 +17,7 @@ class CustomBottomNav extends StatelessWidget {
       margin: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF8E1), // Cream background
+        color: AppColors.backgroundLight, // Cream background
         borderRadius: BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(

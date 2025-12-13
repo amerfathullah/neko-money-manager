@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/constants/app_colors.dart';
+
 import '../../../categories/data/models/category.dart';
 import '../../../categories/presentation/providers/category_provider.dart';
 import '../../../home/presentation/providers/ledger_provider.dart';
@@ -314,7 +316,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
       context: context,
       builder: (ctx) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
-        backgroundColor: const Color(0xFFFFF8E5), // Cream
+        backgroundColor: AppColors.backgroundLight, // Cream
         insetPadding: const EdgeInsets.all(24),
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -323,7 +325,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
             children: [
               Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF5E4D0), // Beige input area
+                  color: AppColors.buttonBeige, // Beige input area
                   borderRadius: BorderRadius.circular(16),
                 ),
                 padding: const EdgeInsets.symmetric(
@@ -360,7 +362,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
                       height: 50,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFF5E4D0), // Beige
+                          backgroundColor: AppColors.buttonBeige, // Beige
                           foregroundColor: Colors.black87,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
@@ -385,7 +387,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
                       height: 50,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFC25E5E), // Red
+                          backgroundColor: AppColors.destructiveRed, // Red
                           foregroundColor: Colors.white,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
@@ -426,7 +428,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFFC25E5E), // Match custom red
+              primary: AppColors.destructiveRed, // Match custom red
               onPrimary: Colors.white,
               onSurface: Colors.black,
             ),
@@ -483,7 +485,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFC25E5E),
+                  backgroundColor: AppColors.destructiveRed,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -595,7 +597,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F3EC), // Light Beige Background
+      backgroundColor: AppColors.backgroundLight, // Light Beige Background
       resizeToAvoidBottomInset:
           false, // Prevent keyboard from distorting layout
       body: SafeArea(
@@ -614,7 +616,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
                     ),
                     onPressed: () => Navigator.of(context).pop(),
                     style: IconButton.styleFrom(
-                      backgroundColor: const Color(0xFFF5E6D3), // Darker beige
+                      backgroundColor: AppColors.inputBeige, // Darker beige
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -624,7 +626,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
                   // Custom Tab Bar
                   Container(
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF5E6D3),
+                      color: AppColors.inputBeige,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     padding: const EdgeInsets.all(4),
@@ -692,7 +694,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
                           height: 40,
                           padding: const EdgeInsets.symmetric(horizontal: 24),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF5E6D3),
+                            color: AppColors.inputBeige,
                             borderRadius: BorderRadius.circular(30),
                           ),
                           alignment: Alignment.centerRight,
@@ -724,7 +726,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
                             height: 40,
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF5E6D3),
+                              color: AppColors.inputBeige,
                               borderRadius: BorderRadius.circular(30),
                             ),
                             alignment: Alignment.center,

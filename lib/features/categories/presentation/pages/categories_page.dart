@@ -82,7 +82,7 @@ class _CategoriesPageState extends ConsumerState<CategoriesPage>
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(32),
               ),
-              backgroundColor: const Color(0xFFFFF8E5), // Cream
+              backgroundColor: AppColors.backgroundLight, // Cream
               insetPadding: const EdgeInsets.all(24),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
@@ -110,9 +110,7 @@ class _CategoriesPageState extends ConsumerState<CategoriesPage>
                             height: 56,
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(
-                                  0xFFF5E4D0,
-                                ), // Beige
+                                backgroundColor: AppColors.buttonBeige, // Beige
                                 foregroundColor: AppColors.textDark,
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
@@ -125,7 +123,7 @@ class _CategoriesPageState extends ConsumerState<CategoriesPage>
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF2C3E50),
+                                  color: AppColors.textDark,
                                 ),
                               ),
                             ),
@@ -137,7 +135,8 @@ class _CategoriesPageState extends ConsumerState<CategoriesPage>
                             height: 56,
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFC25E5E), // Red
+                                backgroundColor:
+                                    AppColors.destructiveRed, // Red
                                 foregroundColor: Colors.white,
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(

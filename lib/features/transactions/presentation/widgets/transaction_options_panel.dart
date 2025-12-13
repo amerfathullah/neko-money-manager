@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/constants/app_colors.dart';
 import 'package:intl/intl.dart';
 
 class TransactionOptionsPanel extends StatelessWidget {
@@ -35,8 +36,8 @@ class TransactionOptionsPanel extends StatelessWidget {
           label: 'Date',
           icon: Icons.calendar_today,
           text: _formatDate(selectedDate),
-          color: const Color(0xFFD0F4F7), // Light Cyan
-          iconColor: const Color(0xFF2E5C5F),
+          color: AppColors.pastelCyan, // Light Cyan
+          iconColor: AppColors.textCyan,
           onTap: onDateTap,
         ),
         const SizedBox(height: 8),
@@ -44,8 +45,8 @@ class TransactionOptionsPanel extends StatelessWidget {
           label: 'Ledger',
           icon: Icons.book, // Replace with custom asset if available
           text: ledgerName,
-          color: const Color(0xFFFFE5CC), // Light Orange
-          iconColor: const Color(0xFFA65200),
+          color: AppColors.pastelOrange, // Light Orange
+          iconColor: AppColors.textOrange,
           onTap: onLedgerTap,
         ),
         const SizedBox(height: 8),
@@ -53,8 +54,8 @@ class TransactionOptionsPanel extends StatelessWidget {
           label: 'Asset',
           icon: Icons.account_balance_wallet,
           text: assetName, // Truncate if too long?
-          color: const Color(0xFFFFE0B2), // Slightly different Orange
-          iconColor: const Color(0xFFE65100),
+          color: AppColors.buttonBeige, // Slightly different Orange
+          iconColor: AppColors.textDeepOrange,
           onTap: onAssetTap,
         ),
         const SizedBox(height: 8),
@@ -63,10 +64,10 @@ class TransactionOptionsPanel extends StatelessWidget {
           icon: Icons.work_outline,
           text: 'Reimburse',
           color: isReimburseEnabled
-              ? const Color(0xFFF3E5F5)
+              ? AppColors.pastelPurpleLight
               : Colors.grey.shade200, // Light Purple or Grey if disabled
           iconColor: isReimburseEnabled
-              ? const Color(0xFF7B1FA2)
+              ? AppColors.textPurple
               : Colors.grey, // Purple or Grey
           textColor: isReimburseEnabled ? null : Colors.grey,
           onTap: isReimburseEnabled

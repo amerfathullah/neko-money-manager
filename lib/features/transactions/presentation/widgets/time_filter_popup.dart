@@ -50,7 +50,7 @@ class _TimeFilterPopupState extends State<TimeFilterPopup> {
       insetPadding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFFFFFCF0), // Cream background
+          color: AppColors.surfaceCream, // Cream background
           borderRadius: BorderRadius.circular(24),
         ),
         padding: const EdgeInsets.all(16),
@@ -100,7 +100,7 @@ class _TimeFilterPopupState extends State<TimeFilterPopup> {
                 ElevatedButton(
                   onPressed: _onConfirm,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFB71C1C), // Deep Red
+                    backgroundColor: AppColors.deepRed, // Deep Red
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -143,7 +143,7 @@ class _TimeFilterPopupState extends State<TimeFilterPopup> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFFB71C1C) : Colors.transparent,
+            color: isSelected ? AppColors.deepRed : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
@@ -254,8 +254,8 @@ class _TimeFilterPopupState extends State<TimeFilterPopup> {
                 child: Container(
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? const Color(0xFFB71C1C)
-                        : const Color(0xFFFFF8E1),
+                        ? AppColors.deepRed
+                        : AppColors.backgroundLight,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Center(
@@ -348,8 +348,8 @@ class _TimeFilterPopupState extends State<TimeFilterPopup> {
                 child: Container(
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? const Color(0xFFB71C1C)
-                        : const Color(0xFFFFF8E1),
+                        ? AppColors.deepRed
+                        : AppColors.backgroundLight,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Center(
@@ -411,8 +411,8 @@ class _TimeFilterPopupState extends State<TimeFilterPopup> {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: _isEditingCustomStart
-                        ? const Color(0xFFB71C1C)
-                        : const Color(0xFFFFF8E1),
+                        ? AppColors.deepRed
+                        : AppColors.backgroundLight,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Center(
@@ -440,8 +440,8 @@ class _TimeFilterPopupState extends State<TimeFilterPopup> {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: !_isEditingCustomStart
-                        ? const Color(0xFFB71C1C)
-                        : const Color(0xFFFFF8E1),
+                        ? AppColors.deepRed
+                        : AppColors.backgroundLight,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Center(
@@ -682,7 +682,7 @@ class _CalendarGrid extends StatelessWidget {
     Color textColor = isCurrentMonth ? AppColors.textDark : Colors.grey[400]!;
 
     if (isInWeek) {
-      bgColor = const Color(0xFFB71C1C);
+      bgColor = AppColors.deepRed;
       textColor = Colors.white;
     }
 
@@ -744,10 +744,10 @@ class _CalendarGrid extends StatelessWidget {
     Color textColor = isCurrentMonth ? AppColors.textDark : Colors.grey[400]!;
 
     if (isSelected) {
-      bgColor = const Color(0xFFB71C1C);
+      bgColor = AppColors.deepRed;
       textColor = Colors.white;
     } else if (isInBetween) {
-      bgColor = const Color(0xFFB71C1C).withValues(alpha: 0.3); // Lighter red
+      bgColor = AppColors.deepRed.withValues(alpha: 0.3); // Lighter red
       textColor = AppColors.textDark; // Or white if opacity is high
     }
 

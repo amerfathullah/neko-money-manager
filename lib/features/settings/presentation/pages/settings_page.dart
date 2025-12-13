@@ -33,9 +33,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
     final currencySymbol = currencyAsync.asData?.value ?? '\$';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8E1), // Cream background
+      backgroundColor: AppColors.backgroundLight, // Cream background
       appBar: AppBar(
-        backgroundColor: const Color(0xFFFFF8E1),
+        backgroundColor: AppColors.backgroundLight,
         elevation: 0,
         centerTitle: true,
         title: const Text(
@@ -487,7 +487,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Select Language'),
-        backgroundColor: const Color(0xFFFFFDF5),
+        backgroundColor: AppColors.surfaceCream,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -534,7 +534,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Select Monthly Start Date'),
-        backgroundColor: const Color(0xFFFFFDF5),
+        backgroundColor: AppColors.surfaceCream,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         content: SizedBox(
           width: double.maxFinite,
@@ -568,7 +568,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Select First Day of Week'),
-        backgroundColor: const Color(0xFFFFFDF5),
+        backgroundColor: AppColors.surfaceCream,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -606,7 +606,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        backgroundColor: const Color(0xFFFFFDF5),
+        backgroundColor: AppColors.surfaceCream,
         title: const Text('Select Currency'),
         content: SizedBox(
           width: double.maxFinite,

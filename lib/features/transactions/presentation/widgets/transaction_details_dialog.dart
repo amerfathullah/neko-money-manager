@@ -49,7 +49,7 @@ class _TransactionDetailsDialogState
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      backgroundColor: const Color(0xFFFFF8E5), // Cream color
+      backgroundColor: AppColors.backgroundLight, // Cream color
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
       child: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -153,7 +153,7 @@ class _TransactionDetailsDialogState
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(32),
                         ),
-                        backgroundColor: const Color(0xFFFFF8E5), // Cream
+                        backgroundColor: AppColors.backgroundLight, // Cream
                         insetPadding: const EdgeInsets.all(24),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
@@ -183,9 +183,8 @@ class _TransactionDetailsDialogState
                                       height: 56,
                                       child: ElevatedButton(
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(
-                                            0xFFF5E4D0,
-                                          ), // Beige
+                                          backgroundColor:
+                                              AppColors.buttonBeige, // Beige
                                           foregroundColor: AppColors.textDark,
                                           elevation: 0,
                                           shape: RoundedRectangleBorder(
@@ -213,9 +212,8 @@ class _TransactionDetailsDialogState
                                       height: 56,
                                       child: ElevatedButton(
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(
-                                            0xFFC25E5E,
-                                          ), // Red
+                                          backgroundColor:
+                                              AppColors.destructiveRed, // Red
                                           foregroundColor: Colors.white,
                                           elevation: 0,
                                           shape: RoundedRectangleBorder(
@@ -281,7 +279,7 @@ class _TransactionDetailsDialogState
                 if (_currentTransaction.isReimbursement)
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFC25E5E), // Redish
+                      backgroundColor: AppColors.destructiveRed, // Redish
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
@@ -348,7 +346,7 @@ class _TransactionDetailsDialogState
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: const Color(0xFFF5E6D3), // Beige background
+          color: AppColors.inputBeige, // Beige background
           borderRadius: BorderRadius.circular(12),
         ),
         child: Icon(icon, color: color, size: 24),

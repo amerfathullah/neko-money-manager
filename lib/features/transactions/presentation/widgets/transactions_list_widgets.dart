@@ -237,7 +237,7 @@ class TransactionSearchBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFFFFF8E1), // Background matching main/card
+          color: AppColors.backgroundLight, // Background matching main/card
           borderRadius: BorderRadius.circular(24),
         ),
         child: TextField(

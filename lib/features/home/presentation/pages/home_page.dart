@@ -161,7 +161,7 @@ class _HomePageState extends ConsumerState<HomePage>
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8E1), // Cream background
+      backgroundColor: AppColors.backgroundLight, // Cream background
       body: SafeArea(
         bottom: false,
         child: Stack(
@@ -234,7 +234,7 @@ class _HomePageState extends ConsumerState<HomePage>
                     Container(
                       margin: const EdgeInsets.only(top: 25),
                       decoration: const BoxDecoration(
-                        color: Color(0xFFFFFCF0),
+                        color: AppColors.surfaceCream,
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(32),
                           topRight: Radius.circular(32),
@@ -337,7 +337,7 @@ class _HomePageState extends ConsumerState<HomePage>
                                   useComma: useComma,
                                   shrinkWrap: true,
                                   physics: const NeverScrollableScrollPhysics(),
-                                  backgroundColor: const Color(0xFFFFFCF0),
+                                  backgroundColor: AppColors.surfaceCream,
                                 ),
                               ),
                             ),

@@ -41,7 +41,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage>
     final useComma = settings.useCommaSeparator;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8E1), // Cream background
+      backgroundColor: AppColors.backgroundLight, // Cream background
       body: assetsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Center(child: Text('Error: $err')),
@@ -129,7 +129,11 @@ class _AssetsPageState extends ConsumerState<AssetsPage>
                                 ),
                               ),
                               Text(
-                                CurrencyFormatter.format(net, symbol: currencySymbol, useGrouping: useComma),
+                                CurrencyFormatter.format(
+                                  net,
+                                  symbol: currencySymbol,
+                                  useGrouping: useComma,
+                                ),
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -186,7 +190,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage>
                         Container(
                           margin: const EdgeInsets.only(top: 25),
                           decoration: const BoxDecoration(
-                            color: Color(0xFFFFFCF0),
+                            color: AppColors.surfaceCream,
                             borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(32),
                               topRight: Radius.circular(32),

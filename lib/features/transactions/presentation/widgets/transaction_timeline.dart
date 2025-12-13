@@ -151,9 +151,8 @@ class TransactionTimeline extends ConsumerWidget {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(
-                                  0xFFEFE6D5,
-                                ), // Beige/Sand pill background
+                                color: AppColors
+                                    .containerBeige, // Beige/Sand pill background
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
@@ -322,9 +321,8 @@ class TransactionTimeline extends ConsumerWidget {
                         child: Container(
                           color:
                               backgroundColor ??
-                              const Color(
-                                0xFFFFF8E1,
-                              ), // Mask line with background color
+                              AppColors
+                                  .backgroundLight, // Mask line with background color
                           padding: const EdgeInsets.symmetric(vertical: 4),
                           child: Text(
                             DateFormat('HH:00').format(t.date),
@@ -356,7 +354,7 @@ class TransactionTimeline extends ConsumerWidget {
                         child: Icon(
                           Icons.play_arrow,
                           size: 12,
-                          color: Color(0xFFBF4C58),
+                          color: AppColors.timelineArrow,
                         ),
                       ),
                     ),
@@ -386,7 +384,7 @@ class TransactionTimeline extends ConsumerWidget {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: backgroundColor ?? const Color(0xFFFFF8E1),
+                        color: backgroundColor ?? AppColors.backgroundLight,
                         shape: BoxShape.circle,
                       ),
                       child: Icon(

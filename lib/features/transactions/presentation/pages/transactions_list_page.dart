@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/constants/app_colors.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -143,7 +144,7 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage>
     final useComma = settings.useCommaSeparator;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8E1), // Cream background
+      backgroundColor: AppColors.backgroundLight, // Cream background
 
       body: transactionsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -253,7 +254,7 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage>
                         Container(
                           margin: const EdgeInsets.only(top: 25),
                           decoration: const BoxDecoration(
-                            color: Color(0xFFFFFCF0),
+                            color: AppColors.surfaceCream,
                             borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(32),
                               topRight: Radius.circular(32),
@@ -327,7 +328,7 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage>
                                 physics:
                                     const NeverScrollableScrollPhysics(), // Since it's inside a ListView
                                 shrinkWrap: true,
-                                backgroundColor: const Color(0xFFFFFCF0),
+                                backgroundColor: AppColors.surfaceCream,
                               ),
                             ],
                           ),

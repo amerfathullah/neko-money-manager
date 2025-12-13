@@ -45,7 +45,7 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
     );
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8E1), // Cream background
+      backgroundColor: AppColors.backgroundLight, // Cream background
       body: SafeArea(
         child: Column(
           children: [
@@ -119,7 +119,7 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
           Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: const Color(0xFFEFE6D5), // Darker cream/beige
+              color: AppColors.containerBeige, // Darker cream/beige
               borderRadius: BorderRadius.circular(24),
             ),
             child: Row(
@@ -143,7 +143,7 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
                 color: AppColors.textDark,
               ),
             ),
-            color: const Color(0xFFFFF8E1), // Cream background
+            color: AppColors.backgroundLight, // Cream background
             elevation: 4,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
@@ -170,9 +170,8 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: const Color(
-                          0xFFF5E4D0,
-                        ), // Darker beige to match image
+                        color: AppColors
+                            .buttonBeige, // Darker beige to match image
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
@@ -203,9 +202,8 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: const Color(
-                            0xFFF5E4D0,
-                          ), // Darker beige to match image
+                          color: AppColors
+                              .buttonBeige, // Darker beige to match image
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Icon(
@@ -240,7 +238,7 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFFFF8E1) : Colors.transparent,
+          color: isSelected ? AppColors.backgroundLight : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
           boxShadow: isSelected
               ? [
@@ -373,8 +371,9 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: const BoxDecoration(
-        color: Color(0xFFFFF8E1), // Match background or slightly different?
-        border: Border(top: BorderSide(color: Color(0xFFEEE0CD), width: 1)),
+        color: AppColors
+            .backgroundLight, // Match background or slightly different?
+        border: Border(top: BorderSide(color: AppColors.borderBeige, width: 1)),
       ),
       child: Column(
         children: [
@@ -589,7 +588,7 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
       context: context,
       builder: (ctx) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
-        backgroundColor: const Color(0xFFFFF8E1), // Cream
+        backgroundColor: AppColors.backgroundLight, // Cream
         insetPadding: const EdgeInsets.all(24),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
@@ -601,7 +600,7 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFF5E4D0), // Beige
+                    backgroundColor: AppColors.buttonBeige, // Beige
                     foregroundColor: AppColors.textDark,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(
@@ -655,7 +654,7 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFF5E4D0), // Beige
+                    backgroundColor: AppColors.buttonBeige, // Beige
                     foregroundColor: AppColors.textDark,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(
@@ -692,7 +691,7 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
                 height: 56,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFC25E5E), // Red
+                    backgroundColor: AppColors.destructiveRed, // Red
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
