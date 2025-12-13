@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_colors.dart';
+
+import '../../../../core/theme/app_theme_colors.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -142,9 +143,10 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage>
     final monthlyStartDate = settings.monthlyStartDate;
     final firstDayOfWeek = settings.firstDayOfWeek;
     final useComma = settings.useCommaSeparator;
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight, // Cream background
+      backgroundColor: themeColors.background, // Cream background
 
       body: transactionsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -253,8 +255,8 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage>
                         // White Sheet
                         Container(
                           margin: const EdgeInsets.only(top: 25),
-                          decoration: const BoxDecoration(
-                            color: AppColors.surfaceCream,
+                          decoration: BoxDecoration(
+                            color: themeColors.surface,
                             borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(32),
                               topRight: Radius.circular(32),
@@ -328,7 +330,7 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage>
                                 physics:
                                     const NeverScrollableScrollPhysics(), // Since it's inside a ListView
                                 shrinkWrap: true,
-                                backgroundColor: AppColors.surfaceCream,
+                                backgroundColor: themeColors.surface,
                               ),
                             ],
                           ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../data/models/asset.dart';
@@ -39,9 +40,10 @@ class _AssetsPageState extends ConsumerState<AssetsPage>
     final currencySymbol = currencyAsync.asData?.value ?? '\$';
     final settings = settingsAsync.asData?.value ?? const SettingsState();
     final useComma = settings.useCommaSeparator;
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight, // Cream background
+      backgroundColor: themeColors.background, // Cream background
       body: assetsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Center(child: Text('Error: $err')),
@@ -107,12 +109,12 @@ class _AssetsPageState extends ConsumerState<AssetsPage>
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'Liabilities',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  color: AppColors.textDark,
+                                  color: themeColors.text,
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -137,9 +139,7 @@ class _AssetsPageState extends ConsumerState<AssetsPage>
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  color: AppColors.textDark.withValues(
-                                    alpha: 0.6,
-                                  ),
+                                  color: themeColors.textSubtle,
                                 ),
                               ),
                             ],
@@ -147,12 +147,12 @@ class _AssetsPageState extends ConsumerState<AssetsPage>
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              const Text(
+                              Text(
                                 'Assets',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  color: AppColors.textDark,
+                                  color: themeColors.text,
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -162,10 +162,10 @@ class _AssetsPageState extends ConsumerState<AssetsPage>
                                   symbol: currencySymbol,
                                   useGrouping: useComma,
                                 ),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 28,
                                   fontWeight: FontWeight.bold,
-                                  color: AppColors.textDark,
+                                  color: themeColors.text,
                                 ),
                               ),
                               const SizedBox(height: 24),
@@ -189,8 +189,8 @@ class _AssetsPageState extends ConsumerState<AssetsPage>
                       children: [
                         Container(
                           margin: const EdgeInsets.only(top: 25),
-                          decoration: const BoxDecoration(
-                            color: AppColors.surfaceCream,
+                          decoration: BoxDecoration(
+                            color: themeColors.surface,
                             borderRadius: BorderRadius.only(
                               topLeft: Radius.circular(32),
                               topRight: Radius.circular(32),
@@ -297,6 +297,7 @@ class _TopPill extends StatelessWidget {
   });
   @override
   Widget build(BuildContext context) {
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -307,13 +308,13 @@ class _TopPill extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(icon, size: 20, color: AppColors.textDark),
+            Icon(icon, size: 20, color: themeColors.text),
             const SizedBox(width: 8),
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: AppColors.textDark,
+                color: themeColors.text,
               ),
             ),
           ],

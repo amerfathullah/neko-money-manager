@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 
 import '../../data/models/category.dart';
 
@@ -128,8 +129,9 @@ class _AddEditCategoryDialogState extends State<AddEditCategoryDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     return Dialog(
-      backgroundColor: AppColors.backgroundLight, // Light beige match
+      backgroundColor: themeColors.surface, // Light beige match
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Container(
         padding: const EdgeInsets.all(24),
@@ -147,9 +149,10 @@ class _AddEditCategoryDialogState extends State<AddEditCategoryDialog> {
               children: [
                 Text(
                   widget.category == null ? 'New' : 'Edit',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
+                    color: themeColors.text,
                   ),
                 ),
                 Container(

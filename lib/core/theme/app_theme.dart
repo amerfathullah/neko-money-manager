@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
+import 'app_theme_colors.dart';
 
 class AppTheme {
   static ThemeData get lightTheme {
@@ -9,6 +10,18 @@ class AppTheme {
       brightness: Brightness.light,
       primaryColor: AppColors.pastelPink,
       scaffoldBackgroundColor: AppColors.backgroundLight,
+      extensions: const [
+        AppThemeColors(
+          background: AppColors.backgroundLight,
+          surface: AppColors.surfaceCream,
+          container: AppColors.containerBeige,
+          buttonBackground: AppColors.buttonBeige,
+          subtleBorder: AppColors.borderBeige,
+          text: AppColors.textDark,
+          textSubtle: Color(0xFF666666), // Dark Grey
+          inputBackground: AppColors.inputBeige,
+        ),
+      ],
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.pastelPink,
         brightness: Brightness.light,
@@ -68,6 +81,18 @@ class AppTheme {
       brightness: Brightness.dark,
       primaryColor: AppColors.pastelPurple,
       scaffoldBackgroundColor: AppColors.backgroundDark,
+      extensions: const [
+        AppThemeColors(
+          background: AppColors.backgroundDark,
+          surface: AppColors.surfaceDark,
+          container: AppColors.containerDark,
+          buttonBackground: AppColors.buttonDark,
+          subtleBorder: AppColors.borderDark,
+          text: AppColors.textLight,
+          textSubtle: Color(0xFFAAAAAA), // Light Grey
+          inputBackground: AppColors.inputDark,
+        ),
+      ],
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.pastelPurple,
         brightness: Brightness.dark,

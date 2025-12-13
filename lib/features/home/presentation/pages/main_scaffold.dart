@@ -92,8 +92,15 @@ class _MainScaffoldState extends ConsumerState<MainScaffold> {
       floatingActionButton: onFabPressed != null
           ? FloatingActionButton(
               onPressed: onFabPressed,
-              backgroundColor: AppColors.pastelOrange,
-              child: const Icon(Icons.add, color: AppColors.textDark),
+              backgroundColor: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.textDeepOrange
+                  : AppColors.pastelOrange,
+              child: Icon(
+                Icons.add,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : AppColors.textDark,
+              ),
             )
           : null,
     );

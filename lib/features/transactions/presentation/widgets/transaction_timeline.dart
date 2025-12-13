@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../categories/data/models/category.dart';
 import '../../../categories/presentation/providers/category_provider.dart';
@@ -40,6 +41,7 @@ class TransactionTimeline extends ConsumerWidget {
       );
     }
 
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     final categories = ref.watch(categoryProvider).asData?.value ?? [];
     final assets = ref.watch(assetProvider).asData?.value ?? [];
     final ledgers = ref.watch(ledgerProvider).asData?.value ?? [];
@@ -133,8 +135,8 @@ class TransactionTimeline extends ConsumerWidget {
                                   TextSpan(
                                     text:
                                         '${DateFormat('MMM').format(date).substring(1)} ${DateFormat('dd').format(date)}',
-                                    style: const TextStyle(
-                                      color: AppColors.textDark,
+                                    style: TextStyle(
+                                      color: themeColors.text,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 18,
                                     ),
@@ -151,15 +153,15 @@ class TransactionTimeline extends ConsumerWidget {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: AppColors
-                                    .containerBeige, // Beige/Sand pill background
+                                color: themeColors
+                                    .container, // Beige/Sand pill background
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
                                 DateFormat('EEE').format(date),
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: AppColors.textDark,
+                                style: TextStyle(
+                                  color: themeColors.text,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
                                 ),
@@ -176,9 +178,9 @@ class TransactionTimeline extends ConsumerWidget {
                         if (income > 0)
                           Text(
                             '+${CurrencyFormatter.format(income, symbol: '', useGrouping: useComma)}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textDark,
+                              color: themeColors.text,
                               fontSize: 18,
                             ),
                           ),
@@ -242,6 +244,7 @@ class TransactionTimeline extends ConsumerWidget {
     bool useComma,
     bool showTime,
   ) {
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     final isExpense = t.type == TransactionType.expense;
     final category = categories.firstWhere(
       (c) => c.id == t.categoryId,
@@ -321,14 +324,14 @@ class TransactionTimeline extends ConsumerWidget {
                         child: Container(
                           color:
                               backgroundColor ??
-                              AppColors
-                                  .backgroundLight, // Mask line with background color
+                              themeColors
+                                  .background, // Mask line with background color
                           padding: const EdgeInsets.symmetric(vertical: 4),
                           child: Text(
                             DateFormat('HH:00').format(t.date),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 13,
-                              color: AppColors.textDark,
+                              color: themeColors.text,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -384,7 +387,7 @@ class TransactionTimeline extends ConsumerWidget {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: backgroundColor ?? AppColors.backgroundLight,
+                        color: backgroundColor ?? themeColors.background,
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -402,10 +405,10 @@ class TransactionTimeline extends ConsumerWidget {
                           // Category Name
                           Text(
                             category.name,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
-                              color: AppColors.textDark,
+                              color: themeColors.text,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -427,10 +430,10 @@ class TransactionTimeline extends ConsumerWidget {
                                 ),
                                 child: Text(
                                   DateFormat('HH:mm').format(t.date),
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
-                                    color: AppColors.textDark,
+                                    color: themeColors.text,
                                   ),
                                 ),
                               ),
@@ -499,9 +502,7 @@ class TransactionTimeline extends ConsumerWidget {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
-                        color: isExpense
-                            ? AppColors.expense
-                            : AppColors.textDark,
+                        color: isExpense ? AppColors.expense : themeColors.text,
                       ),
                     ),
                   ],

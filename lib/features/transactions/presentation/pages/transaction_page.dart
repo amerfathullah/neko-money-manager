@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 
 import '../../../categories/data/models/category.dart';
 import '../../../categories/presentation/providers/category_provider.dart';
@@ -314,104 +315,110 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
     final controller = TextEditingController(text: curVal);
     final result = await showDialog<String>(
       context: context,
-      builder: (ctx) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
-        backgroundColor: AppColors.backgroundLight, // Cream
-        insetPadding: const EdgeInsets.all(24),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: AppColors.buttonBeige, // Beige input area
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                child: TextField(
-                  controller: controller,
-                  autofocus: true,
-                  maxLines: 5,
-                  minLines: 3,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.black87,
-                    fontWeight: FontWeight.w500,
+      builder: (ctx) {
+        final themeColors = Theme.of(context).extension<AppThemeColors>()!;
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(32),
+          ),
+          backgroundColor: themeColors.surface, // Cream
+          insetPadding: const EdgeInsets.all(24),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: themeColors.inputBackground, // Beige input area
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  decoration: InputDecoration(
-                    hintText: 'Enter the remarks...',
-                    hintStyle: TextStyle(
-                      color: Colors.black.withValues(alpha: 0.3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: TextField(
+                    controller: controller,
+                    autofocus: true,
+                    maxLines: 5,
+                    minLines: 3,
+                    style: TextStyle(
                       fontSize: 16,
+                      color: themeColors.text,
                       fontWeight: FontWeight.w500,
                     ),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.zero,
+                    decoration: InputDecoration(
+                      hintText: 'Enter the remarks...',
+                      hintStyle: TextStyle(
+                        color: themeColors.text.withValues(alpha: 0.3),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.zero,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: SizedBox(
-                      height: 50,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.buttonBeige, // Beige
-                          foregroundColor: Colors.black87,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 50,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                themeColors.inputBackground, // Beige
+                            foregroundColor: themeColors.text,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
                           ),
-                        ),
-                        onPressed: () => Navigator.pop(ctx),
-                        child: const Text(
-                          'Cancel',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF2C3E50),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: SizedBox(
-                      height: 50,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.destructiveRed, // Red
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        onPressed: () => Navigator.pop(ctx, controller.text),
-                        child: const Text(
-                          'OK',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                          onPressed: () => Navigator.pop(ctx),
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: themeColors.text,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: SizedBox(
+                        height: 50,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.destructiveRed, // Red
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          onPressed: () => Navigator.pop(ctx, controller.text),
+                          child: const Text(
+                            'OK',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
     if (result != null) {
       setState(() => _remark = result);
@@ -427,11 +434,18 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: AppColors.destructiveRed, // Match custom red
-              onPrimary: Colors.white,
-              onSurface: Colors.black,
-            ),
+            colorScheme: Theme.of(context).brightness == Brightness.dark
+                ? const ColorScheme.dark(
+                    primary: AppColors.destructiveRed,
+                    onPrimary: Colors.white,
+                    surface: AppColors.backgroundDark,
+                    onSurface: AppColors.textLight,
+                  )
+                : const ColorScheme.light(
+                    primary: AppColors.destructiveRed,
+                    onPrimary: Colors.white,
+                    onSurface: Colors.black,
+                  ),
           ),
           child: child!,
         );
@@ -444,8 +458,10 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
 
   // New unified Asset Popup for options panel
   Future<void> _showAssetSelectionPopup(List<Asset> assets) async {
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     await showModalBottomSheet(
       context: context,
+      backgroundColor: themeColors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -456,7 +472,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
           final asset = assets[index];
           return ListTile(
             leading: Icon(asset.icon, color: asset.color),
-            title: Text(asset.name),
+            title: Text(asset.name, style: TextStyle(color: themeColors.text)),
             onTap: () {
               setState(() => _selectedAssetId = asset.id);
               Navigator.pop(ctx);
@@ -470,36 +486,41 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
   void _showTransferChargePopup() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        backgroundColor: const Color(0xFFFFF3E0),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Transfer charge is included in the total amount. [Transfer in] = [Total] - [charge] . For example transfer out 1000, and the transfer charge is 50, the final transfer in amount is 950.',
-              style: TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.destructiveRed,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+      builder: (context) {
+        final themeColors = Theme.of(context).extension<AppThemeColors>()!;
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          backgroundColor: themeColors.surface,
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Transfer charge is included in the total amount. [Transfer in] = [Total] - [charge] . For example transfer out 1000, and the transfer charge is 50, the final transfer in amount is 950.',
+                style: TextStyle(fontSize: 16, color: themeColors.text),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.destructiveRed,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    'Confirm',
+                    style: TextStyle(color: Colors.white),
                   ),
                 ),
-                onPressed: () => Navigator.pop(context),
-                child: const Text(
-                  'Confirm',
-                  style: TextStyle(color: Colors.white),
-                ),
               ),
-            ),
-          ],
-        ),
-      ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -508,25 +529,44 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
     final controller = TextEditingController(text: curVal == '0' ? '' : curVal);
     final result = await showDialog<String>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Enter Transfer Charge'),
-        content: TextField(
-          controller: controller,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          autofocus: true,
-          decoration: const InputDecoration(hintText: '0'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+      builder: (ctx) {
+        final themeColors = Theme.of(context).extension<AppThemeColors>()!;
+        return AlertDialog(
+          backgroundColor: themeColors.surface,
+          title: Text(
+            'Enter Transfer Charge',
+            style: TextStyle(color: themeColors.text),
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, controller.text),
-            child: const Text('OK'),
+          content: TextField(
+            controller: controller,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            autofocus: true,
+            style: TextStyle(color: themeColors.text),
+            decoration: InputDecoration(
+              hintText: '0',
+              hintStyle: TextStyle(
+                color: themeColors.text.withValues(alpha: 0.5),
+              ),
+            ),
           ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text('Cancel', style: TextStyle(color: themeColors.text)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, controller.text),
+              child: Text(
+                'OK',
+                style: TextStyle(
+                  color: themeColors.text,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
     if (result != null) {
       setState(() => _transferCharge = result.isEmpty ? '0' : result);
@@ -596,8 +636,10 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
       } catch (_) {}
     }
 
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
+
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight, // Light Beige Background
+      backgroundColor: themeColors.surface, // Light Beige Background
       resizeToAvoidBottomInset:
           false, // Prevent keyboard from distorting layout
       body: SafeArea(
@@ -609,14 +651,14 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.arrow_back_ios_new,
                       size: 20,
-                      color: Colors.black87,
+                      color: themeColors.text,
                     ),
                     onPressed: () => Navigator.of(context).pop(),
                     style: IconButton.styleFrom(
-                      backgroundColor: AppColors.inputBeige, // Darker beige
+                      backgroundColor: themeColors.inputBackground,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -626,7 +668,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
                   // Custom Tab Bar
                   Container(
                     decoration: BoxDecoration(
-                      color: AppColors.inputBeige,
+                      color: themeColors.inputBackground,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     padding: const EdgeInsets.all(4),
@@ -694,7 +736,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
                           height: 40,
                           padding: const EdgeInsets.symmetric(horizontal: 24),
                           decoration: BoxDecoration(
-                            color: AppColors.inputBeige,
+                            color: themeColors.inputBackground,
                             borderRadius: BorderRadius.circular(30),
                           ),
                           alignment: Alignment.centerRight,
@@ -708,8 +750,8 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
                               color:
                                   _inputAmountStr == '0' ||
                                       _inputAmountStr.isEmpty
-                                  ? Colors.black.withValues(alpha: 0.3)
-                                  : Colors.black87,
+                                  ? themeColors.text.withValues(alpha: 0.3)
+                                  : themeColors.text,
                             ),
                           ),
                         ),
@@ -726,7 +768,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
                             height: 40,
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             decoration: BoxDecoration(
-                              color: AppColors.inputBeige,
+                              color: themeColors.inputBackground,
                               borderRadius: BorderRadius.circular(30),
                             ),
                             alignment: Alignment.center,
@@ -734,8 +776,8 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
                               _remark.isEmpty ? 'Remark' : _remark,
                               style: TextStyle(
                                 color: _remark.isEmpty
-                                    ? Colors.black.withValues(alpha: 0.3)
-                                    : Colors.black87,
+                                    ? themeColors.text.withValues(alpha: 0.3)
+                                    : themeColors.text,
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -779,6 +821,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
                             if (ledgers.isNotEmpty) {
                               await showModalBottomSheet(
                                 context: context,
+                                backgroundColor: themeColors.surface,
                                 shape: const RoundedRectangleBorder(
                                   borderRadius: BorderRadius.vertical(
                                     top: Radius.circular(20),
@@ -790,7 +833,12 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
                                   itemBuilder: (context, index) {
                                     final l = ledgers[index];
                                     return ListTile(
-                                      title: Text(l.name),
+                                      title: Text(
+                                        l.name,
+                                        style: TextStyle(
+                                          color: themeColors.text,
+                                        ),
+                                      ),
                                       onTap: () {
                                         setState(
                                           () => _selectedLedgerId = l.id,
@@ -823,6 +871,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
 
   Widget _buildTabItem(String label, int index) {
     bool isSelected = _selectedTypeIndex == index;
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     return GestureDetector(
       onTap: () => setState(() {
         _selectedTypeIndex = index;
@@ -833,7 +882,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFFFF8E1) : Colors.transparent,
+          color: isSelected ? themeColors.surface : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
           boxShadow: isSelected
               ? [
@@ -848,7 +897,7 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
           label,
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: isSelected ? Colors.black87 : Colors.black54,
+            color: isSelected ? themeColors.text : themeColors.textSubtle,
           ),
         ),
       ),

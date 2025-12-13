@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../home/presentation/providers/ledger_provider.dart';
-import '../../../../core/constants/app_colors.dart';
 import '../../../home/presentation/pages/ledger_details_page.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import 'add_edit_ledger_page.dart';
 
 class LedgersPage extends ConsumerWidget {
@@ -11,6 +11,7 @@ class LedgersPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ledgersAsync = ref.watch(ledgerProvider);
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
 
     return Scaffold(
       appBar: AppBar(
@@ -118,10 +119,10 @@ class LedgersPage extends ConsumerWidget {
                           child: Text(
                             ledger.name,
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textDark,
+                              color: themeColors.text,
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,

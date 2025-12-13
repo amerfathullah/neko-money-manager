@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../core/utils/currency_formatter.dart';
 
 class LedgerCard extends StatelessWidget {
@@ -22,6 +23,17 @@ class LedgerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // In dark mode, reduce opacity of the card to prevent it from being too bright/neon
+    // and use white text for better contrast against the darker background.
+    final cardColors = isDark
+        ? [color.withValues(alpha: 0.2), color.withValues(alpha: 0.3)]
+        : [color.withValues(alpha: 0.8), color];
+
+    final textColor = isDark ? themeColors.text : AppColors.textDark;
+
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -36,7 +48,7 @@ class LedgerCard extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [color.withValues(alpha: 0.8), color],
+              colors: cardColors,
             ),
           ),
           child: Column(
@@ -45,7 +57,7 @@ class LedgerCard extends StatelessWidget {
             children: [
               Icon(
                 icon ?? Icons.account_balance_wallet,
-                color: AppColors.textDark.withValues(alpha: 0.7),
+                color: textColor.withValues(alpha: 0.7),
                 size: 26,
               ),
               const SizedBox(height: 6),
@@ -54,8 +66,8 @@ class LedgerCard extends StatelessWidget {
                 children: [
                   Text(
                     name,
-                    style: const TextStyle(
-                      color: AppColors.textDark,
+                    style: TextStyle(
+                      color: textColor,
                       fontWeight: FontWeight.w600,
                       fontSize: 16,
                     ),
@@ -65,8 +77,8 @@ class LedgerCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     CurrencyFormatter.format(balance, symbol: currencySymbol),
-                    style: const TextStyle(
-                      color: AppColors.textDark,
+                    style: TextStyle(
+                      color: textColor,
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
                     ),

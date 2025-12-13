@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 
 class CustomKeypad extends StatelessWidget {
   final VoidCallback onBlackCheckTap;
@@ -19,34 +20,35 @@ class CustomKeypad extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     return Column(
       children: [
-        _buildRow(['1', '2', '3', '+']),
+        _buildRow(['1', '2', '3', '+'], themeColors),
         const SizedBox(height: 8),
-        _buildRow(['4', '5', '6', '-']),
+        _buildRow(['4', '5', '6', '-'], themeColors),
         const SizedBox(height: 8),
-        _buildRow(['7', '8', '9', 'BACK']),
+        _buildRow(['7', '8', '9', 'BACK'], themeColors),
         const SizedBox(height: 8),
-        _buildBottomRow(),
+        _buildBottomRow(themeColors),
       ],
     );
   }
 
-  Widget _buildRow(List<String> keys) {
+  Widget _buildRow(List<String> keys, AppThemeColors themeColors) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: keys.map((key) {
-        return Expanded(child: _buildKey(key));
+        return Expanded(child: _buildKey(key, themeColors));
       }).toList(),
     );
   }
 
-  Widget _buildBottomRow() {
+  Widget _buildBottomRow(AppThemeColors themeColors) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Expanded(child: _buildKey('0')),
-        Expanded(child: _buildKey('.')),
+        Expanded(child: _buildKey('0', themeColors)),
+        Expanded(child: _buildKey('.', themeColors)),
         // Black Check Button
         Expanded(
           child: Center(
@@ -61,13 +63,9 @@ class CustomKeypad extends StatelessWidget {
                   alignment: Alignment.center,
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.transparent, // Or specific color?
+                    color: Colors.transparent,
                   ),
-                  child: const Icon(
-                    Icons.check, // Or check with dash
-                    size: 28,
-                    color: Colors.black87,
-                  ),
+                  child: Icon(Icons.check, size: 28, color: themeColors.text),
                 ),
               ),
             ),
@@ -86,14 +84,11 @@ class CustomKeypad extends StatelessWidget {
                   height: 40,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: AppColors.destructiveRed, // Muted red/maroon
+                    color: AppColors.destructiveRed,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Icon(
-                    isCalculationMode
-                        ? Icons.drag_handle
-                        : Icons
-                              .check, // drag_handle looks like equal sign approx, or use FontAwesome eq
+                    isCalculationMode ? Icons.drag_handle : Icons.check,
                     size: 28,
                     color: Colors.white,
                   ),
@@ -106,7 +101,7 @@ class CustomKeypad extends StatelessWidget {
     );
   }
 
-  Widget _buildKey(String key) {
+  Widget _buildKey(String key, AppThemeColors themeColors) {
     if (key == 'BACK') {
       return Center(
         child: FittedBox(
@@ -122,7 +117,7 @@ class CustomKeypad extends StatelessWidget {
                 shape: BoxShape.circle,
                 color: Colors.grey.withValues(alpha: 0.1),
               ),
-              child: const Icon(Icons.arrow_back, size: 28),
+              child: Icon(Icons.arrow_back, size: 28, color: themeColors.text),
             ),
           ),
         ),
@@ -144,21 +139,21 @@ class CustomKeypad extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isOperator
-                  ? AppColors.inputBeige
-                  : Colors.transparent, // Match Amount field color
+                  ? themeColors.inputBackground
+                  : Colors.transparent,
             ),
             child: isOperator
                 ? Icon(
                     key == '+' ? Icons.add : Icons.remove,
                     size: 28,
-                    color: Colors.black87,
+                    color: themeColors.text,
                   )
                 : Text(
                     key,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: themeColors.text,
                     ),
                   ),
           ),

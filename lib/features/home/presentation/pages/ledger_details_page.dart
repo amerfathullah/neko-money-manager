@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../data/models/ledger.dart';
 import '../../../transactions/data/models/transaction_model.dart';
@@ -35,6 +36,7 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     final currencyAsync = ref.watch(currencyProvider);
     final settingsAsync = ref.watch(settingsProvider);
     final currencySymbol = currencyAsync.asData?.value ?? '\$';
@@ -45,7 +47,7 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
     );
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight, // Cream background
+      backgroundColor: themeColors.background, // Theme background
       body: SafeArea(
         child: Column(
           children: [
@@ -95,6 +97,7 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
   }
 
   Widget _buildCustomAppBar(BuildContext context) {
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Row(
@@ -105,13 +108,13 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
             icon: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.textDark.withValues(alpha: 0.05),
+                color: themeColors.text.withValues(alpha: 0.05),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.arrow_back_ios_new,
                 size: 20,
-                color: AppColors.textDark,
+                color: themeColors.text,
               ),
             ),
           ),
@@ -119,7 +122,7 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
           Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: AppColors.containerBeige, // Darker cream/beige
+              color: themeColors.container, // Theme container
               borderRadius: BorderRadius.circular(24),
             ),
             child: Row(
@@ -134,16 +137,12 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
             icon: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.textDark.withValues(alpha: 0.05),
+                color: themeColors.text.withValues(alpha: 0.05),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.settings,
-                size: 20,
-                color: AppColors.textDark,
-              ),
+              child: Icon(Icons.settings, size: 20, color: themeColors.text),
             ),
-            color: AppColors.backgroundLight, // Cream background
+            color: themeColors.surface, // Theme surface
             elevation: 4,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
@@ -170,23 +169,22 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: AppColors
-                            .buttonBeige, // Darker beige to match image
+                        color: themeColors.inputBackground,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.edit,
                         size: 20,
-                        color: AppColors.textDark,
+                        color: themeColors.text,
                       ),
                     ),
                     const SizedBox(width: 16),
-                    const Text(
+                    Text(
                       'Edit',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
-                        color: AppColors.textDark,
+                        color: themeColors.text,
                       ),
                     ),
                   ],
@@ -202,23 +200,22 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: AppColors
-                              .buttonBeige, // Darker beige to match image
+                          color: themeColors.inputBackground,
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.delete, // Filled trash can
                           size: 20,
-                          color: AppColors.textDark,
+                          color: themeColors.text,
                         ),
                       ),
                       const SizedBox(width: 16),
-                      const Text(
+                      Text(
                         'Delete',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
-                          color: AppColors.textDark,
+                          color: themeColors.text,
                         ),
                       ),
                     ],
@@ -232,13 +229,14 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
   }
 
   Widget _buildTabButton(String text, int index) {
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     final isSelected = _selectedTabIndex == index;
     return GestureDetector(
       onTap: () => setState(() => _selectedTabIndex = index),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.backgroundLight : Colors.transparent,
+          color: isSelected ? themeColors.background : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
           boxShadow: isSelected
               ? [
@@ -253,7 +251,9 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
           text,
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: isSelected ? AppColors.textDark : Colors.grey[600],
+            color: isSelected
+                ? themeColors.text
+                : themeColors.text.withValues(alpha: 0.6),
           ),
         ),
       ),
@@ -261,6 +261,7 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
   }
 
   Widget _buildDateFilter() {
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Center(
@@ -270,23 +271,20 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: AppColors.pastelBlue.withValues(alpha: 0.3),
+              color: themeColors
+                  .inputBackground, // Use subtle input bg instead of pastel blue for better dark mode
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
-                  Icons.calendar_month,
-                  size: 20,
-                  color: AppColors.textDark,
-                ),
+                Icon(Icons.calendar_month, size: 20, color: themeColors.text),
                 const SizedBox(width: 8),
                 Text(
                   _getDateLabel(),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textDark,
+                    color: themeColors.text,
                   ),
                 ),
               ],
@@ -364,16 +362,18 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
     String currencySymbol,
     bool useComma,
   ) {
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     final expense = summary['expense'] ?? 0.0;
     final income = summary['income'] ?? 0.0;
     final net = income - expense;
 
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: const BoxDecoration(
-        color: AppColors
-            .backgroundLight, // Match background or slightly different?
-        border: Border(top: BorderSide(color: AppColors.borderBeige, width: 1)),
+      decoration: BoxDecoration(
+        color: themeColors.surface, // Theme surface
+        border: Border(
+          top: BorderSide(color: themeColors.subtleBorder, width: 1),
+        ),
       ),
       child: Column(
         children: [
@@ -393,31 +393,32 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
               const SizedBox(width: 12),
               Text(
                 widget.ledger.name,
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
-                  color: AppColors.textDark,
+                  color: themeColors.text,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
                       Text(
                         'Expenses',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textDark,
+                          color: themeColors.text,
                         ),
                       ),
-                      Icon(
+                      const Icon(
                         Icons.arrow_drop_down,
                         color: AppColors.expense,
                         size: 16,
@@ -442,10 +443,10 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
                       symbol: currencySymbol,
                       useGrouping: useComma,
                     ),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textDark,
+                      color: themeColors.text,
                     ),
                   ),
                 ],
@@ -453,18 +454,18 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
                       Text(
                         'Income',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textDark,
+                          color: themeColors.text,
                         ),
                       ),
-                      Icon(
+                      const Icon(
                         Icons.arrow_drop_up,
-                        color: AppColors.textDark,
+                        color: AppColors.income,
                         size: 16,
                       ), // Dark arrow for income per image?
                     ],
@@ -478,7 +479,7 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textDark,
+                      color: AppColors.income,
                     ),
                   ),
                 ],
@@ -586,133 +587,138 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
 
     await showDialog(
       context: context,
-      builder: (ctx) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
-        backgroundColor: AppColors.backgroundLight, // Cream
-        insetPadding: const EdgeInsets.all(24),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Option 1: Delete Ledger + Records
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.buttonBeige, // Beige
-                    foregroundColor: AppColors.textDark,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 16,
-                      horizontal: 16,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                  onPressed: () async {
-                    Navigator.pop(ctx);
-                    // 1. Fetch all transactions (no limit)
-                    // Note: Optimally we should have a getTransactionsByLedgerFuture without limit
-                    final allTxs = await ref
-                        .read(transactionRepositoryProvider)
-                        .getAllTransactions(userId);
-
-                    final txsToDelete = allTxs
-                        .where((t) => t.ledgerId == widget.ledger.id)
-                        .toList();
-
-                    // 2. Delete each
-                    final notifier = ref.read(transactionProvider.notifier);
-                    for (final tx in txsToDelete) {
-                      await notifier.deleteTransaction(tx);
-                    }
-
-                    // 3. Delete Ledger
-                    await ref
-                        .read(ledgerProvider.notifier)
-                        .deleteLedger(widget.ledger.id);
-
-                    if (mounted) Navigator.pop(context);
-                  },
-                  child: const Text(
-                    'Delete the ledger and the records in the ledger',
-                    textAlign: TextAlign.left,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textDark,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Option 2: Delete Ledger Only
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.buttonBeige, // Beige
-                    foregroundColor: AppColors.textDark,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 16,
-                      horizontal: 16,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                  onPressed: () async {
-                    Navigator.pop(ctx);
-                    await ref
-                        .read(ledgerProvider.notifier)
-                        .deleteLedger(widget.ledger.id);
-                    if (mounted) Navigator.pop(context);
-                  },
-                  child: const Text(
-                    'Delete the ledger but keep the records in the ledger',
-                    textAlign: TextAlign.left,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textDark,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              // Cancel
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.destructiveRed, // Red
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                  onPressed: () => Navigator.pop(ctx),
-                  child: const Text(
-                    'Cancel',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ],
+      builder: (ctx) {
+        final themeColors = Theme.of(context).extension<AppThemeColors>()!;
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(32),
           ),
-        ),
-      ),
+          backgroundColor: themeColors.surface, // Cream
+          insetPadding: const EdgeInsets.all(24),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Option 1: Delete Ledger + Records
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: themeColors.inputBackground, // Beige
+                      foregroundColor: themeColors.text,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 16,
+                        horizontal: 16,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    onPressed: () async {
+                      Navigator.pop(ctx);
+                      // 1. Fetch all transactions (no limit)
+                      // Note: Optimally we should have a getTransactionsByLedgerFuture without limit
+                      final allTxs = await ref
+                          .read(transactionRepositoryProvider)
+                          .getAllTransactions(userId);
+
+                      final txsToDelete = allTxs
+                          .where((t) => t.ledgerId == widget.ledger.id)
+                          .toList();
+
+                      // 2. Delete each
+                      final notifier = ref.read(transactionProvider.notifier);
+                      for (final tx in txsToDelete) {
+                        await notifier.deleteTransaction(tx);
+                      }
+
+                      // 3. Delete Ledger
+                      await ref
+                          .read(ledgerProvider.notifier)
+                          .deleteLedger(widget.ledger.id);
+
+                      if (mounted) Navigator.pop(context);
+                    },
+                    child: Text(
+                      'Delete the ledger and the records in the ledger',
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: themeColors.text,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Option 2: Delete Ledger Only
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: themeColors.inputBackground, // Beige
+                      foregroundColor: themeColors.text,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 16,
+                        horizontal: 16,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    onPressed: () async {
+                      Navigator.pop(ctx);
+                      await ref
+                          .read(ledgerProvider.notifier)
+                          .deleteLedger(widget.ledger.id);
+                      if (mounted) Navigator.pop(context);
+                    },
+                    child: Text(
+                      'Delete the ledger but keep the records in the ledger',
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: themeColors.text,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+
+                // Cancel
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.destructiveRed, // Red
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                    onPressed: () => Navigator.pop(ctx),
+                    child: const Text(
+                      'Cancel',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

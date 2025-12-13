@@ -20,8 +20,6 @@ class AppColors {
   static const Color backgroundLight = Color(
     0xFFFFF8E1,
   ); // Cream/Eggshell for kawaii feel
-  static const Color backgroundDark = Color(0xFF1A1A1A);
-  static const Color surfaceDark = Color(0xFF2C2C2C);
 
   // Semantic
   static const Color expense = Color(0xFFFF9AA2); // Pastel Red
@@ -37,6 +35,16 @@ class AppColors {
   static const Color timelineArrow = Color(0xFFBF4C58);
   static const Color inputBeige = Color(0xFFF5E6D3);
   static const Color deepRed = Color(0xFFB71C1C);
+
+  // Dark Theme Colors
+  static const Color backgroundDark = Color(0xFF121212);
+  static const Color surfaceDark = Color(0xFF1E1E1E);
+  static const Color containerDark = Color(0xFF2C2C2C);
+  static const Color buttonDark = Color(
+    0xFF333333,
+  ); // Or a specific dark button color
+  static const Color borderDark = Color(0xFF424242);
+  static const Color inputDark = Color(0xFF2A2A2A);
 
   static const Color pastelCyan = Color(0xFFD0F4F7);
   static const Color textCyan = Color(0xFF2E5C5F);

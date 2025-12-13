@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../../assets/data/models/asset.dart';
 import '../../../categories/data/models/category.dart';
@@ -45,11 +46,12 @@ class _TransactionDetailsDialogState
   @override
   Widget build(BuildContext context) {
     final isExpense = _currentTransaction.type == TransactionType.expense;
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     final color = widget.category.color;
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      backgroundColor: AppColors.backgroundLight, // Cream color
+      backgroundColor: themeColors.surface, // Cream color
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
       child: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -72,10 +74,10 @@ class _TransactionDetailsDialogState
                 Expanded(
                   child: Text(
                     widget.category.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textDark,
+                      color: themeColors.text,
                     ),
                   ),
                 ),
@@ -84,7 +86,7 @@ class _TransactionDetailsDialogState
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: isExpense ? AppColors.expense : AppColors.textDark,
+                    color: isExpense ? AppColors.expense : themeColors.text,
                   ),
                 ),
               ],
@@ -129,7 +131,7 @@ class _TransactionDetailsDialogState
                 // Edit
                 _buildOptionBtn(
                   icon: Icons.edit,
-                  color: AppColors.textDark,
+                  color: themeColors.text,
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.push(
@@ -145,7 +147,7 @@ class _TransactionDetailsDialogState
                 // Delete
                 _buildOptionBtn(
                   icon: Icons.delete,
-                  color: AppColors.textDark,
+                  color: themeColors.text,
                   onTap: () async {
                     final confirm = await showDialog<bool>(
                       context: context,
@@ -153,7 +155,7 @@ class _TransactionDetailsDialogState
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(32),
                         ),
-                        backgroundColor: AppColors.backgroundLight, // Cream
+                        backgroundColor: themeColors.surface, // Cream
                         insetPadding: const EdgeInsets.all(24),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
@@ -168,10 +170,10 @@ class _TransactionDetailsDialogState
                                     ? 'Are you sure you want to delete this reimbursement?'
                                     : 'Are you sure you want to delete this record?',
                                 textAlign: TextAlign.left,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
-                                  color: AppColors.textDark,
+                                  color: themeColors.text,
                                   height: 1.2,
                                 ),
                               ),
@@ -183,9 +185,9 @@ class _TransactionDetailsDialogState
                                       height: 56,
                                       child: ElevatedButton(
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor:
-                                              AppColors.buttonBeige, // Beige
-                                          foregroundColor: AppColors.textDark,
+                                          backgroundColor: themeColors
+                                              .inputBackground, // Beige
+                                          foregroundColor: themeColors.text,
                                           elevation: 0,
                                           shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.circular(
@@ -259,7 +261,7 @@ class _TransactionDetailsDialogState
                       : Icons.star_border,
                   color: _currentTransaction.isBookmarked
                       ? Colors.amber
-                      : AppColors.textDark,
+                      : themeColors.text,
                   onTap: () {
                     final oldTx = _currentTransaction;
                     setState(() {
@@ -312,23 +314,24 @@ class _TransactionDetailsDialogState
   }
 
   Widget _buildDetailRow(String label, String value) {
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 16,
-            color: AppColors.textDark,
+            color: themeColors.text,
           ),
         ),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: AppColors.textDark,
+            color: themeColors.text,
           ),
         ),
       ],
@@ -340,13 +343,14 @@ class _TransactionDetailsDialogState
     required Color color,
     required VoidCallback onTap,
   }) {
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: AppColors.inputBeige, // Beige background
+          color: themeColors.inputBackground, // Beige background
           borderRadius: BorderRadius.circular(12),
         ),
         child: Icon(icon, color: color, size: 24),

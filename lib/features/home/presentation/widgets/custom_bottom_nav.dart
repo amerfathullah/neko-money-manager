@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 
 class CustomBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -13,11 +14,12 @@ class CustomBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     return Container(
       margin: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.backgroundLight, // Cream background
+        color: themeColors.background, // Cream background
         borderRadius: BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(
@@ -84,6 +86,12 @@ class _NavIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final backgroundColor = isSelected
+        ? (isDark ? color.withValues(alpha: 0.2) : color)
+        : Colors.transparent;
+
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -92,7 +100,7 @@ class _NavIcon extends StatelessWidget {
         curve: Curves.easeOutQuart,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? color : Colors.transparent,
+          color: backgroundColor,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Row(
@@ -104,8 +112,8 @@ class _NavIcon extends StatelessWidget {
               child: Icon(
                 icon,
                 color: isSelected
-                    ? AppColors.textDark
-                    : AppColors.textDark.withValues(alpha: 0.4),
+                    ? themeColors.text
+                    : themeColors.text.withValues(alpha: 0.4),
                 size: 24,
               ),
             ),
@@ -113,8 +121,8 @@ class _NavIcon extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 label,
-                style: const TextStyle(
-                  color: AppColors.textDark,
+                style: TextStyle(
+                  color: themeColors.text,
                   fontWeight: FontWeight.bold,
                   fontSize: 14,
                 ),

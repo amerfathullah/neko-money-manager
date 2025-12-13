@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../data/models/asset.dart';
 import '../providers/asset_provider.dart';
 import '../../../../features/settings/presentation/providers/currency_provider.dart';
@@ -165,21 +166,22 @@ class _AddEditAssetPageState extends ConsumerState<AddEditAssetPage> {
   @override
   Widget build(BuildContext context) {
     final currencyAsync = ref.watch(currencyProvider);
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     final currencySymbol = currencyAsync.asData?.value ?? '\$';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFFF8E1),
+      backgroundColor: themeColors.background,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: AppColors.textDark),
+          icon: Icon(Icons.arrow_back_ios_new, color: themeColors.text),
           onPressed: () => Navigator.of(context).pop(),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
           widget.asset == null ? 'Add Asset' : 'Edit Asset',
-          style: const TextStyle(
-            color: AppColors.textDark,
+          style: TextStyle(
+            color: themeColors.text,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -194,12 +196,12 @@ class _AddEditAssetPageState extends ConsumerState<AddEditAssetPage> {
                   // Theme Color Row
                   Align(
                     alignment: Alignment.center,
-                    child: const Text(
+                    child: Text(
                       'Theme Color',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textDark,
+                        color: themeColors.text,
                       ),
                     ),
                   ),
@@ -243,12 +245,12 @@ class _AddEditAssetPageState extends ConsumerState<AddEditAssetPage> {
                   // Icon Selection
                   Align(
                     alignment: Alignment.center,
-                    child: const Text(
+                    child: Text(
                       'Select Icon',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textDark,
+                        color: themeColors.text,
                       ),
                     ),
                   ),
@@ -264,7 +266,7 @@ class _AddEditAssetPageState extends ConsumerState<AddEditAssetPage> {
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: Colors.grey[800],
+                              color: themeColors.textSubtle,
                             ),
                           ),
                         ),
@@ -318,7 +320,7 @@ class _AddEditAssetPageState extends ConsumerState<AddEditAssetPage> {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: const Color(0xFFFFF8E5),
+              color: themeColors.surface,
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(24),
               ),
@@ -360,7 +362,7 @@ class _AddEditAssetPageState extends ConsumerState<AddEditAssetPage> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF3E9D2),
+                            color: themeColors.inputBackground,
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: TextFormField(
@@ -368,16 +370,16 @@ class _AddEditAssetPageState extends ConsumerState<AddEditAssetPage> {
                             decoration: InputDecoration(
                               hintText: 'Asset Name',
                               hintStyle: TextStyle(
-                                color: Colors.black.withValues(alpha: 0.4),
+                                color: themeColors.text.withValues(alpha: 0.4),
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
                               ),
                               border: InputBorder.none,
                             ),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
-                              color: AppColors.textDark,
+                              color: themeColors.text,
                             ),
                             validator: (value) => value == null || value.isEmpty
                                 ? 'Required'
@@ -396,16 +398,16 @@ class _AddEditAssetPageState extends ConsumerState<AddEditAssetPage> {
                         width: 56,
                         height: 56,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF3E9D2),
+                          color: themeColors.inputBackground,
                           borderRadius: BorderRadius.circular(16),
                         ),
                         alignment: Alignment.center,
                         child: Text(
                           currencySymbol,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black54,
+                            color: themeColors.text,
                           ),
                         ),
                       ),
@@ -417,7 +419,7 @@ class _AddEditAssetPageState extends ConsumerState<AddEditAssetPage> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF3E9D2),
+                            color: themeColors.inputBackground,
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: TextFormField(
@@ -428,14 +430,14 @@ class _AddEditAssetPageState extends ConsumerState<AddEditAssetPage> {
                             decoration: InputDecoration(
                               hintText: 'Current Balance',
                               hintStyle: TextStyle(
-                                color: Colors.black.withValues(alpha: 0.4),
+                                color: themeColors.text.withValues(alpha: 0.4),
                                 fontSize: 16,
                               ),
                               border: InputBorder.none,
                             ),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
-                              color: AppColors.textDark,
+                              color: themeColors.text,
                             ),
                           ),
                         ),
@@ -451,12 +453,12 @@ class _AddEditAssetPageState extends ConsumerState<AddEditAssetPage> {
                         width: 56,
                         height: 56,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF3E9D2),
+                          color: themeColors.inputBackground,
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Icon(
                           Icons.description_outlined,
-                          color: AppColors.textDark.withValues(alpha: 0.7),
+                          color: themeColors.textSubtle,
                           size: 28,
                         ),
                       ),
@@ -468,7 +470,7 @@ class _AddEditAssetPageState extends ConsumerState<AddEditAssetPage> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF3E9D2),
+                            color: themeColors.inputBackground,
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: TextFormField(
@@ -476,14 +478,14 @@ class _AddEditAssetPageState extends ConsumerState<AddEditAssetPage> {
                             decoration: InputDecoration(
                               hintText: 'Remark (Optional)',
                               hintStyle: TextStyle(
-                                color: Colors.black.withValues(alpha: 0.4),
+                                color: themeColors.text.withValues(alpha: 0.4),
                                 fontSize: 16,
                               ),
                               border: InputBorder.none,
                             ),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
-                              color: AppColors.textDark,
+                              color: themeColors.text,
                             ),
                           ),
                         ),

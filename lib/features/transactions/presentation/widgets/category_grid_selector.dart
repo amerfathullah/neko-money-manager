@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../categories/data/models/category.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 
 class CategoryGridSelector extends StatelessWidget {
   final List<Category> categories;
@@ -32,8 +33,7 @@ class CategoryGridSelector extends StatelessWidget {
       );
     }
 
-    // Include "Setting" as a special item at the end or handle it externally?
-    // Based on image: "Setting" is last item.
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     final itemCount = categories.length + 1; // +1 for Setting
 
     return GridView.builder(
@@ -48,25 +48,23 @@ class CategoryGridSelector extends StatelessWidget {
       itemBuilder: (context, index) {
         if (index == categories.length) {
           // Setting Button
-          return _buildSettingButton();
+          return _buildSettingButton(themeColors);
         }
 
         final category = categories[index];
         final isSelected = selectedCategory?.id == category.id;
 
-        return _buildCategoryItem(category, isSelected);
+        return _buildCategoryItem(category, isSelected, themeColors);
       },
     );
   }
 
-  Widget _buildCategoryItem(Category category, bool isSelected) {
+  Widget _buildCategoryItem(
+    Category category,
+    bool isSelected,
+    AppThemeColors themeColors,
+  ) {
     // Determine background color.
-    // Image shows colorful backgrounds for all items.
-    // If selected, maybe highlight border or darken?
-    // The image shows "Cash" selected with Red background.
-    // Unselected items have light pastel backgrounds.
-
-    // Assuming category.color is the main color.
     final color = category.color;
 
     return Material(
@@ -80,23 +78,18 @@ class CategoryGridSelector extends StatelessWidget {
                 ? color
                 : color.withValues(alpha: 0.2), // Light version if not selected
             borderRadius: BorderRadius.circular(20),
-            // border: isSelected ? Border.all(color: Colors.black12, width: 1) : null,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // Icon Container
-              Container(
+              SizedBox(
                 width: 24,
                 height: 24,
-                decoration: const BoxDecoration(
-                  // shape: BoxShape.circle,
-                  // color: Colors.white24,
-                ),
                 child: Icon(
                   category.icon,
                   size: 16,
-                  color: isSelected ? Colors.white : Colors.black87,
+                  color: isSelected ? Colors.white : themeColors.text,
                 ),
               ),
               const SizedBox(width: 4),
@@ -107,7 +100,7 @@ class CategoryGridSelector extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: isSelected ? Colors.white : Colors.black87,
+                    color: isSelected ? Colors.white : themeColors.text,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -119,9 +112,9 @@ class CategoryGridSelector extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingButton() {
+  Widget _buildSettingButton(AppThemeColors themeColors) {
     return Material(
-      color: Colors.grey[300], // Grey for settings
+      color: themeColors.inputBackground,
       borderRadius: BorderRadius.circular(20),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -132,14 +125,14 @@ class CategoryGridSelector extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.settings, size: 16, color: Colors.black54),
+            Icon(Icons.settings, size: 16, color: themeColors.text),
             const SizedBox(width: 4),
-            const Text(
+            Text(
               'Setting',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
-                color: Colors.black54,
+                color: themeColors.text,
               ),
             ),
           ],

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/category.dart';
+import '../../../../core/theme/app_theme_colors.dart';
+import '../../../../core/constants/app_colors.dart';
 
 class CategoryActionPopup extends ConsumerWidget {
   final Category category;
@@ -17,8 +19,9 @@ class CategoryActionPopup extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Custom dialog matching the rounded beige aesthetic
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     return Dialog(
-      backgroundColor: const Color(0xFFFFF8E1), // Light beige background
+      backgroundColor: themeColors.surface, // Light beige background
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -29,8 +32,9 @@ class CategoryActionPopup extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: category.color
-                    .withValues(alpha: 0.2), // Box decoration color follows category color
+                color: category.color.withValues(
+                  alpha: 0.2,
+                ), // Box decoration color follows category color
                 borderRadius: BorderRadius.circular(50),
               ),
               child: Row(
@@ -44,10 +48,10 @@ class CategoryActionPopup extends ConsumerWidget {
                   const SizedBox(width: 12),
                   Text(
                     category.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
-                      color: Colors.black87,
+                      color: themeColors.text,
                     ),
                   ),
                 ],
@@ -60,10 +64,9 @@ class CategoryActionPopup extends ConsumerWidget {
                 Expanded(
                   child: _buildActionButton(
                     label: 'Delete',
-                    color: const Color(
-                      0xFFFFF3E0,
-                    ), // Very light beige for delete
-                    textColor: Colors.black87,
+                    color: themeColors
+                        .inputBackground, // Very light beige for delete
+                    textColor: themeColors.text,
                     onTap: () {
                       Navigator.of(context).pop();
                       onDelete();
@@ -74,7 +77,7 @@ class CategoryActionPopup extends ConsumerWidget {
                 Expanded(
                   child: _buildActionButton(
                     label: 'Modify',
-                    color: const Color(0xFFCD5C5C), // Indian Red / Muted Red
+                    color: AppColors.destructiveRed, // Indian Red / Muted Red
                     textColor: Colors.white,
                     onTap: () {
                       Navigator.of(context).pop();

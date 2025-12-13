@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../widgets/transactions_list_widgets.dart';
 
 class TimeFilterPopup extends StatefulWidget {
@@ -48,84 +49,125 @@ class _TimeFilterPopupState extends State<TimeFilterPopup> {
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.surfaceCream, // Cream background
-          borderRadius: BorderRadius.circular(24),
-        ),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Tabs
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _buildTab('Daily', TransactionTimeRange.daily),
-                  _buildTab('Weekly', TransactionTimeRange.weekly),
-                  _buildTab('Monthly', TransactionTimeRange.monthly),
-                  _buildTab('Annual', TransactionTimeRange.annual),
-                  _buildTab('Custom', TransactionTimeRange.custom),
-                  _buildTab('All', TransactionTimeRange.all),
-                ],
-              ),
+      child: Builder(
+        builder: (context) {
+          final themeColors = Theme.of(context).extension<AppThemeColors>()!;
+          final primaryColor = Theme.of(context).primaryColor;
+          return Container(
+            decoration: BoxDecoration(
+              color: themeColors.surface, // Cream background
+              borderRadius: BorderRadius.circular(24),
             ),
-            const SizedBox(height: 16),
-
-            // Content Area
-            SizedBox(
-              height: 340,
-              width: double.maxFinite,
-              child: _buildContent(),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text(
-                    'Cancel',
-                    style: TextStyle(
-                      color: AppColors.textDark,
-                      fontWeight: FontWeight.bold,
-                    ),
+                // Tabs
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      _buildTab(
+                        'Daily',
+                        TransactionTimeRange.daily,
+                        primaryColor,
+                        themeColors,
+                      ),
+                      _buildTab(
+                        'Weekly',
+                        TransactionTimeRange.weekly,
+                        primaryColor,
+                        themeColors,
+                      ),
+                      _buildTab(
+                        'Monthly',
+                        TransactionTimeRange.monthly,
+                        primaryColor,
+                        themeColors,
+                      ),
+                      _buildTab(
+                        'Annual',
+                        TransactionTimeRange.annual,
+                        primaryColor,
+                        themeColors,
+                      ),
+                      _buildTab(
+                        'Custom',
+                        TransactionTimeRange.custom,
+                        primaryColor,
+                        themeColors,
+                      ),
+                      _buildTab(
+                        'All',
+                        TransactionTimeRange.all,
+                        primaryColor,
+                        themeColors,
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: _onConfirm,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.deepRed, // Deep Red
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                const SizedBox(height: 16),
+
+                // Content Area
+                SizedBox(
+                  height: 340,
+                  width: double.maxFinite,
+                  child: _buildContent(themeColors, primaryColor),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Buttons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: themeColors.text,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: _onConfirm,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor, // Deep Red
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                      ),
+                      child: const Text(
+                        'Confirm',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                  ),
-                  child: const Text(
-                    'Confirm',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildTab(String title, TransactionTimeRange range) {
+  Widget _buildTab(
+    String title,
+    TransactionTimeRange range,
+    Color primaryColor,
+    AppThemeColors themeColors,
+  ) {
     final isSelected = _selectedRange == range;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4.0),
@@ -143,13 +185,13 @@ class _TimeFilterPopupState extends State<TimeFilterPopup> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.deepRed : Colors.transparent,
+            color: isSelected ? primaryColor : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
             title,
             style: TextStyle(
-              color: isSelected ? Colors.white : AppColors.textDark,
+              color: isSelected ? Colors.white : themeColors.text,
               fontWeight: FontWeight.bold,
               fontSize: 14,
             ),
@@ -159,28 +201,32 @@ class _TimeFilterPopupState extends State<TimeFilterPopup> {
     );
   }
 
-  Widget _buildContent() {
+  Widget _buildContent(AppThemeColors themeColors, Color primaryColor) {
     switch (_selectedRange) {
       case TransactionTimeRange.daily:
-        return _buildDailyView();
+        return _buildDailyView(themeColors, primaryColor);
       case TransactionTimeRange.weekly:
-        return _buildDailyView(isWeekly: true);
+        return _buildDailyView(themeColors, primaryColor, isWeekly: true);
       case TransactionTimeRange.monthly:
-        return _buildMonthlyView();
+        return _buildMonthlyView(themeColors, primaryColor);
       case TransactionTimeRange.annual:
-        return _buildAnnualView();
+        return _buildAnnualView(themeColors, primaryColor);
       case TransactionTimeRange.custom:
-        return _buildCustomView();
+        return _buildCustomView(themeColors, primaryColor);
       case TransactionTimeRange.all:
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
-              Icon(Icons.list_alt, size: 48, color: AppColors.textDark),
-              SizedBox(height: 16),
+            children: [
+              Icon(Icons.list_alt, size: 48, color: themeColors.text),
+              const SizedBox(height: 16),
               Text(
                 "Show all transactions",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: themeColors.text,
+                ),
               ),
             ],
           ),
@@ -189,14 +235,19 @@ class _TimeFilterPopupState extends State<TimeFilterPopup> {
   }
 
   // --- Views ---
-
-  Widget _buildDailyView({bool isWeekly = false}) {
+  Widget _buildDailyView(
+    AppThemeColors themeColors,
+    Color primaryColor, {
+    bool isWeekly = false,
+  }) {
     return Column(
       children: [
-        _buildMonthNavigator(),
+        _buildMonthNavigator(themeColors),
         const SizedBox(height: 8),
         Expanded(
           child: _CalendarGrid(
+            themeColors: themeColors,
+            primaryColor: primaryColor,
             focusedMonth: _focusedDate,
             selectedDate: _selectedDate,
             selectionMode: isWeekly
@@ -217,7 +268,7 @@ class _TimeFilterPopupState extends State<TimeFilterPopup> {
     );
   }
 
-  Widget _buildMonthlyView() {
+  Widget _buildMonthlyView(AppThemeColors themeColors, Color primaryColor) {
     return Column(
       children: [
         const SizedBox(height: 16),
@@ -291,9 +342,10 @@ class _TimeFilterPopupState extends State<TimeFilterPopup> {
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Text(
                 '${_focusedDate.year}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
+                  color: themeColors.text,
                 ),
               ),
             ),
@@ -315,7 +367,7 @@ class _TimeFilterPopupState extends State<TimeFilterPopup> {
     );
   }
 
-  Widget _buildAnnualView() {
+  Widget _buildAnnualView(AppThemeColors themeColors, Color primaryColor) {
     final startYear = _annualStartYear;
 
     return Column(
@@ -399,7 +451,7 @@ class _TimeFilterPopupState extends State<TimeFilterPopup> {
     );
   }
 
-  Widget _buildCustomView() {
+  Widget _buildCustomView(AppThemeColors themeColors, Color primaryColor) {
     return Column(
       children: [
         Row(
@@ -411,8 +463,8 @@ class _TimeFilterPopupState extends State<TimeFilterPopup> {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: _isEditingCustomStart
-                        ? AppColors.deepRed
-                        : AppColors.backgroundLight,
+                        ? primaryColor
+                        : themeColors.surface,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Center(
@@ -425,7 +477,7 @@ class _TimeFilterPopupState extends State<TimeFilterPopup> {
                       style: TextStyle(
                         color: _isEditingCustomStart
                             ? Colors.white
-                            : AppColors.textDark,
+                            : themeColors.text,
                       ),
                     ),
                   ),
@@ -440,8 +492,8 @@ class _TimeFilterPopupState extends State<TimeFilterPopup> {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: !_isEditingCustomStart
-                        ? AppColors.deepRed
-                        : AppColors.backgroundLight,
+                        ? primaryColor
+                        : themeColors.surface,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Center(
@@ -454,7 +506,7 @@ class _TimeFilterPopupState extends State<TimeFilterPopup> {
                       style: TextStyle(
                         color: !_isEditingCustomStart
                             ? Colors.white
-                            : AppColors.textDark,
+                            : themeColors.text,
                       ),
                     ),
                   ),
@@ -464,10 +516,12 @@ class _TimeFilterPopupState extends State<TimeFilterPopup> {
           ],
         ),
         const SizedBox(height: 8),
-        _buildMonthNavigator(),
+        _buildMonthNavigator(themeColors),
         const SizedBox(height: 8),
         Expanded(
           child: _CalendarGrid(
+            themeColors: themeColors,
+            primaryColor: primaryColor,
             focusedMonth: _focusedDate,
             selectedDate: null,
             selectedRange: _customDateRange,
@@ -503,12 +557,12 @@ class _TimeFilterPopupState extends State<TimeFilterPopup> {
     );
   }
 
-  Widget _buildMonthNavigator() {
+  Widget _buildMonthNavigator(AppThemeColors themeColors) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: 16),
+          icon: Icon(Icons.arrow_back_ios, size: 16, color: themeColors.text),
           onPressed: () {
             setState(() {
               _focusedDate = DateTime(
@@ -520,10 +574,17 @@ class _TimeFilterPopupState extends State<TimeFilterPopup> {
         ),
         Text(
           DateFormat('MMM yyyy').format(_focusedDate),
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: themeColors.text,
+          ),
         ),
         IconButton(
-          icon: const Icon(Icons.arrow_forward_ios, size: 16),
+          icon: Icon(
+            Icons.arrow_forward_ios,
+            size: 16,
+            color: themeColors.text,
+          ),
           onPressed: () {
             setState(() {
               _focusedDate = DateTime(
@@ -554,6 +615,8 @@ class _CalendarGrid extends StatelessWidget {
   final DateTimeRange? selectedRange;
   final _CalendarSelectionMode selectionMode;
   final ValueChanged<DateTime> onDateSelected;
+  final AppThemeColors themeColors; // Add params
+  final Color primaryColor;
 
   const _CalendarGrid({
     required this.focusedMonth,
@@ -561,6 +624,8 @@ class _CalendarGrid extends StatelessWidget {
     this.selectedRange,
     required this.selectionMode,
     required this.onDateSelected,
+    required this.themeColors,
+    required this.primaryColor,
   });
 
   @override
@@ -633,8 +698,8 @@ class _CalendarGrid extends StatelessWidget {
         margin: const EdgeInsets.all(4),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFFB71C1C)
-              : Colors.transparent, // Red circle
+              ? primaryColor
+              : Colors.transparent, // Primary color circle
           shape: BoxShape.circle,
         ),
         child: Center(
@@ -643,7 +708,7 @@ class _CalendarGrid extends StatelessWidget {
             style: TextStyle(
               color: isSelected
                   ? Colors.white
-                  : (isCurrentMonth ? AppColors.textDark : Colors.grey[400]),
+                  : (isCurrentMonth ? themeColors.text : Colors.grey[400]),
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),
           ),
@@ -679,10 +744,10 @@ class _CalendarGrid extends StatelessWidget {
         d.day == selectedDate!.day;
 
     Color? bgColor;
-    Color textColor = isCurrentMonth ? AppColors.textDark : Colors.grey[400]!;
+    Color textColor = isCurrentMonth ? themeColors.text : Colors.grey[400]!;
 
     if (isInWeek) {
-      bgColor = AppColors.deepRed;
+      bgColor = primaryColor;
       textColor = Colors.white;
     }
 
@@ -741,14 +806,14 @@ class _CalendarGrid extends StatelessWidget {
     final isSelected = isStart || isEnd;
 
     Color? bgColor;
-    Color textColor = isCurrentMonth ? AppColors.textDark : Colors.grey[400]!;
+    Color textColor = isCurrentMonth ? themeColors.text : Colors.grey[400]!;
 
     if (isSelected) {
-      bgColor = AppColors.deepRed;
+      bgColor = primaryColor;
       textColor = Colors.white;
     } else if (isInBetween) {
-      bgColor = AppColors.deepRed.withValues(alpha: 0.3); // Lighter red
-      textColor = AppColors.textDark; // Or white if opacity is high
+      bgColor = primaryColor.withValues(alpha: 0.3); // Lighter primary
+      textColor = themeColors.text; // Text
     }
 
     BorderRadius? radius;

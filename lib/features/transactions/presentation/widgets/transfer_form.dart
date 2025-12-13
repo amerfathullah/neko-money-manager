@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_colors.dart';
+
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../../assets/data/models/asset.dart';
 
 class TransferForm extends StatelessWidget {
@@ -26,6 +27,7 @@ class TransferForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -35,10 +37,15 @@ class TransferForm extends StatelessWidget {
             selectedAsset: selectedSourceAsset,
             onChanged: onSourceAssetChanged,
             assets: assets,
+            themeColors: themeColors,
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8),
-            child: Icon(Icons.swap_vert, size: 32, color: Colors.grey),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Icon(
+              Icons.swap_vert,
+              size: 32,
+              color: themeColors.textSubtle,
+            ),
           ),
           _buildAssetSelector(
             label: 'Asset to',
@@ -47,9 +54,10 @@ class TransferForm extends StatelessWidget {
             assets: assets
                 .where((a) => a.id != selectedSourceAsset?.id)
                 .toList(),
+            themeColors: themeColors,
           ),
           const SizedBox(height: 24),
-          _buildChargeField(),
+          _buildChargeField(themeColors),
         ],
       ),
     );
@@ -60,33 +68,35 @@ class TransferForm extends StatelessWidget {
     required Asset? selectedAsset,
     required ValueChanged<Asset?> onChanged,
     required List<Asset> assets,
+    required AppThemeColors themeColors,
   }) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 32),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.inputBeige, // Very light orange/beige
+        color: themeColors.inputBackground,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(4),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.black87,
+              color: themeColors.text,
             ),
-            child: const Icon(Icons.add, color: Colors.white, size: 16),
+            child: Icon(Icons.add, color: themeColors.background, size: 16),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: DropdownButtonHideUnderline(
               child: DropdownButton<Asset>(
                 value: selectedAsset,
+                dropdownColor: themeColors.surface,
                 hint: Text(
                   label,
-                  style: const TextStyle(
-                    color: Colors.black54,
+                  style: TextStyle(
+                    color: themeColors.textSubtle,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -101,9 +111,9 @@ class TransferForm extends StatelessWidget {
                         const SizedBox(width: 8),
                         Text(
                           asset.name,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                            color: themeColors.text,
                           ),
                         ),
                       ],
@@ -119,12 +129,12 @@ class TransferForm extends StatelessWidget {
     );
   }
 
-  Widget _buildChargeField() {
+  Widget _buildChargeField(AppThemeColors themeColors) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 32),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.inputBeige,
+        color: themeColors.inputBackground,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -138,8 +148,8 @@ class TransferForm extends StatelessWidget {
                     : 'Charge: $chargeAmount',
                 style: TextStyle(
                   color: chargeAmount.isEmpty || chargeAmount == '0'
-                      ? Colors.black26
-                      : Colors.black87,
+                      ? themeColors.text.withValues(alpha: 0.3)
+                      : themeColors.text,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -149,14 +159,14 @@ class TransferForm extends StatelessWidget {
             onTap: onChargeHelpTap,
             child: Container(
               padding: const EdgeInsets.all(4),
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white,
+                color: themeColors.surface,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.question_mark,
                 size: 16,
-                color: Colors.black54,
+                color: themeColors.text,
               ),
             ),
           ),

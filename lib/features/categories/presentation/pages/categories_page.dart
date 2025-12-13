@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../data/models/category.dart';
 import '../providers/category_provider.dart';
@@ -73,112 +74,117 @@ class _CategoriesPageState extends ConsumerState<CategoriesPage>
   void _showActionPopup(Category category) {
     showDialog(
       context: context,
-      builder: (context) => CategoryActionPopup(
-        category: category,
-        onDelete: () {
-          showDialog(
-            context: context,
-            builder: (context) => Dialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(32),
-              ),
-              backgroundColor: AppColors.backgroundLight, // Cream
-              insetPadding: const EdgeInsets.all(24),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 32,
+      builder: (context) {
+        final themeColors = Theme.of(context).extension<AppThemeColors>()!;
+        return CategoryActionPopup(
+          category: category,
+          onDelete: () {
+            showDialog(
+              context: context,
+              builder: (context) => Dialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(32),
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      'Are you sure you want to delete this category?',
-                      textAlign: TextAlign.left,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.textDark,
-                        height: 1.2,
+                backgroundColor: themeColors.background, // Cream
+                insetPadding: const EdgeInsets.all(24),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 32,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Are you sure you want to delete this category?',
+                        textAlign: TextAlign.left,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: themeColors.text,
+                          height: 1.2,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 32),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: SizedBox(
-                            height: 56,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.buttonBeige, // Beige
-                                foregroundColor: AppColors.textDark,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
+                      const SizedBox(height: 32),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: SizedBox(
+                              height: 56,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      themeColors.buttonBackground, // Beige
+                                  foregroundColor: themeColors.text,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
                                 ),
-                              ),
-                              onPressed: () => Navigator.of(context).pop(),
-                              child: const Text(
-                                'Cancel',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textDark,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: SizedBox(
-                            height: 56,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    AppColors.destructiveRed, // Red
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                              ),
-                              onPressed: () {
-                                ref
-                                    .read(categoryProvider.notifier)
-                                    .removeCategory(category.id);
-                                Navigator.of(context).pop();
-                              },
-                              child: const Text(
-                                'Delete',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: Text(
+                                  'Cancel',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: themeColors.text,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: SizedBox(
+                              height: 56,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      AppColors.destructiveRed, // Red
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  ref
+                                      .read(categoryProvider.notifier)
+                                      .removeCategory(category.id);
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text(
+                                  'Delete',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          );
-        },
-        onModify: () {
-          // Open modify dialog
-          _showAddEditDialog(category: category, type: category.type);
-        },
-      ),
+            );
+          },
+          onModify: () {
+            // Open modify dialog
+            _showAddEditDialog(category: category, type: category.type);
+          },
+        );
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final themeColors = theme.extension<AppThemeColors>()!;
     final categoriesAsync = ref.watch(categoryProvider);
 
     return Scaffold(
@@ -188,7 +194,7 @@ class _CategoriesPageState extends ConsumerState<CategoriesPage>
           controller: _tabController,
           indicatorColor: theme.primaryColor,
           labelColor: theme.primaryColor,
-          unselectedLabelColor: AppColors.textDark.withValues(alpha: 0.5),
+          unselectedLabelColor: themeColors.text.withValues(alpha: 0.5),
           tabs: const [
             Tab(text: 'Expense'),
             Tab(text: 'Income'),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../providers/ledger_provider.dart';
 
 class LedgerSelector extends ConsumerWidget {
@@ -10,6 +11,7 @@ class LedgerSelector extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final ledgersAsync = ref.watch(ledgerProvider);
     final selectedLedgerId = ref.watch(selectedLedgerProvider);
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
 
     return ledgersAsync.when(
       data: (ledgers) {
@@ -33,24 +35,24 @@ class LedgerSelector extends ConsumerWidget {
             child: DropdownButton<String?>(
               value: selectedLedgerId,
               isDense: true,
-              icon: const Icon(
+              icon: Icon(
                 Icons.arrow_drop_down,
-                color: AppColors.textDark,
+                color: themeColors.text,
                 size: 20,
               ),
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: AppColors.textDark,
+                color: themeColors.text,
               ),
               borderRadius: BorderRadius.circular(20),
-              dropdownColor: AppColors.backgroundLight,
+              dropdownColor: themeColors.surface,
               items: [
-                const DropdownMenuItem<String?>(
+                DropdownMenuItem<String?>(
                   value: null,
                   child: Row(
                     children: [
-                      Icon(Icons.book, size: 20, color: AppColors.textDark),
-                      SizedBox(width: 8),
+                      Icon(Icons.book, size: 20, color: themeColors.text),
+                      const SizedBox(width: 8),
                       Text('All ledgers'),
                     ],
                   ),

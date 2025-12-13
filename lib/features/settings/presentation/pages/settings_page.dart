@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../core/services/auth_service.dart';
 import '../../../categories/presentation/pages/categories_page.dart';
 
@@ -31,21 +32,23 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
     final currencyAsync = ref.watch(currencyProvider);
     final settingsAsync = ref.watch(settingsProvider);
     final currencySymbol = currencyAsync.asData?.value ?? '\$';
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
+    final primaryColor = Theme.of(context).primaryColor;
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight, // Cream background
+      backgroundColor: themeColors.background, // Cream background
       appBar: AppBar(
-        backgroundColor: AppColors.backgroundLight,
+        backgroundColor: themeColors.background,
         elevation: 0,
         centerTitle: true,
-        title: const Text(
+        title: Text(
           'Settings',
           style: TextStyle(
-            color: AppColors.textDark,
+            color: themeColors.text,
             fontWeight: FontWeight.bold,
           ),
         ),
-        iconTheme: const IconThemeData(color: AppColors.textDark),
+        iconTheme: IconThemeData(color: themeColors.text),
       ),
       body: settingsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -60,7 +63,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
             ),
             children: [
               // SECTION: CUSTOM
-              _buildSectionHeader('Custom', color: AppColors.pastelRed),
+              _buildSectionHeader('Custom', color: primaryColor),
 
               // Membership
               _buildModernSettingItem(
@@ -69,10 +72,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                 iconColor: AppColors.pastelOrange,
                 title: 'Membership',
                 subtitle: 'Unlock all features',
-                trailing: const Text(
+                trailing: Text(
                   '20% off',
                   style: TextStyle(
-                    color: AppColors.pastelRed,
+                    color: primaryColor,
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                   ),
@@ -90,7 +93,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               _buildModernSettingItem(
                 context,
                 icon: Icons.dark_mode,
-                iconColor: AppColors.textDark,
+                iconColor: themeColors.text,
                 title: 'Dark theme setting',
                 subtitle: 'Switch to dark theme',
                 onTap: () {
@@ -116,7 +119,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               _buildModernSettingItem(
                 context,
                 icon: Icons.calendar_month,
-                iconColor: AppColors.textDark,
+                iconColor: themeColors.text,
                 title: 'Monthly start date',
                 subtitle:
                     '${settings.monthlyStartDate}${_getDaySuffix(settings.monthlyStartDate)} day of each month',
@@ -127,7 +130,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               _buildModernSettingItem(
                 context,
                 icon: Icons.calendar_today,
-                iconColor: AppColors.textDark,
+                iconColor: themeColors.text,
                 title: 'First day of the week',
                 subtitle: _getDayName(settings.firstDayOfWeek),
                 onTap: () => _showWeekStartDialog(context, ref, settings),
@@ -137,7 +140,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               _buildModernSettingItem(
                 context,
                 icon: Icons.monetization_on,
-                iconColor: AppColors.textDark,
+                iconColor: themeColors.text,
                 title: 'Currency symbol',
                 subtitle: 'Display the currency symbol before the amount',
                 trailing: Text(
@@ -154,7 +157,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               _buildModernSettingItem(
                 context,
                 icon: Icons.format_quote,
-                iconColor: AppColors.textDark,
+                iconColor: themeColors.text,
                 title: 'Comma separator',
                 subtitle: 'Show the comma currency separator',
                 trailing: Switch(
@@ -162,7 +165,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                   onChanged: (val) {
                     ref.read(settingsProvider.notifier).setCommaSeparator(val);
                   },
-                  activeTrackColor: AppColors.pastelRed,
+                  activeTrackColor: primaryColor,
                 ),
                 onTap: () {
                   ref
@@ -175,7 +178,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               _buildModernSettingItem(
                 context,
                 icon: Icons.fingerprint,
-                iconColor: AppColors.textDark,
+                iconColor: themeColors.text,
                 title: 'Fingerprint lock',
                 subtitle: 'Need to enter fingerprint when open app',
                 trailing: Switch(
@@ -183,7 +186,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                   onChanged: (val) async {
                     await _handleBiometricToggle(context, ref, val);
                   },
-                  activeTrackColor: AppColors.pastelRed,
+                  activeTrackColor: primaryColor,
                 ),
                 onTap: () async {
                   await _handleBiometricToggle(
@@ -197,12 +200,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               const SizedBox(height: 24),
 
               // SECTION: MANAGEMENT
-              _buildSectionHeader('Management', color: AppColors.pastelRed),
+              _buildSectionHeader('Management', color: primaryColor),
 
               _buildModernSettingItem(
                 context,
                 icon: Icons.category,
-                iconColor: AppColors.textDark,
+                iconColor: themeColors.text,
                 title: 'Record category management',
                 subtitle: 'Add, modify and sort record categories',
                 onTap: () {
@@ -217,7 +220,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               _buildModernSettingItem(
                 context,
                 icon: Icons.book,
-                iconColor: AppColors.textDark,
+                iconColor: themeColors.text,
                 title: 'Ledger',
                 subtitle: 'Manage the ledgers',
                 onTap: () {
@@ -232,7 +235,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               _buildModernSettingItem(
                 context,
                 icon: Icons.autorenew,
-                iconColor: AppColors.textDark,
+                iconColor: themeColors.text,
                 title: 'Recurring record',
                 subtitle: 'Automatic recurring record',
                 onTap: () {},
@@ -240,7 +243,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               _buildModernSettingItem(
                 context,
                 icon: Icons.work,
-                iconColor: AppColors.textDark,
+                iconColor: themeColors.text,
                 title: 'Reimburse',
                 subtitle: 'Manage the reimbursement',
                 onTap: () {},
@@ -248,7 +251,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               _buildModernSettingItem(
                 context,
                 icon: Icons.star,
-                iconColor: AppColors.textDark,
+                iconColor: themeColors.text,
                 title: 'Bookmarks',
                 subtitle: 'Manage the bookmarks',
                 onTap: () {},
@@ -256,7 +259,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               _buildModernSettingItem(
                 context,
                 icon: Icons.pie_chart,
-                iconColor: AppColors.textDark,
+                iconColor: themeColors.text,
                 title: 'Budget',
                 subtitle: 'Manage the category budgets',
                 onTap: () {},
@@ -264,7 +267,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               _buildModernSettingItem(
                 context,
                 icon: Icons.exit_to_app,
-                iconColor: AppColors.textDark,
+                iconColor: themeColors.text,
                 title: 'Bill Export',
                 subtitle: 'The bill will be exported to a csv format file',
                 onTap: () {},
@@ -273,11 +276,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               const SizedBox(height: 24),
 
               // SECTION: ABOUT US
-              _buildSectionHeader('About Us', color: AppColors.pastelRed),
+              _buildSectionHeader('About Us', color: primaryColor),
               _buildModernSettingItem(
                 context,
                 icon: Icons.thumb_up,
-                iconColor: AppColors.textDark,
+                iconColor: themeColors.text,
                 title: 'Rate',
                 subtitle: 'Rate us on the Play Store!',
                 onTap: () {},
@@ -285,7 +288,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               _buildModernSettingItem(
                 context,
                 icon: Icons.lock,
-                iconColor: AppColors.textDark,
+                iconColor: themeColors.text,
                 title: 'Privacy Policy',
                 subtitle: 'See the privacy policy for more information.',
                 onTap: () {},
@@ -293,7 +296,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               _buildModernSettingItem(
                 context,
                 icon: Icons.info,
-                iconColor: AppColors.textDark,
+                iconColor: themeColors.text,
                 title: 'About',
                 subtitle: 'Version 1.0.0',
                 onTap: () {},
@@ -301,7 +304,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               _buildModernSettingItem(
                 context,
                 icon: Icons.logout,
-                iconColor: AppColors.textDark,
+                iconColor: themeColors.text,
                 title: 'Logout',
                 subtitle: 'Sign out from current account',
                 onTap: () async {
@@ -317,10 +320,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
     );
   }
 
-  Widget _buildSectionHeader(
-    String title, {
-    Color color = AppColors.pastelRed,
-  }) {
+  Widget _buildSectionHeader(String title, {Color? color}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16, left: 0),
       child: Text(
@@ -344,6 +344,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
     Color? iconColor,
     Widget? trailing,
   }) {
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -366,10 +367,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textDark,
+                      color: themeColors.text,
                     ),
                   ),
                   if (subtitle != null) ...[
@@ -378,7 +379,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                       subtitle,
                       style: TextStyle(
                         fontSize: 12,
-                        color: AppColors.textDark.withValues(alpha: 0.6),
+                        color: themeColors.textSubtle,
                       ),
                     ),
                   ],
@@ -487,7 +488,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Select Language'),
-        backgroundColor: AppColors.surfaceCream,
+        backgroundColor: Theme.of(context).extension<AppThemeColors>()!.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -514,7 +515,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
       value: code,
       // ignore: deprecated_member_use
       groupValue: currentCode,
-      activeColor: AppColors.pastelRed,
+      activeColor: Theme.of(context).primaryColor,
       // ignore: deprecated_member_use
       onChanged: (val) {
         if (val != null) {
@@ -534,7 +535,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Select Monthly Start Date'),
-        backgroundColor: AppColors.surfaceCream,
+        backgroundColor: Theme.of(context).extension<AppThemeColors>()!.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         content: SizedBox(
           width: double.maxFinite,
@@ -546,7 +547,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
               return ListTile(
                 title: Text('$day${_getDaySuffix(day)}'),
                 selected: settings.monthlyStartDate == day,
-                selectedColor: AppColors.pastelRed,
+                selectedColor: Theme.of(context).primaryColor,
                 onTap: () {
                   ref.read(settingsProvider.notifier).setMonthlyStartDate(day);
                   Navigator.pop(context);
@@ -568,7 +569,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Select First Day of Week'),
-        backgroundColor: AppColors.surfaceCream,
+        backgroundColor: Theme.of(context).extension<AppThemeColors>()!.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -592,7 +593,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
     return ListTile(
       title: Text(label),
       selected: settings.firstDayOfWeek == day,
-      selectedColor: AppColors.pastelRed,
+      selectedColor: Theme.of(context).primaryColor,
       onTap: () {
         ref.read(settingsProvider.notifier).setFirstDayOfWeek(day);
         Navigator.pop(context);
@@ -606,7 +607,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        backgroundColor: AppColors.surfaceCream,
+        backgroundColor: Theme.of(context).extension<AppThemeColors>()!.surface,
         title: const Text('Select Currency'),
         content: SizedBox(
           width: double.maxFinite,

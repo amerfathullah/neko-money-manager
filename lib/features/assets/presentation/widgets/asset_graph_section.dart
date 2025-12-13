@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../data/models/asset.dart';
 import '../../data/models/asset_history_model.dart';
@@ -35,6 +36,7 @@ class _AssetGraphSectionState extends State<AssetGraphSection> {
 
   @override
   Widget build(BuildContext context) {
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     // 1. Calculate historical points based on history and filter
     final points = _calculateHistoryPoints();
 
@@ -80,7 +82,7 @@ class _AssetGraphSectionState extends State<AssetGraphSection> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surfaceCream,
+        color: themeColors.surface,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
@@ -97,23 +99,23 @@ class _AssetGraphSectionState extends State<AssetGraphSection> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Flexible(
+              Flexible(
                 child: Text(
                   'Net Worth',
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textDark,
+                    color: themeColors.text,
                   ),
                 ),
               ),
-              _buildTimeRangeSelector(),
+              _buildTimeRangeSelector(themeColors),
             ],
           ),
           const SizedBox(height: 16),
           // Filter Row: Net | Income | Expenses
-          _buildFilterSelector(),
+          _buildFilterSelector(themeColors),
           const SizedBox(height: 24),
           AspectRatio(
             aspectRatio: 1.70,
@@ -129,7 +131,7 @@ class _AssetGraphSectionState extends State<AssetGraphSection> {
                             : (maxY - minY) / 5,
                         getDrawingHorizontalLine: (value) {
                           return FlLine(
-                            color: AppColors.textDark.withValues(alpha: 0.1),
+                            color: themeColors.text.withValues(alpha: 0.1),
                             strokeWidth: 1,
                           );
                         },
@@ -171,9 +173,7 @@ class _AssetGraphSectionState extends State<AssetGraphSection> {
                                 child: Text(
                                   text,
                                   style: TextStyle(
-                                    color: AppColors.textDark.withValues(
-                                      alpha: 0.6,
-                                    ),
+                                    color: themeColors.textSubtle,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 10,
                                   ),
@@ -219,7 +219,7 @@ class _AssetGraphSectionState extends State<AssetGraphSection> {
                       ],
                       lineTouchData: LineTouchData(
                         touchTooltipData: LineTouchTooltipData(
-                          getTooltipColor: (touchedSpot) => AppColors.textDark,
+                          getTooltipColor: (touchedSpot) => themeColors.surface,
                           getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
                             return touchedBarSpots.map((barSpot) {
                               final index = barSpot.x.toInt();
@@ -229,8 +229,8 @@ class _AssetGraphSectionState extends State<AssetGraphSection> {
                               final point = points[index];
                               return LineTooltipItem(
                                 '${DateFormat('MMM dd').format(point.date)}\n',
-                                const TextStyle(
-                                  color: Colors.white,
+                                TextStyle(
+                                  color: themeColors.text,
                                   fontWeight: FontWeight.bold,
                                 ),
                                 children: [
@@ -259,33 +259,37 @@ class _AssetGraphSectionState extends State<AssetGraphSection> {
     );
   }
 
-  Widget _buildTimeRangeSelector() {
+  Widget _buildTimeRangeSelector(AppThemeColors themeColors) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.inputBeige,
+        color: themeColors.inputBackground,
         borderRadius: BorderRadius.circular(20),
       ),
       padding: const EdgeInsets.all(4),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildRangeButton('1W', GraphTimeRange.oneWeek),
-          _buildRangeButton('1M', GraphTimeRange.oneMonth),
-          _buildRangeButton('3M', GraphTimeRange.threeMonths),
-          _buildRangeButton('6M', GraphTimeRange.sixMonths),
+          _buildRangeButton('1W', GraphTimeRange.oneWeek, themeColors),
+          _buildRangeButton('1M', GraphTimeRange.oneMonth, themeColors),
+          _buildRangeButton('3M', GraphTimeRange.threeMonths, themeColors),
+          _buildRangeButton('6M', GraphTimeRange.sixMonths, themeColors),
         ],
       ),
     );
   }
 
-  Widget _buildRangeButton(String label, GraphTimeRange range) {
+  Widget _buildRangeButton(
+    String label,
+    GraphTimeRange range,
+    AppThemeColors themeColors,
+  ) {
     final isSelected = _selectedRange == range;
     return GestureDetector(
       onTap: () => setState(() => _selectedRange = range),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.backgroundLight : Colors.transparent,
+          color: isSelected ? themeColors.background : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
           boxShadow: isSelected
               ? [
@@ -301,34 +305,52 @@ class _AssetGraphSectionState extends State<AssetGraphSection> {
           style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.bold,
-            color: isSelected ? Colors.black87 : Colors.black54,
+            color: isSelected
+                ? themeColors.text
+                : themeColors.text.withValues(alpha: 0.6),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildFilterSelector() {
+  Widget _buildFilterSelector(AppThemeColors themeColors) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: AppColors.inputBeige,
+        color: themeColors.inputBackground,
         borderRadius: BorderRadius.circular(20),
       ),
       padding: const EdgeInsets.all(4),
       child: Row(
         children: [
-          Expanded(child: _buildFilterButton('Net', GraphFilterType.net)),
-          Expanded(child: _buildFilterButton('Income', GraphFilterType.income)),
           Expanded(
-            child: _buildFilterButton('Expenses', GraphFilterType.expenses),
+            child: _buildFilterButton('Net', GraphFilterType.net, themeColors),
+          ),
+          Expanded(
+            child: _buildFilterButton(
+              'Income',
+              GraphFilterType.income,
+              themeColors,
+            ),
+          ),
+          Expanded(
+            child: _buildFilterButton(
+              'Expenses',
+              GraphFilterType.expenses,
+              themeColors,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildFilterButton(String label, GraphFilterType type) {
+  Widget _buildFilterButton(
+    String label,
+    GraphFilterType type,
+    AppThemeColors themeColors,
+  ) {
     final isSelected = _selectedType == type;
     return GestureDetector(
       onTap: () => setState(() => _selectedType = type),
@@ -336,7 +358,7 @@ class _AssetGraphSectionState extends State<AssetGraphSection> {
         padding: const EdgeInsets.symmetric(vertical: 8),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.backgroundLight : Colors.transparent,
+          color: isSelected ? themeColors.background : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
           boxShadow: isSelected
               ? [
@@ -352,7 +374,9 @@ class _AssetGraphSectionState extends State<AssetGraphSection> {
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.bold,
-            color: isSelected ? Colors.black87 : Colors.black54,
+            color: isSelected
+                ? themeColors.text
+                : themeColors.text.withValues(alpha: 0.6),
           ),
         ),
       ),

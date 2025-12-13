@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/currency_formatter.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../data/models/transaction_model.dart';
 import '../../../home/presentation/widgets/ledger_selector.dart';
 import '../pages/category_transactions_page.dart';
@@ -71,6 +72,7 @@ class TransactionsTopSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     return Column(
       children: [
         const SizedBox(height: 16),
@@ -100,17 +102,17 @@ class TransactionsTopSection extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.calendar_month,
                         size: 20,
-                        color: AppColors.textDark,
+                        color: themeColors.text,
                       ),
                       const SizedBox(width: 8),
                       Text(
                         _dateDisplay,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textDark,
+                          color: themeColors.text,
                         ),
                       ),
                     ],
@@ -133,14 +135,14 @@ class TransactionsTopSection extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
                       Text(
                         'Expenses',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
-                          color: AppColors.textDark,
+                          color: themeColors.text,
                         ),
                       ),
                       SizedBox(width: 4),
@@ -166,18 +168,18 @@ class TransactionsTopSection extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
                       Text(
                         'Income',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
-                          color: AppColors.textDark,
+                          color: themeColors.text,
                         ),
                       ),
                       SizedBox(width: 4),
-                      Icon(Icons.arrow_drop_up, color: AppColors.textDark),
+                      Icon(Icons.arrow_drop_up, color: themeColors.text),
                     ],
                   ),
                   Text(
@@ -186,10 +188,10 @@ class TransactionsTopSection extends StatelessWidget {
                       symbol: currencySymbol,
                       useGrouping: useComma,
                     ),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textDark,
+                      color: themeColors.text,
                     ),
                   ),
                 ],
@@ -233,22 +235,30 @@ class TransactionSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.backgroundLight, // Background matching main/card
+          color: themeColors.inputBackground, // Background matching main/card
           borderRadius: BorderRadius.circular(24),
         ),
         child: TextField(
           controller: controller,
           onChanged: onChanged,
-          decoration: const InputDecoration(
+          style: TextStyle(color: themeColors.text),
+          decoration: InputDecoration(
             hintText: 'Search by amount or remarks..',
-            prefixIcon: Icon(Icons.search, color: Colors.grey),
-            suffixIcon: Icon(Icons.search, color: AppColors.textDark),
+            hintStyle: TextStyle(
+              color: themeColors.text.withValues(alpha: 0.5),
+            ),
+            prefixIcon: const Icon(Icons.search, color: Colors.grey),
+            suffixIcon: Icon(Icons.search, color: themeColors.text),
             border: InputBorder.none,
-            contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 14,
+            ),
           ),
         ),
       ),
@@ -276,6 +286,7 @@ class TransactionChartSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     // 1. Group by category
     final Map<String, double> categoryTotals = {};
     double total = 0;
@@ -315,8 +326,8 @@ class TransactionChartSection extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                   color: isExpense
                       ? AppColors.expense
-                      : AppColors
-                            .textDark, // Per image: Expenses is Red/DarkRed text
+                      : themeColors
+                            .text, // Per image: Expenses is Red/DarkRed text
                 ),
               ),
               IconButton(
@@ -457,7 +468,10 @@ class TransactionChartSection extends StatelessWidget {
                         const SizedBox(width: 12),
                         Text(
                           key,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: themeColors.text,
+                          ),
                         ),
                         const Spacer(),
                         Column(
@@ -531,6 +545,7 @@ class _TransactionCalendarSectionState
     extends State<TransactionCalendarSection> {
   @override
   Widget build(BuildContext context) {
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     final now = DateTime.now();
     final daysInMonth = DateUtils.getDaysInMonth(now.year, now.month);
     final firstDayOfMonth = DateTime(now.year, now.month, 1);
@@ -594,7 +609,7 @@ class _TransactionCalendarSectionState
           const SizedBox(height: 16),
           Table(
             children: [
-              TableRow(children: _buildWeekHeaders()),
+              TableRow(children: _buildWeekHeaders(themeColors)),
               const TableRow(
                 children: [
                   SizedBox(height: 8),
@@ -606,7 +621,12 @@ class _TransactionCalendarSectionState
                   SizedBox(),
                 ],
               ),
-              ..._buildCalendarRows(daysInMonth, startingOffset, dailyTotals),
+              ..._buildCalendarRows(
+                daysInMonth,
+                startingOffset,
+                dailyTotals,
+                themeColors,
+              ),
             ],
           ),
         ],
@@ -614,14 +634,19 @@ class _TransactionCalendarSectionState
     );
   }
 
-  List<Widget> _buildWeekHeaders() {
+  List<Widget> _buildWeekHeaders(AppThemeColors themeColors) {
     final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     final shift = widget.firstDayOfWeek - 1;
     final orderedDays = [...days.sublist(shift), ...days.sublist(0, shift)];
 
     return orderedDays
         .map(
-          (d) => Center(child: Text(d, style: const TextStyle(fontSize: 10))),
+          (d) => Center(
+            child: Text(
+              d,
+              style: TextStyle(fontSize: 10, color: themeColors.text),
+            ),
+          ),
         )
         .toList();
   }
@@ -629,7 +654,9 @@ class _TransactionCalendarSectionState
   List<TableRow> _buildCalendarRows(
     int daysInMonth,
     int startingOffset,
+
     Map<int, double> totals,
+    AppThemeColors themeColors,
   ) {
     List<TableRow> rows = [];
     int currentDay = 1;
@@ -641,7 +668,9 @@ class _TransactionCalendarSectionState
         rowWidgets.add(const SizedBox());
       } else {
         if (currentDay <= daysInMonth) {
-          rowWidgets.add(_buildDayCell(currentDay, totals[currentDay]));
+          rowWidgets.add(
+            _buildDayCell(currentDay, totals[currentDay], themeColors),
+          );
           currentDay++;
         }
       }
@@ -653,7 +682,9 @@ class _TransactionCalendarSectionState
       rowWidgets = [];
       for (int i = 0; i < 7; i++) {
         if (currentDay <= daysInMonth) {
-          rowWidgets.add(_buildDayCell(currentDay, totals[currentDay]));
+          rowWidgets.add(
+            _buildDayCell(currentDay, totals[currentDay], themeColors),
+          );
           currentDay++;
         } else {
           rowWidgets.add(const SizedBox());
@@ -665,7 +696,7 @@ class _TransactionCalendarSectionState
     return rows;
   }
 
-  Widget _buildDayCell(int day, double? amount) {
+  Widget _buildDayCell(int day, double? amount, AppThemeColors themeColors) {
     return Container(
       height: 48,
       margin: const EdgeInsets.all(2),
@@ -682,7 +713,11 @@ class _TransactionCalendarSectionState
         children: [
           Text(
             '$day',
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: themeColors.text,
+            ),
           ),
           if ((amount ?? 0) > 0)
             Text(
@@ -714,6 +749,7 @@ class TransactionListSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     final grouped = <String, List<TransactionModel>>{};
     final sortedDates = <String>[];
 
@@ -750,9 +786,10 @@ class TransactionListSection extends ConsumerWidget {
                     children: [
                       Text(
                         DateFormat('MMM dd').format(date),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
+                          color: themeColors.text,
                         ),
                       ),
                       const SizedBox(width: 8),

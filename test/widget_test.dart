@@ -15,6 +15,7 @@ import 'package:neko_money_manager/features/settings/presentation/providers/pro_
 import 'package:neko_money_manager/features/settings/presentation/providers/currency_provider.dart';
 import 'package:neko_money_manager/features/assets/presentation/providers/asset_provider.dart';
 import 'package:neko_money_manager/features/assets/data/models/asset.dart';
+import 'package:neko_money_manager/core/theme/app_theme.dart';
 import 'package:neko_money_manager/features/settings/presentation/providers/settings_provider.dart';
 
 // Mocks
@@ -180,7 +181,10 @@ void main() {
           currencyProvider.overrideWith(MockCurrencyNotifier.new),
           settingsProvider.overrideWith(MockSettingsNotifier.new),
         ],
-        child: const MaterialApp(home: MainScaffold()),
+        child: MaterialApp(
+          home: const MainScaffold(),
+          theme: AppTheme.lightTheme,
+        ),
       ),
     );
 

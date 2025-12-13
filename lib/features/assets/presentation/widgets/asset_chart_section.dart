@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../data/models/asset.dart';
 import '../../../transactions/presentation/pages/transaction_history_page.dart';
@@ -23,6 +24,7 @@ class AssetChartSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     if (assets.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -48,9 +50,7 @@ class AssetChartSection extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: isLiabilities
-                      ? AppColors.pastelRed
-                      : AppColors.textDark,
+                  color: isLiabilities ? AppColors.pastelRed : themeColors.text,
                 ),
               ),
               IconButton(
@@ -109,15 +109,19 @@ class AssetChartSection extends StatelessWidget {
                           Expanded(
                             child: Text(
                               asset.name,
-                              style: const TextStyle(fontSize: 12),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: themeColors.text,
+                              ),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           Text(
                             '${percent.toStringAsFixed(2)}%',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
+                              color: themeColors.text,
                             ),
                           ),
                         ],
@@ -164,7 +168,10 @@ class AssetChartSection extends StatelessWidget {
                         const SizedBox(width: 12),
                         Text(
                           asset.name,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: themeColors.text,
+                          ),
                         ),
                         const Spacer(),
                         Column(
@@ -180,14 +187,14 @@ class AssetChartSection extends StatelessWidget {
                                 fontWeight: FontWeight.bold,
                                 color: isLiabilities
                                     ? AppColors.pastelRed
-                                    : AppColors.textDark,
+                                    : themeColors.text,
                               ),
                             ),
                             Text(
                               '${(percent * 100).toStringAsFixed(2)}%',
                               style: TextStyle(
                                 fontSize: 10,
-                                color: Colors.grey[600],
+                                color: themeColors.textSubtle,
                               ),
                             ),
                           ],

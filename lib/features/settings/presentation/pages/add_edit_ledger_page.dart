@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
+import 'package:neko_money_manager/core/theme/app_theme_colors.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../home/data/models/ledger.dart';
 import '../../../home/presentation/providers/ledger_provider.dart';
@@ -175,11 +176,12 @@ class _AddEditLedgerPageState extends ConsumerState<AddEditLedgerPage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     // Reusing the same grid delegate as designs often use 3 columns for templates
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: AppColors.textDark),
+          icon: Icon(Icons.arrow_back_ios_new, color: themeColors.text),
           onPressed: () => Navigator.of(context).pop(),
         ),
         backgroundColor: Colors.transparent,
@@ -194,12 +196,12 @@ class _AddEditLedgerPageState extends ConsumerState<AddEditLedgerPage> {
                 children: [
                   Align(
                     alignment: Alignment.center,
-                    child: const Text(
+                    child: Text(
                       'Recommend',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textDark,
+                        color: themeColors.text,
                       ),
                     ),
                   ),
@@ -282,11 +284,10 @@ class _AddEditLedgerPageState extends ConsumerState<AddEditLedgerPage> {
                                   child: Text(
                                     template['name'],
                                     textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      color: AppColors.textDark,
+                                    style: TextStyle(
+                                      color: themeColors.text,
                                       fontWeight: FontWeight.bold,
-                                      fontSize:
-                                          14, // Increased to 14 Match Ledgers Page
+                                      fontSize: 14,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -431,9 +432,7 @@ class _AddEditLedgerPageState extends ConsumerState<AddEditLedgerPage> {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: const Color(
-                0xFFFFF8E5,
-              ), // Beige/Cream background per image
+              color: themeColors.surface, // Theme surface
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(24),
               ),
@@ -477,9 +476,7 @@ class _AddEditLedgerPageState extends ConsumerState<AddEditLedgerPage> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(
-                              0xFFF3E9D2,
-                            ), // Darker beige for input
+                            color: themeColors.inputBackground,
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: TextFormField(
@@ -487,7 +484,7 @@ class _AddEditLedgerPageState extends ConsumerState<AddEditLedgerPage> {
                             decoration: InputDecoration(
                               hintText: 'Ledger Name',
                               hintStyle: TextStyle(
-                                color: Colors.black.withValues(alpha: 0.4),
+                                color: themeColors.textSubtle,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
                               ),
@@ -496,11 +493,12 @@ class _AddEditLedgerPageState extends ConsumerState<AddEditLedgerPage> {
                                 vertical: 12,
                               ),
                             ),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
-                              color: AppColors.textDark,
+                              color: themeColors.text,
                             ),
+                            cursorColor: themeColors.text,
                             validator: (value) => value == null || value.isEmpty
                                 ? 'Required'
                                 : null,
@@ -519,12 +517,12 @@ class _AddEditLedgerPageState extends ConsumerState<AddEditLedgerPage> {
                         width: 56,
                         height: 56,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF3E9D2), // Match input bg
+                          color: themeColors.inputBackground,
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Icon(
                           Icons.description_outlined, // Text bubble/tag icon
-                          color: AppColors.textDark.withValues(alpha: 0.7),
+                          color: themeColors.text.withValues(alpha: 0.7),
                           size: 28,
                         ),
                       ),
@@ -537,7 +535,7 @@ class _AddEditLedgerPageState extends ConsumerState<AddEditLedgerPage> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF3E9D2),
+                            color: themeColors.inputBackground,
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: TextFormField(
@@ -545,7 +543,7 @@ class _AddEditLedgerPageState extends ConsumerState<AddEditLedgerPage> {
                             decoration: InputDecoration(
                               hintText: 'Ledger remark',
                               hintStyle: TextStyle(
-                                color: Colors.black.withValues(alpha: 0.4),
+                                color: themeColors.textSubtle,
                                 fontSize: 16,
                               ),
                               border: InputBorder.none,
@@ -553,10 +551,11 @@ class _AddEditLedgerPageState extends ConsumerState<AddEditLedgerPage> {
                                 vertical: 12,
                               ),
                             ),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
-                              color: AppColors.textDark,
+                              color: themeColors.text,
                             ),
+                            cursorColor: themeColors.text,
                           ),
                         ),
                       ),
@@ -570,10 +569,8 @@ class _AddEditLedgerPageState extends ConsumerState<AddEditLedgerPage> {
                         child: TextButton(
                           onPressed: () => Navigator.of(context).pop(),
                           style: TextButton.styleFrom(
-                            backgroundColor: const Color(
-                              0xFFEEE0CD,
-                            ), // Light beige button
-                            foregroundColor: AppColors.textDark,
+                            backgroundColor: themeColors.inputBackground,
+                            foregroundColor: themeColors.text,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16),
@@ -592,7 +589,7 @@ class _AddEditLedgerPageState extends ConsumerState<AddEditLedgerPage> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(
                               0xFFBF4C58,
-                            ), // Rusty Red per image
+                            ), // Rusty Red per image - keeping semantic
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(

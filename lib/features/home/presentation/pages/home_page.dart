@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_theme_colors.dart';
 import '../../../transactions/presentation/providers/transaction_provider.dart';
 import '../../../transactions/data/models/transaction_model.dart';
 import '../../../../core/utils/currency_formatter.dart';
@@ -31,6 +32,7 @@ class _HomePageState extends ConsumerState<HomePage>
     final currencyAsync = ref.watch(currencyProvider);
     final settingsAsync = ref.watch(settingsProvider);
     final currencySymbol = currencyAsync.asData?.value ?? '\$';
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     final selectedLedgerId = ref.watch(selectedLedgerProvider);
 
     // Settings defaults
@@ -161,7 +163,7 @@ class _HomePageState extends ConsumerState<HomePage>
     }
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight, // Cream background
+      backgroundColor: themeColors.background, // Cream background
       body: SafeArea(
         bottom: false,
         child: Stack(
@@ -233,8 +235,8 @@ class _HomePageState extends ConsumerState<HomePage>
                     // The main white/cream container
                     Container(
                       margin: const EdgeInsets.only(top: 25),
-                      decoration: const BoxDecoration(
-                        color: AppColors.surfaceCream,
+                      decoration: BoxDecoration(
+                        color: themeColors.surface,
                         borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(32),
                           topRight: Radius.circular(32),
@@ -306,12 +308,12 @@ class _HomePageState extends ConsumerState<HomePage>
                                     color: AppColors.pastelBlue,
                                   ),
                                   const SizedBox(height: 16),
-                                  const Text(
+                                  Text(
                                     'Welcome',
                                     style: TextStyle(
                                       fontSize: 24,
                                       fontWeight: FontWeight.bold,
-                                      color: AppColors.textDark,
+                                      color: themeColors.text,
                                     ),
                                   ),
                                   const SizedBox(height: 8),
@@ -319,7 +321,7 @@ class _HomePageState extends ConsumerState<HomePage>
                                     'There is no record at the moment\nstart your first record now.',
                                     textAlign: TextAlign.center,
                                     style: TextStyle(
-                                      color: AppColors.textDark.withValues(
+                                      color: themeColors.text.withValues(
                                         alpha: 0.6,
                                       ),
                                     ),
@@ -337,7 +339,7 @@ class _HomePageState extends ConsumerState<HomePage>
                                   useComma: useComma,
                                   shrinkWrap: true,
                                   physics: const NeverScrollableScrollPhysics(),
-                                  backgroundColor: AppColors.surfaceCream,
+                                  backgroundColor: themeColors.surface,
                                 ),
                               ),
                             ),
@@ -385,6 +387,7 @@ class _SummaryItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -392,16 +395,16 @@ class _SummaryItem extends StatelessWidget {
           children: [
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
-                color: AppColors.textDark,
+                color: themeColors.text,
               ),
             ),
             const SizedBox(width: 4),
             Icon(
               isExpense ? Icons.arrow_drop_down : Icons.arrow_drop_up,
-              color: isExpense ? AppColors.expense : AppColors.textDark,
+              color: isExpense ? AppColors.expense : themeColors.text,
             ),
           ],
         ),
@@ -414,7 +417,7 @@ class _SummaryItem extends StatelessWidget {
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: isExpense ? AppColors.pastelRed : AppColors.textDark,
+            color: isExpense ? AppColors.pastelRed : themeColors.text,
           ),
         ),
       ],
@@ -437,6 +440,7 @@ class _TopPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -447,13 +451,13 @@ class _TopPill extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(icon, size: 20, color: AppColors.textDark),
+            Icon(icon, size: 20, color: themeColors.text),
             const SizedBox(width: 8),
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: AppColors.textDark,
+                color: themeColors.text,
               ),
             ),
           ],
@@ -476,6 +480,7 @@ class _QuickAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -492,7 +497,7 @@ class _QuickAction extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: 12,
-            color: AppColors.textDark.withValues(alpha: 0.8),
+            color: themeColors.text.withValues(alpha: 0.8),
             fontWeight: FontWeight.bold,
           ),
           textAlign: TextAlign.center,
