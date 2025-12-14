@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:neko_money_manager/core/widgets/dynamic_icon.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_colors.dart';
@@ -471,7 +472,12 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
         itemBuilder: (context, index) {
           final asset = assets[index];
           return ListTile(
-            leading: Icon(asset.icon, color: asset.color),
+            leading: DynamicIcon(
+              codePoint: asset.iconCodePoint,
+              fontFamily: asset.iconFontFamily,
+              fontPackage: asset.iconFontPackage,
+              color: asset.color,
+            ),
             title: Text(asset.name, style: TextStyle(color: themeColors.text)),
             onTap: () {
               setState(() => _selectedAssetId = asset.id);

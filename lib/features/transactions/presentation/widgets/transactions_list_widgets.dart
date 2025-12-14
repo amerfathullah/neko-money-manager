@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:neko_money_manager/core/widgets/dynamic_icon.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -463,7 +464,13 @@ class TransactionChartSection extends StatelessWidget {
                             color: color.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Icon(category.icon, size: 20, color: color),
+                          child: DynamicIcon(
+                            codePoint: category.iconCodePoint,
+                            fontFamily: category.iconFontFamily,
+                            fontPackage: category.iconFontPackage,
+                            size: 20,
+                            color: color,
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Text(

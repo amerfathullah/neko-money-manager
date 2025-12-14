@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
+import 'package:neko_money_manager/core/widgets/dynamic_icon.dart';
 import '../providers/ledger_provider.dart';
 
 class LedgerSelector extends ConsumerWidget {
@@ -62,8 +63,11 @@ class LedgerSelector extends ConsumerWidget {
                     value: l.id,
                     child: Row(
                       children: [
-                        Icon(
-                          l.icon ?? Icons.account_balance_wallet,
+                        DynamicIcon(
+                          codePoint: l.iconPoint,
+                          fontFamily: l.iconFamily,
+                          fontPackage: l.iconPackage,
+                          fallback: Icons.account_balance_wallet,
                           size: 20,
                           color: l.color,
                         ),
@@ -91,8 +95,11 @@ class LedgerSelector extends ConsumerWidget {
                   ...ledgers.map((l) {
                     return Row(
                       children: [
-                        Icon(
-                          l.icon ?? Icons.account_balance_wallet,
+                        DynamicIcon(
+                          codePoint: l.iconPoint,
+                          fontFamily: l.iconFamily,
+                          fontPackage: l.iconPackage,
+                          fallback: Icons.account_balance_wallet,
                           size: 20,
                           color: l.color,
                         ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:neko_money_manager/core/widgets/dynamic_icon.dart';
 
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../../assets/data/models/asset.dart';
@@ -107,7 +108,13 @@ class TransferForm extends StatelessWidget {
                     value: asset,
                     child: Row(
                       children: [
-                        Icon(asset.icon, color: asset.color, size: 20),
+                        DynamicIcon(
+                          codePoint: asset.iconCodePoint,
+                          fontFamily: asset.iconFontFamily,
+                          fontPackage: asset.iconFontPackage,
+                          color: asset.color,
+                          size: 20,
+                        ),
                         const SizedBox(width: 8),
                         Text(
                           asset.name,

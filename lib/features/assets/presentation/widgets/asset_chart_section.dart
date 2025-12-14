@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:neko_money_manager/core/widgets/dynamic_icon.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../core/utils/currency_formatter.dart';
@@ -107,13 +108,29 @@ class AssetChartSection extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           Expanded(
-                            child: Text(
-                              asset.name,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: themeColors.text,
-                              ),
-                              overflow: TextOverflow.ellipsis,
+                            child: Row(
+                              // Changed to Row to hold DynamicIcon and Text
+                              children: [
+                                DynamicIcon(
+                                  codePoint: asset.iconCodePoint,
+                                  fontFamily: asset.iconFontFamily,
+                                  fontPackage: asset.iconFontPackage,
+                                  size: 16,
+                                  color: asset.color,
+                                ),
+                                const SizedBox(width: 8), // Added spacing
+                                Expanded(
+                                  // Wrapped Text in Expanded to handle overflow
+                                  child: Text(
+                                    asset.name,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: themeColors.text,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                           Text(
@@ -163,7 +180,13 @@ class AssetChartSection extends StatelessWidget {
                             shape: BoxShape.circle,
                           ),
                           alignment: Alignment.center,
-                          child: Icon(asset.icon, color: color, size: 20),
+                          child: DynamicIcon(
+                            codePoint: asset.iconCodePoint,
+                            fontFamily: asset.iconFontFamily,
+                            fontPackage: asset.iconFontPackage,
+                            color: color,
+                            size: 20,
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Text(

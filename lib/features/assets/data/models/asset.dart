@@ -25,18 +25,6 @@ class Asset {
 
   Color get color => Color(colorValue);
 
-  IconData get icon {
-    if (iconCodePoint != null) {
-      return IconData(
-        iconCodePoint!,
-        fontFamily: iconFontFamily,
-        fontPackage: iconFontPackage,
-      );
-    }
-    // Default fallback if no icon set
-    return Icons.account_balance_wallet;
-  }
-
   factory Asset.fromJson(Map<String, dynamic> json) {
     return Asset(
       id: json['id'] as String,

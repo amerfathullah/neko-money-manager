@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:neko_money_manager/core/widgets/dynamic_icon.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -22,7 +23,9 @@ class _AddEditAssetPageState extends ConsumerState<AddEditAssetPage> {
   late TextEditingController _balanceController;
   late TextEditingController _remarkController;
   late Color _selectedColor;
-  late IconData _selectedIcon;
+  late int _selectedIconCodePoint;
+  String? _selectedIconFontFamily;
+  String? _selectedIconFontPackage;
 
   // Grouped Icons (Same as Ledger for consistency)
   final Map<String, List<IconData>> _iconGroups = {
@@ -109,7 +112,16 @@ class _AddEditAssetPageState extends ConsumerState<AddEditAssetPage> {
     );
     _remarkController = TextEditingController(text: widget.asset?.remark ?? '');
     _selectedColor = widget.asset?.color ?? AppColors.pastelPurple;
-    _selectedIcon = widget.asset?.icon ?? Icons.account_balance_wallet;
+    if (widget.asset != null) {
+      _selectedIconCodePoint =
+          widget.asset!.iconCodePoint ?? Icons.account_balance_wallet.codePoint;
+      _selectedIconFontFamily = widget.asset!.iconFontFamily;
+      _selectedIconFontPackage = widget.asset!.iconFontPackage;
+    } else {
+      _selectedIconCodePoint = Icons.account_balance_wallet.codePoint;
+      _selectedIconFontFamily = Icons.account_balance_wallet.fontFamily;
+      _selectedIconFontPackage = Icons.account_balance_wallet.fontPackage;
+    }
   }
 
   @override
@@ -135,9 +147,9 @@ class _AddEditAssetPageState extends ConsumerState<AddEditAssetPage> {
           balance: balance,
           initialBalance: balance, // Set initial balance for history baseline
           remark: remark,
-          iconCodePoint: _selectedIcon.codePoint,
-          iconFontFamily: _selectedIcon.fontFamily,
-          iconFontPackage: _selectedIcon.fontPackage,
+          iconCodePoint: _selectedIconCodePoint,
+          iconFontFamily: _selectedIconFontFamily,
+          iconFontPackage: _selectedIconFontPackage,
         );
         await ref.read(assetProvider.notifier).addAsset(newAsset);
       } else {
@@ -150,9 +162,9 @@ class _AddEditAssetPageState extends ConsumerState<AddEditAssetPage> {
           colorValue: _selectedColor.toARGB32(),
           balance: balance,
           remark: remark,
-          iconCodePoint: _selectedIcon.codePoint,
-          iconFontFamily: _selectedIcon.fontFamily,
-          iconFontPackage: _selectedIcon.fontPackage,
+          iconCodePoint: _selectedIconCodePoint,
+          iconFontFamily: _selectedIconFontFamily,
+          iconFontPackage: _selectedIconFontPackage,
         );
         await ref.read(assetProvider.notifier).updateAsset(updatedAsset);
       }
@@ -274,11 +286,16 @@ class _AddEditAssetPageState extends ConsumerState<AddEditAssetPage> {
                           spacing: 12,
                           runSpacing: 12,
                           children: entry.value.map((icon) {
-                            final isSelected = _selectedIcon == icon;
+                            final isSelected =
+                                _selectedIconCodePoint == icon.codePoint &&
+                                _selectedIconFontFamily == icon.fontFamily &&
+                                _selectedIconFontPackage == icon.fontPackage;
                             return GestureDetector(
                               onTap: () {
                                 setState(() {
-                                  _selectedIcon = icon;
+                                  _selectedIconCodePoint = icon.codePoint;
+                                  _selectedIconFontFamily = icon.fontFamily;
+                                  _selectedIconFontPackage = icon.fontPackage;
                                 });
                               },
                               child: Container(
@@ -348,8 +365,10 @@ class _AddEditAssetPageState extends ConsumerState<AddEditAssetPage> {
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(color: _selectedColor, width: 2),
                         ),
-                        child: Icon(
-                          _selectedIcon,
+                        child: DynamicIcon(
+                          codePoint: _selectedIconCodePoint,
+                          fontFamily: _selectedIconFontFamily,
+                          fontPackage: _selectedIconFontPackage,
                           color: _selectedColor,
                           size: 28,
                         ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:neko_money_manager/core/widgets/dynamic_icon.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
@@ -68,7 +69,13 @@ class _TransactionDetailsDialogState
                     color: color.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(widget.category.icon, color: color, size: 28),
+                  child: DynamicIcon(
+                    codePoint: widget.category.iconCodePoint,
+                    fontFamily: widget.category.iconFontFamily,
+                    fontPackage: widget.category.iconFontPackage,
+                    color: color,
+                    size: 28,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(

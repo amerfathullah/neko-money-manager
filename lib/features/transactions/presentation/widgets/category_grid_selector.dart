@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:neko_money_manager/core/widgets/dynamic_icon.dart';
 import '../../../categories/data/models/category.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 
@@ -86,10 +87,12 @@ class CategoryGridSelector extends StatelessWidget {
               SizedBox(
                 width: 24,
                 height: 24,
-                child: Icon(
-                  category.icon,
-                  size: 16,
-                  color: isSelected ? Colors.white : themeColors.text,
+                child: DynamicIcon(
+                  codePoint: category.iconCodePoint,
+                  fontFamily: category.iconFontFamily,
+                  fontPackage: category.iconFontPackage,
+                  size: 24,
+                  color: isSelected ? Colors.white : category.color,
                 ),
               ),
               const SizedBox(width: 4),

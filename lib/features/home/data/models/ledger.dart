@@ -23,15 +23,6 @@ class Ledger {
 
   Color get color => Color(colorValue);
 
-  IconData? get icon {
-    if (iconPoint == null) return null;
-    return IconData(
-      iconPoint!,
-      fontFamily: iconFamily,
-      fontPackage: iconPackage,
-    );
-  }
-
   factory Ledger.fromJson(Map<String, dynamic> json) {
     return Ledger(
       id: json['id'] as String,

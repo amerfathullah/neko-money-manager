@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:neko_money_manager/core/widgets/dynamic_icon.dart';
+import 'transaction_timeline_asset_icon.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -267,7 +269,7 @@ class TransactionTimeline extends ConsumerWidget {
     );
 
     // Use Asset Icon
-    final assetIcon = asset.icon;
+    // final assetIcon = asset.icon; // Removed
 
     // Use Ledger from transaction
     final transactionLedger = ledgers.firstWhere(
@@ -390,8 +392,10 @@ class TransactionTimeline extends ConsumerWidget {
                         color: backgroundColor ?? themeColors.background,
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(
-                        category.icon,
+                      child: DynamicIcon(
+                        codePoint: category.iconCodePoint,
+                        fontFamily: category.iconFontFamily,
+                        fontPackage: category.iconFontPackage,
                         size: 24,
                         color: category.color,
                       ),
@@ -444,11 +448,7 @@ class TransactionTimeline extends ConsumerWidget {
                                   color: asset.color.withValues(alpha: 0.2),
                                   shape: BoxShape.circle,
                                 ),
-                                child: Icon(
-                                  assetIcon,
-                                  size: 16,
-                                  color: asset.color,
-                                ),
+                                child: TransactionAssetIcon(asset: asset),
                               ),
                               // Ledger Icon
                               Container(
@@ -459,9 +459,11 @@ class TransactionTimeline extends ConsumerWidget {
                                   ),
                                   shape: BoxShape.circle,
                                 ),
-                                child: Icon(
-                                  transactionLedger.icon ??
-                                      Icons.account_balance_wallet,
+                                child: DynamicIcon(
+                                  codePoint: transactionLedger.iconPoint,
+                                  fontFamily: transactionLedger.iconFamily,
+                                  fontPackage: transactionLedger.iconPackage,
+                                  fallback: Icons.account_balance_wallet,
                                   size: 16,
                                   color: transactionLedger.color,
                                 ),

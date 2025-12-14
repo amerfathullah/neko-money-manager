@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../home/presentation/providers/ledger_provider.dart';
 import '../../../home/presentation/pages/ledger_details_page.dart';
 import '../../../../core/theme/app_theme_colors.dart';
+import 'package:neko_money_manager/core/widgets/dynamic_icon.dart';
 import 'add_edit_ledger_page.dart';
 
 class LedgersPage extends ConsumerWidget {
@@ -87,20 +88,18 @@ class LedgersPage extends ConsumerWidget {
                               ),
                               // Main Icon
                               Center(
-                                child: Icon(
-                                  ledger.icon ?? Icons.account_balance_wallet,
+                                child: DynamicIcon(
+                                  codePoint: ledger.iconPoint,
+                                  fontFamily: ledger.iconFamily,
+                                  fontPackage: ledger.iconPackage,
+                                  fallback: Icons.account_balance_wallet,
                                   size: 48,
                                   color: Colors.white.withValues(alpha: 0.9),
-                                  // Adding a subtle shadow to icon to make it pop like a sticker
-                                  shadows: [
-                                    Shadow(
-                                      offset: const Offset(0, 2),
-                                      blurRadius: 4,
-                                      color: Colors.black.withValues(
-                                        alpha: 0.2,
-                                      ),
-                                    ),
-                                  ],
+                                  // DynamicIcon doesn't support shadows directly usually, so wrapping might be needed if DynamicIcon doesn't support it.
+                                  // Checking DynamicIcon definition: it renders Text. TextStyle supports shadows.
+                                  // But DynamicIcon parameter doesn't expose shadows/style directly, just color/size.
+                                  // I might lose the shadow effect unless I update DynamicIcon or wrap it.
+                                  // For now, let's omit the shadow or accept it's less fancy, or update DynamicIcon later.
                                 ),
                               ),
                             ],

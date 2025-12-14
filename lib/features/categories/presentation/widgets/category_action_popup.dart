@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:neko_money_manager/core/widgets/dynamic_icon.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/category.dart';
 import '../../../../core/theme/app_theme_colors.dart';
@@ -43,7 +44,13 @@ class CategoryActionPopup extends ConsumerWidget {
                   CircleAvatar(
                     backgroundColor: category.color.withValues(alpha: 0.2),
                     radius: 16,
-                    child: Icon(category.icon, color: category.color, size: 20),
+                    child: DynamicIcon(
+                      codePoint: category.iconCodePoint,
+                      fontFamily: category.iconFontFamily,
+                      fontPackage: category.iconFontPackage,
+                      color: category.color,
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Text(

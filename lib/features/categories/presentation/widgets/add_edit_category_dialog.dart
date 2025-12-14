@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 
@@ -7,7 +8,14 @@ import '../../data/models/category.dart';
 class AddEditCategoryDialog extends StatefulWidget {
   final Category? category;
   final CategoryType initialType;
-  final Function(String name, int colorValue, IconData icon) onSave;
+  final Function(
+    String name,
+    int colorValue,
+    int iconCodePoint,
+    String? fontFamily,
+    String? fontPackage,
+  )
+  onSave;
 
   const AddEditCategoryDialog({
     super.key,
@@ -23,7 +31,9 @@ class AddEditCategoryDialog extends StatefulWidget {
 class _AddEditCategoryDialogState extends State<AddEditCategoryDialog> {
   late TextEditingController _nameController;
   late int _selectedColorValue;
-  late IconData _selectedIcon;
+  late int _selectedIconCodePoint;
+  String? _selectedIconFontFamily;
+  String? _selectedIconFontPackage;
 
   // Expanding color palette - vibrant pastels
   final List<Color> _colors = [
@@ -118,7 +128,16 @@ class _AddEditCategoryDialogState extends State<AddEditCategoryDialog> {
     super.initState();
     _nameController = TextEditingController(text: widget.category?.name ?? '');
     _selectedColorValue = widget.category?.colorValue ?? _colors[0].toARGB32();
-    _selectedIcon = widget.category?.icon ?? _iconGroups['Food']![0];
+    if (widget.category != null) {
+      _selectedIconCodePoint = widget.category!.iconCodePoint;
+      _selectedIconFontFamily = widget.category!.iconFontFamily;
+      _selectedIconFontPackage = widget.category!.iconFontPackage;
+    } else {
+      final defaultIcon = _iconGroups['Food']![0];
+      _selectedIconCodePoint = defaultIcon.codePoint;
+      _selectedIconFontFamily = defaultIcon.fontFamily;
+      _selectedIconFontPackage = defaultIcon.fontPackage;
+    }
   }
 
   @override
@@ -279,10 +298,16 @@ class _AddEditCategoryDialogState extends State<AddEditCategoryDialog> {
                             spacing: 12,
                             runSpacing: 12,
                             children: entry.value.map((icon) {
-                              final isSelected = _selectedIcon == icon;
+                              final isSelected =
+                                  _selectedIconCodePoint == icon.codePoint &&
+                                  _selectedIconFontFamily == icon.fontFamily &&
+                                  _selectedIconFontPackage == icon.fontPackage;
                               return GestureDetector(
-                                onTap: () =>
-                                    setState(() => _selectedIcon = icon),
+                                onTap: () => setState(() {
+                                  _selectedIconCodePoint = icon.codePoint;
+                                  _selectedIconFontFamily = icon.fontFamily;
+                                  _selectedIconFontPackage = icon.fontPackage;
+                                }),
                                 child: Container(
                                   width: 48,
                                   height: 48,
@@ -317,7 +342,9 @@ class _AddEditCategoryDialogState extends State<AddEditCategoryDialog> {
                   widget.onSave(
                     _nameController.text,
                     _selectedColorValue,
-                    _selectedIcon,
+                    _selectedIconCodePoint,
+                    _selectedIconFontFamily,
+                    _selectedIconFontPackage,
                   );
                   Navigator.of(context).pop();
                 }

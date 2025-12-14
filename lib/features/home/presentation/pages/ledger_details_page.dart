@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../core/utils/currency_formatter.dart';
+import 'package:neko_money_manager/core/widgets/dynamic_icon.dart';
 import '../../data/models/ledger.dart';
 import '../../../transactions/data/models/transaction_model.dart';
 import '../../../transactions/presentation/providers/transaction_provider.dart';
@@ -385,8 +386,11 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
                   color: widget.ledger.color.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  widget.ledger.icon ?? Icons.account_balance_wallet,
+                child: DynamicIcon(
+                  codePoint: widget.ledger.iconPoint,
+                  fontFamily: widget.ledger.iconFamily,
+                  fontPackage: widget.ledger.iconPackage,
+                  fallback: Icons.account_balance_wallet,
                   color: widget.ledger.color,
                 ),
               ),

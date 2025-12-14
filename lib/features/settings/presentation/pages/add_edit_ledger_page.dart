@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:neko_money_manager/core/theme/app_theme_colors.dart';
 import '../../../../core/constants/app_colors.dart';
+import 'package:neko_money_manager/core/widgets/dynamic_icon.dart';
 import '../../../home/data/models/ledger.dart';
 import '../../../home/presentation/providers/ledger_provider.dart';
 
@@ -20,7 +21,9 @@ class _AddEditLedgerPageState extends ConsumerState<AddEditLedgerPage> {
   late TextEditingController _nameController;
   late TextEditingController _remarkController;
   late Color _selectedColor;
-  IconData _selectedIcon = Icons.account_balance_wallet;
+  late int _selectedIconCodePoint;
+  String? _selectedIconFontFamily;
+  String? _selectedIconFontPackage;
 
   // Templates
   final List<Map<String, dynamic>> _templates = [
@@ -118,8 +121,15 @@ class _AddEditLedgerPageState extends ConsumerState<AddEditLedgerPage> {
     _selectedColor = widget.ledger != null
         ? widget.ledger!.color
         : _colors.first;
-    if (widget.ledger?.icon != null) {
-      _selectedIcon = widget.ledger!.icon!;
+    if (widget.ledger != null) {
+      _selectedIconCodePoint =
+          widget.ledger!.iconPoint ?? Icons.account_balance_wallet.codePoint;
+      _selectedIconFontFamily = widget.ledger!.iconFamily;
+      _selectedIconFontPackage = widget.ledger!.iconPackage;
+    } else {
+      _selectedIconCodePoint = Icons.account_balance_wallet.codePoint;
+      _selectedIconFontFamily = Icons.account_balance_wallet.fontFamily;
+      _selectedIconFontPackage = Icons.account_balance_wallet.fontPackage;
     }
   }
 
@@ -132,8 +142,11 @@ class _AddEditLedgerPageState extends ConsumerState<AddEditLedgerPage> {
 
   void _applyTemplate(Map<String, dynamic> template, Color color) {
     _nameController.text = template['name'];
+    final IconData icon = template['icon'];
     setState(() {
-      _selectedIcon = template['icon'];
+      _selectedIconCodePoint = icon.codePoint;
+      _selectedIconFontFamily = icon.fontFamily;
+      _selectedIconFontPackage = icon.fontPackage;
       _selectedColor = color;
     });
   }
@@ -149,9 +162,9 @@ class _AddEditLedgerPageState extends ConsumerState<AddEditLedgerPage> {
           id: const Uuid().v4(),
           name: name,
           colorValue: _selectedColor.toARGB32(),
-          iconPoint: _selectedIcon.codePoint,
-          iconFamily: _selectedIcon.fontFamily,
-          iconPackage: _selectedIcon.fontPackage,
+          iconPoint: _selectedIconCodePoint,
+          iconFamily: _selectedIconFontFamily,
+          iconPackage: _selectedIconFontPackage,
           remark: remark.isEmpty ? null : remark,
         );
         await ref.read(ledgerProvider.notifier).addLedger(newLedger);
@@ -160,9 +173,9 @@ class _AddEditLedgerPageState extends ConsumerState<AddEditLedgerPage> {
         final updatedLedger = widget.ledger!.copyWith(
           name: name,
           colorValue: _selectedColor.toARGB32(),
-          iconPoint: _selectedIcon.codePoint,
-          iconFamily: _selectedIcon.fontFamily,
-          iconPackage: _selectedIcon.fontPackage,
+          iconPoint: _selectedIconCodePoint,
+          iconFamily: _selectedIconFontFamily,
+          iconPackage: _selectedIconFontPackage,
           remark: remark.isEmpty ? null : remark,
         );
         await ref.read(ledgerProvider.notifier).updateLedger(updatedLedger);
@@ -386,11 +399,16 @@ class _AddEditLedgerPageState extends ConsumerState<AddEditLedgerPage> {
                           spacing: 12,
                           runSpacing: 12,
                           children: entry.value.map((icon) {
-                            final isSelected = _selectedIcon == icon;
+                            final isSelected =
+                                _selectedIconCodePoint == icon.codePoint &&
+                                _selectedIconFontFamily == icon.fontFamily &&
+                                _selectedIconFontPackage == icon.fontPackage;
                             return GestureDetector(
                               onTap: () {
                                 setState(() {
-                                  _selectedIcon = icon;
+                                  _selectedIconCodePoint = icon.codePoint;
+                                  _selectedIconFontFamily = icon.fontFamily;
+                                  _selectedIconFontPackage = icon.fontPackage;
                                 });
                               },
                               child: Container(
@@ -461,8 +479,10 @@ class _AddEditLedgerPageState extends ConsumerState<AddEditLedgerPage> {
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(color: _selectedColor, width: 2),
                         ),
-                        child: Icon(
-                          _selectedIcon,
+                        child: DynamicIcon(
+                          codePoint: _selectedIconCodePoint,
+                          fontFamily: _selectedIconFontFamily,
+                          fontPackage: _selectedIconFontPackage,
                           color: _selectedColor,
                           size: 28,
                         ),

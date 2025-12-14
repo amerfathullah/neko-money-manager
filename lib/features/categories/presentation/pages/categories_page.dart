@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:neko_money_manager/core/widgets/dynamic_icon.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -37,15 +38,15 @@ class _CategoriesPageState extends ConsumerState<CategoriesPage>
       builder: (context) => AddEditCategoryDialog(
         category: category,
         initialType: type,
-        onSave: (name, colorValue, icon) {
+        onSave: (name, colorValue, iconCodePoint, fontFamily, fontPackage) {
           final newCategory = Category(
             id:
                 category?.id ??
                 DateTime.now().millisecondsSinceEpoch.toString(),
             name: name,
-            iconCodePoint: icon.codePoint,
-            iconFontFamily: icon.fontFamily,
-            iconFontPackage: icon.fontPackage,
+            iconCodePoint: iconCodePoint,
+            iconFontFamily: fontFamily,
+            iconFontPackage: fontPackage,
             colorValue: colorValue,
             type: type,
             index:
@@ -295,7 +296,13 @@ class _CategoriesPageState extends ConsumerState<CategoriesPage>
                   CircleAvatar(
                     backgroundColor: Colors.transparent,
                     radius: 16,
-                    child: Icon(category.icon, color: category.color, size: 24),
+                    child: DynamicIcon(
+                      codePoint: category.iconCodePoint,
+                      fontFamily: category.iconFontFamily,
+                      fontPackage: category.iconFontPackage,
+                      color: category.color,
+                      size: 24,
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(

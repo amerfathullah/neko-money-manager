@@ -23,12 +23,6 @@ class Category {
     this.index = 0,
   });
 
-  IconData get icon => IconData(
-    iconCodePoint,
-    fontFamily: iconFontFamily,
-    fontPackage: iconFontPackage,
-  );
-
   Color get color => Color(colorValue);
 
   factory Category.fromJson(Map<String, dynamic> json) {
