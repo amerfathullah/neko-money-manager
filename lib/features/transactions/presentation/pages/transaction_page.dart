@@ -22,8 +22,14 @@ import '../../../categories/presentation/pages/categories_page.dart';
 class TransactionPage extends ConsumerStatefulWidget {
   final TransactionModel? transaction;
   final TransactionType? initialType;
+  final DateTime? initialDate;
 
-  const TransactionPage({super.key, this.transaction, this.initialType});
+  const TransactionPage({
+    super.key,
+    this.transaction,
+    this.initialType,
+    this.initialDate,
+  });
 
   @override
   ConsumerState<TransactionPage> createState() => _TransactionPageState();
@@ -59,6 +65,10 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
           _selectedTypeIndex = 2;
           break;
       }
+    }
+
+    if (widget.initialDate != null) {
+      _selectedDate = widget.initialDate!;
     }
   }
 

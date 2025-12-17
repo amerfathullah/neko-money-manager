@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:neko_money_manager/core/widgets/dynamic_icon.dart';
-import 'transaction_timeline_asset_icon.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -14,6 +13,7 @@ import '../../../home/presentation/providers/ledger_provider.dart';
 import '../../../home/data/models/ledger.dart';
 import '../../data/models/transaction_model.dart';
 import 'transaction_details_dialog.dart';
+import 'transaction_card.dart';
 
 class TransactionTimeline extends ConsumerWidget {
   final List<TransactionModel> transactions;
@@ -247,7 +247,7 @@ class TransactionTimeline extends ConsumerWidget {
     bool showTime,
   ) {
     final themeColors = Theme.of(context).extension<AppThemeColors>()!;
-    final isExpense = t.type == TransactionType.expense;
+
     final category = categories.firstWhere(
       (c) => c.id == t.categoryId,
       orElse: () => Category(
@@ -369,146 +369,14 @@ class TransactionTimeline extends ConsumerWidget {
 
             // Card
             Expanded(
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 10),
-                padding: const EdgeInsets.only(
-                  left: 8,
-                  right: 8,
-                  top: 4,
-                  bottom: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: category.color.withValues(
-                    alpha: 0.2,
-                  ), // Background follows category color
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Row(
-                  children: [
-                    // Large Category Icon
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: backgroundColor ?? themeColors.background,
-                        shape: BoxShape.circle,
-                      ),
-                      child: DynamicIcon(
-                        codePoint: category.iconCodePoint,
-                        fontFamily: category.iconFontFamily,
-                        fontPackage: category.iconFontPackage,
-                        size: 24,
-                        color: category.color,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Category Name
-                          Text(
-                            category.name,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                              color: themeColors.text,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          // Bottom Row: Time Pill, Asset, Ledger, etc.
-                          Wrap(
-                            spacing: 4,
-                            runSpacing: 2,
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            children: [
-                              // Time Pill
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 4,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: category.color.withValues(alpha: 0.4),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  DateFormat('HH:mm').format(t.date),
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    color: themeColors.text,
-                                  ),
-                                ),
-                              ),
-                              // Asset Icon
-                              Container(
-                                padding: const EdgeInsets.all(2),
-                                decoration: BoxDecoration(
-                                  color: asset.color.withValues(alpha: 0.2),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: TransactionAssetIcon(asset: asset),
-                              ),
-                              // Ledger Icon
-                              Container(
-                                padding: const EdgeInsets.all(2),
-                                decoration: BoxDecoration(
-                                  color: transactionLedger.color.withValues(
-                                    alpha: 0.2,
-                                  ),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: DynamicIcon(
-                                  codePoint: transactionLedger.iconPoint,
-                                  fontFamily: transactionLedger.iconFamily,
-                                  fontPackage: transactionLedger.iconPackage,
-                                  fallback: Icons.account_balance_wallet,
-                                  size: 16,
-                                  color: transactionLedger.color,
-                                ),
-                              ),
-                              // Reimbursement Icon
-                              if (t.isReimbursement) ...[
-                                Container(
-                                  padding: const EdgeInsets.all(2),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.pastelPurple.withValues(
-                                      alpha: 0.2,
-                                    ),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.work,
-                                    size: 16,
-                                    color: AppColors.pastelPurple,
-                                  ),
-                                ),
-                              ],
-                              // Bookmark Icon (Star)
-                              if (t.isBookmarked) ...[
-                                const Icon(
-                                  Icons.star,
-                                  size: 16,
-                                  color: Colors.amber,
-                                ),
-                              ],
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Amount
-                    Text(
-                      '${isExpense ? '-' : '+'}${CurrencyFormatter.format(t.amount, symbol: '', useGrouping: useComma)}',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: isExpense ? AppColors.expense : themeColors.text,
-                      ),
-                    ),
-                  ],
-                ),
+              child: TransactionCard(
+                transaction: t,
+                category: category,
+                asset: asset,
+                ledger: transactionLedger,
+                currencySymbol: currencySymbol,
+                useComma: useComma,
+                backgroundColor: backgroundColor,
               ),
             ),
           ],

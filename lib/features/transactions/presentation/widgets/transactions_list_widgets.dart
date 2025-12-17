@@ -13,6 +13,7 @@ import '../pages/transaction_page.dart';
 import 'time_filter_popup.dart';
 import '../../../../features/categories/data/models/category.dart';
 import '../pages/transaction_chart_page.dart';
+import 'day_transactions_dialog.dart';
 
 // --- ENUMS ---
 enum TransactionTimeRange { daily, weekly, monthly, annual, custom, all }
@@ -736,39 +737,68 @@ class _TransactionCalendarSectionState
   }
 
   Widget _buildDayCell(int day, double? amount, AppThemeColors themeColors) {
-    return Container(
-      height: 48,
-      margin: const EdgeInsets.all(2),
-      decoration: BoxDecoration(
-        color: amount != null
-            ? (widget.isExpenseView
-                  ? AppColors.pastelRed.withValues(alpha: 0.2)
-                  : AppColors.pastelGreen.withValues(alpha: 0.2))
-            : Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            '$day',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: themeColors.text,
+    return GestureDetector(
+      onTap: () {
+        if (amount != null) {
+          // Filter transactions for this day
+          final dayTransactions = widget.transactions.where((t) {
+            final now = DateTime.now();
+            final matchesDate =
+                t.date.year == now.year &&
+                t.date.month == now.month &&
+                t.date.day == day;
+            final matchesType = widget.isExpenseView
+                ? t.type == TransactionType.expense
+                : t.type == TransactionType.income;
+            return matchesDate && matchesType;
+          }).toList();
+
+          showDialog(
+            context: context,
+            builder: (context) => DayTransactionsDialog(
+              date: DateTime(DateTime.now().year, DateTime.now().month, day),
+              transactions: dayTransactions,
+              currencySymbol: widget.currencySymbol,
+              useComma:
+                  true, // Assuming default true or passed from widget if available
             ),
-          ),
-          if ((amount ?? 0) > 0)
+          );
+        }
+      },
+      child: Container(
+        height: 48,
+        margin: const EdgeInsets.all(2),
+        decoration: BoxDecoration(
+          color: amount != null
+              ? (widget.isExpenseView
+                    ? AppColors.pastelRed.withValues(alpha: 0.2)
+                    : AppColors.pastelGreen.withValues(alpha: 0.2))
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
             Text(
-              '${widget.isExpenseView ? '-' : '+'}${widget.currencySymbol}${NumberFormat.compact().format((amount ?? 0).abs())}',
+              '$day',
               style: TextStyle(
-                fontSize: 8,
-                color: widget.isExpenseView
-                    ? AppColors.expense
-                    : AppColors.income,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: themeColors.text,
               ),
             ),
-        ],
+            if ((amount ?? 0) > 0)
+              Text(
+                '${widget.isExpenseView ? '-' : '+'}${widget.currencySymbol}${NumberFormat.compact().format((amount ?? 0).abs())}',
+                style: TextStyle(
+                  fontSize: 8,
+                  color: widget.isExpenseView
+                      ? AppColors.expense
+                      : AppColors.income,
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
