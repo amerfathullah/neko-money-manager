@@ -360,6 +360,7 @@ class _AddEditAssetPageState extends ConsumerState<AddEditAssetPage> {
                       Container(
                         width: 56,
                         height: 56,
+                        alignment: Alignment.center,
                         decoration: BoxDecoration(
                           color: _selectedColor.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(16),
@@ -471,6 +472,7 @@ class _AddEditAssetPageState extends ConsumerState<AddEditAssetPage> {
                       Container(
                         width: 56,
                         height: 56,
+                        alignment: Alignment.center,
                         decoration: BoxDecoration(
                           color: themeColors.inputBackground,
                           borderRadius: BorderRadius.circular(16),

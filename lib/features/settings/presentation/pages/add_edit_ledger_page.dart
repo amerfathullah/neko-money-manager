@@ -474,6 +474,7 @@ class _AddEditLedgerPageState extends ConsumerState<AddEditLedgerPage> {
                       Container(
                         width: 56,
                         height: 56,
+                        alignment: Alignment.center,
                         decoration: BoxDecoration(
                           color: _selectedColor.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(16),
@@ -536,6 +537,7 @@ class _AddEditLedgerPageState extends ConsumerState<AddEditLedgerPage> {
                       Container(
                         width: 56,
                         height: 56,
+                        alignment: Alignment.center,
                         decoration: BoxDecoration(
                           color: themeColors.inputBackground,
                           borderRadius: BorderRadius.circular(16),
