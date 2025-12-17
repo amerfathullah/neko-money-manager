@@ -1,0 +1,85 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/theme/app_theme_colors.dart';
+import '../../../settings/presentation/providers/currency_provider.dart';
+import '../../../settings/presentation/providers/settings_provider.dart';
+import '../providers/transaction_provider.dart';
+import '../widgets/transaction_timeline.dart';
+
+class ReimbursementsPage extends ConsumerWidget {
+  const ReimbursementsPage({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final transactionsAsync = ref.watch(transactionProvider);
+    final currencyAsync = ref.watch(currencyProvider);
+    final settingsAsync = ref.watch(settingsProvider);
+    final themeColors = Theme.of(context).extension<AppThemeColors>()!;
+
+    final currencySymbol = currencyAsync.asData?.value ?? '\$';
+    final settings = settingsAsync.asData?.value;
+    final useComma = settings?.useCommaSeparator ?? true;
+
+    return Scaffold(
+      backgroundColor: themeColors.background,
+      appBar: AppBar(
+        title: Text(
+          'Reimbursements',
+          style: TextStyle(
+            color: themeColors.text,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: IconThemeData(color: themeColors.text),
+      ),
+      body: transactionsAsync.when(
+        data: (transactions) {
+          final filteredTransactions = transactions
+              .where((t) => t.isReimbursement)
+              .toList();
+
+          // Sort by date descending
+          filteredTransactions.sort((a, b) => b.date.compareTo(a.date));
+
+          if (filteredTransactions.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.work_off_outlined,
+                    size: 80,
+                    color: themeColors.text.withValues(alpha: 0.2),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No reimbursements found',
+                    style: TextStyle(
+                      color: themeColors.text.withValues(alpha: 0.6),
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 24),
+            child: TransactionTimeline(
+              transactions: filteredTransactions,
+              currencySymbol: currencySymbol,
+              useComma: useComma,
+              backgroundColor: themeColors.background,
+            ),
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('Error: $err')),
+      ),
+    );
+  }
+}

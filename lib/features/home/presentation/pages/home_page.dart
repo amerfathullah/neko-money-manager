@@ -14,7 +14,8 @@ import '../widgets/ledger_selector.dart';
 import '../../../transactions/presentation/widgets/transaction_timeline.dart';
 import '../../../../features/settings/presentation/pages/ledgers_page.dart';
 import '../../../../features/categories/presentation/pages/categories_page.dart';
-import '../../../transactions/presentation/pages/filtered_transactions_page.dart';
+import '../../../transactions/presentation/pages/reimbursements_page.dart';
+import '../../../transactions/presentation/pages/bookmarks_page.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -319,11 +320,7 @@ class _HomePageState extends ConsumerState<HomePage>
                                           Navigator.of(context).push(
                                             MaterialPageRoute(
                                               builder: (context) =>
-                                                  FilteredTransactionsPage(
-                                                    title: 'Reimbursement',
-                                                    filter: (t) =>
-                                                        t.isReimbursement,
-                                                  ),
+                                                  const ReimbursementsPage(),
                                             ),
                                           );
                                         },
@@ -336,11 +333,7 @@ class _HomePageState extends ConsumerState<HomePage>
                                           Navigator.of(context).push(
                                             MaterialPageRoute(
                                               builder: (context) =>
-                                                  FilteredTransactionsPage(
-                                                    title: 'Bookmarks',
-                                                    filter: (t) =>
-                                                        t.isBookmarked,
-                                                  ),
+                                                  const BookmarksPage(),
                                             ),
                                           );
                                         },

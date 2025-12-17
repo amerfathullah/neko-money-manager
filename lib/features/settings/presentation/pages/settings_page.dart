@@ -9,6 +9,8 @@ import '../providers/settings_provider.dart';
 import 'premium_page.dart';
 import 'appearance_page.dart';
 import 'ledgers_page.dart';
+import '../../../transactions/presentation/pages/reimbursements_page.dart';
+import '../../../transactions/presentation/pages/bookmarks_page.dart';
 
 import '../providers/currency_provider.dart';
 
@@ -246,7 +248,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                 iconColor: themeColors.text,
                 title: 'Reimburse',
                 subtitle: 'Manage the reimbursement',
-                onTap: () {},
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const ReimbursementsPage(),
+                    ),
+                  );
+                },
               ),
               _buildModernSettingItem(
                 context,
@@ -254,7 +262,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                 iconColor: themeColors.text,
                 title: 'Bookmarks',
                 subtitle: 'Manage the bookmarks',
-                onTap: () {},
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const BookmarksPage(),
+                    ),
+                  );
+                },
               ),
               _buildModernSettingItem(
                 context,
