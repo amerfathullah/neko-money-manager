@@ -12,6 +12,7 @@ import '../pages/category_transactions_page.dart';
 import '../pages/transaction_page.dart';
 import 'time_filter_popup.dart';
 import '../../../../features/categories/data/models/category.dart';
+import '../pages/transaction_chart_page.dart';
 
 // --- ENUMS ---
 enum TransactionTimeRange { daily, weekly, monthly, annual, custom, all }
@@ -274,6 +275,7 @@ class TransactionChartSection extends StatelessWidget {
   final String currencySymbol;
   final bool useComma;
   final List<Category> categories;
+  final bool showForwardButton;
 
   const TransactionChartSection({
     super.key,
@@ -283,6 +285,7 @@ class TransactionChartSection extends StatelessWidget {
     required this.currencySymbol,
     required this.useComma,
     required this.categories,
+    this.showForwardButton = true,
   });
 
   @override
@@ -301,16 +304,6 @@ class TransactionChartSection extends StatelessWidget {
     // Sort by amount desc
     final sortedKeys = categoryTotals.keys.toList()
       ..sort((a, b) => categoryTotals[b]!.compareTo(categoryTotals[a]!));
-
-    // Simple color palette loop
-    final List<Color> colors = [
-      const Color(0xFFFFB74D), // Orange
-      const Color(0xFFE57373), // Red
-      const Color(0xFFF06292), // Pink
-      const Color(0xFF4DB6AC), // Teal
-      const Color(0xFF9575CD), // Purple
-      const Color(0xFFAED581), // Green
-    ];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
@@ -331,10 +324,25 @@ class TransactionChartSection extends StatelessWidget {
                             .text, // Per image: Expenses is Red/DarkRed text
                 ),
               ),
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(Icons.arrow_forward_ios, size: 16),
-              ),
+              if (showForwardButton)
+                IconButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => TransactionChartPage(
+                          title: title,
+                          isExpense: isExpense,
+                          transactions: transactions,
+                          currencySymbol: currencySymbol,
+                          useComma: useComma,
+                          categories: categories,
+                        ),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.arrow_forward_ios, size: 16),
+                ),
             ],
           ),
           const SizedBox(height: 16),
@@ -349,12 +357,24 @@ class TransactionChartSection extends StatelessWidget {
                     sectionsSpace: 0,
                     centerSpaceRadius: 30,
                     sections: sortedKeys.map((key) {
-                      final index = sortedKeys.indexOf(key);
-                      final color = colors[index % colors.length];
                       final value = categoryTotals[key]!;
 
+                      // Find category to get color
+                      final category = categories.firstWhere(
+                        (c) => c.name == key,
+                        orElse: () => Category(
+                          id: 'unknown',
+                          name: 'Unknown',
+                          iconCodePoint: Icons.help_outline.codePoint,
+                          colorValue: Colors.grey.toARGB32(),
+                          type: isExpense
+                              ? CategoryType.expense
+                              : CategoryType.income,
+                        ),
+                      );
+
                       return PieChartSectionData(
-                        color: color,
+                        color: category.color,
                         value: value,
                         radius: 40,
                         showTitle: false,
@@ -368,10 +388,22 @@ class TransactionChartSection extends StatelessWidget {
               Expanded(
                 child: Column(
                   children: sortedKeys.take(5).map((key) {
-                    final index = sortedKeys.indexOf(key);
-                    final color = colors[index % colors.length];
                     final value = categoryTotals[key]!;
                     final percent = total > 0 ? (value / total) * 100 : 0.0;
+
+                    final category = categories.firstWhere(
+                      (c) => c.name == key,
+                      orElse: () => Category(
+                        id: 'unknown',
+                        name: 'Unknown',
+                        iconCodePoint: Icons.help_outline.codePoint,
+                        colorValue: Colors.grey.toARGB32(),
+                        type: isExpense
+                            ? CategoryType.expense
+                            : CategoryType.income,
+                      ),
+                    );
+
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 4.0),
                       child: Row(
@@ -380,7 +412,7 @@ class TransactionChartSection extends StatelessWidget {
                             width: 12,
                             height: 12,
                             decoration: BoxDecoration(
-                              color: color,
+                              color: category.color,
                               shape: BoxShape.rectangle,
                               borderRadius: BorderRadius.circular(4),
                             ),
@@ -412,12 +444,10 @@ class TransactionChartSection extends StatelessWidget {
           const SizedBox(height: 16),
           // Category List (Bars)
           ...sortedKeys.take(3).map((key) {
-            final index = sortedKeys.indexOf(key);
-            final color = colors[index % colors.length];
             final value = categoryTotals[key]!;
             final percent = total > 0 ? (value / total) : 0.0;
 
-            // Find category for icon
+            // Find category for icon and color
             final category = categories.firstWhere(
               (c) => c.name == key,
               orElse: () => Category(
@@ -431,6 +461,8 @@ class TransactionChartSection extends StatelessWidget {
                 type: isExpense ? CategoryType.expense : CategoryType.income,
               ),
             );
+
+            final color = category.color;
 
             return InkWell(
               onTap: () {
