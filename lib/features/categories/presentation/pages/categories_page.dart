@@ -6,7 +6,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../data/models/category.dart';
 import '../providers/category_provider.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
-import '../widgets/add_edit_category_dialog.dart';
+import 'add_edit_category_page.dart';
 import '../widgets/category_action_popup.dart';
 
 class CategoriesPage extends ConsumerStatefulWidget {
@@ -30,46 +30,6 @@ class _CategoriesPageState extends ConsumerState<CategoriesPage>
   void dispose() {
     _tabController.dispose();
     super.dispose();
-  }
-
-  void _showAddEditDialog({Category? category, required CategoryType type}) {
-    showDialog(
-      context: context,
-      builder: (context) => AddEditCategoryDialog(
-        category: category,
-        initialType: type,
-        onSave: (name, colorValue, iconCodePoint, fontFamily, fontPackage) {
-          final newCategory = Category(
-            id:
-                category?.id ??
-                DateTime.now().millisecondsSinceEpoch.toString(),
-            name: name,
-            iconCodePoint: iconCodePoint,
-            iconFontFamily: fontFamily,
-            iconFontPackage: fontPackage,
-            colorValue: colorValue,
-            type: type,
-            index:
-                category?.index ??
-                0, // Keep existing index or 0 (will need smart append logic?)
-            // Ideally, for new categories, we should find max index + 1.
-            // But for now let's leave it 0, logic elsewhere or just append to list in provider?
-            // Existing addCategory just adds.
-          );
-
-          if (category == null) {
-            // For new items, we might want to append to end.
-            // We can fetch current list to find max index from provider but it's async in build.
-            // Provider addCategory adds it.
-            // Ideally we solve index assignment in provider/repo or locally before saving.
-            // For now, let's assume 0 and rely on reorder to fix it or handle it later.
-            ref.read(categoryProvider.notifier).addCategory(newCategory);
-          } else {
-            ref.read(categoryProvider.notifier).addCategory(newCategory);
-          }
-        },
-      ),
-    );
   }
 
   void _showActionPopup(Category category) {
@@ -175,7 +135,16 @@ class _CategoriesPageState extends ConsumerState<CategoriesPage>
           },
           onModify: () {
             // Open modify dialog
-            _showAddEditDialog(category: category, type: category.type);
+            // Open modify page
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AddEditCategoryPage(
+                  category: category,
+                  initialType: category.type,
+                ),
+              ),
+            );
           },
         );
       },
@@ -231,7 +200,12 @@ class _CategoriesPageState extends ConsumerState<CategoriesPage>
           final type = _tabController.index == 0
               ? CategoryType.expense
               : CategoryType.income;
-          _showAddEditDialog(type: type);
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AddEditCategoryPage(initialType: type),
+            ),
+          );
         },
         child: const Icon(Icons.add),
       ),
