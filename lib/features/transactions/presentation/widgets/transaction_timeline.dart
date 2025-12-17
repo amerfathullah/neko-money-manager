@@ -76,8 +76,19 @@ class TransactionTimeline extends ConsumerWidget {
         double income = 0;
         double expense = 0;
         for (var t in dayTransactions) {
-          if (t.type == TransactionType.income) income += t.amount;
-          if (t.type == TransactionType.expense) expense += t.amount;
+          if (t.type == TransactionType.income) {
+            income += t.amount;
+          } else if (t.type == TransactionType.expense) {
+            final double reimbursed = t.reimbursedAmount ?? 0;
+            final double net = t.amount - reimbursed;
+            if (net < 0) {
+              // Reimbursement > Expense = Income
+              income += net.abs();
+            } else {
+              // Reimbursement <= Expense = Reduced Expense
+              expense += net;
+            }
+          }
         }
 
         // Build list with hour grouping

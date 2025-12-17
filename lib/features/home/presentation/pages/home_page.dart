@@ -122,7 +122,13 @@ class _HomePageState extends ConsumerState<HomePage>
           if (selectedLedgerId == null) {
             // Global View
             if (isExpense) {
-              currentMonthExpense += t.amount;
+              final double reimbursed = t.reimbursedAmount ?? 0;
+              final double net = t.amount - reimbursed;
+              if (net < 0) {
+                currentMonthIncome += net.abs();
+              } else {
+                currentMonthExpense += net;
+              }
             } else if (isIncome) {
               currentMonthIncome += t.amount;
             }
@@ -131,7 +137,13 @@ class _HomePageState extends ConsumerState<HomePage>
             // Specific Ledger View
             if (isExpense) {
               if (t.ledgerId == selectedLedgerId) {
-                currentMonthExpense += t.amount;
+                final double reimbursed = t.reimbursedAmount ?? 0;
+                final double net = t.amount - reimbursed;
+                if (net < 0) {
+                  currentMonthIncome += net.abs();
+                } else {
+                  currentMonthExpense += net;
+                }
               }
             } else if (isIncome) {
               if (t.ledgerId == selectedLedgerId) {

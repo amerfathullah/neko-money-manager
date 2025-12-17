@@ -167,15 +167,61 @@ class TransactionCard extends StatelessWidget {
                 ],
               ),
             ),
-            // Amount
-            Text(
-              '${isExpense ? '-' : '+'}${CurrencyFormatter.format(transaction.amount, symbol: '', useGrouping: useComma)}',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: isExpense ? AppColors.expense : themeColors.text,
+            if (transaction.reimbursedAmount != null &&
+                transaction.reimbursedAmount! > 0)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '${TransactionType.expense == transaction.type ? '-' : '+'}${CurrencyFormatter.format(transaction.amount, symbol: currencySymbol, useGrouping: useComma)}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: AppColors.expense,
+                      decoration: TextDecoration.lineThrough,
+                      decorationColor: AppColors.expense,
+                    ),
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        String.fromCharCode(Icons.replay.codePoint),
+                        style: TextStyle(
+                          inherit: false,
+                          color: themeColors.text,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          fontFamily: Icons.replay.fontFamily,
+                          package: Icons.replay.fontPackage,
+                        ),
+                      ),
+                      Text(
+                        CurrencyFormatter.format(
+                          transaction.reimbursedAmount ?? 0,
+                          symbol: currencySymbol,
+                          useGrouping: useComma,
+                        ),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: themeColors.text,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              )
+            else
+              Text(
+                '${isExpense ? '-' : '+'}${CurrencyFormatter.format(transaction.amount, symbol: '', useGrouping: useComma)}',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: isExpense ? AppColors.expense : themeColors.text,
+                ),
               ),
-            ),
           ],
         ),
       ),

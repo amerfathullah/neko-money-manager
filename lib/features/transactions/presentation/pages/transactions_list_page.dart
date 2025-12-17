@@ -195,9 +195,17 @@ class _TransactionsListPageState extends ConsumerState<TransactionsListPage>
           double totalIncome = 0;
           double totalExpense = 0;
           for (var t in filtered) {
-            if (t.type == TransactionType.income) totalIncome += t.amount;
-            if (t.type == TransactionType.expense) totalExpense += t.amount;
-            if (t.type == TransactionType.transfer) {
+            if (t.type == TransactionType.income) {
+              totalIncome += t.amount;
+            } else if (t.type == TransactionType.expense) {
+              final double reimbursed = t.reimbursedAmount ?? 0;
+              final double net = t.amount - reimbursed;
+              if (net < 0) {
+                totalIncome += net.abs();
+              } else {
+                totalExpense += net;
+              }
+            } else if (t.type == TransactionType.transfer) {
               // Per wallet total logic?
               if (selectedLedgerId != null) {
                 if (t.ledgerId == selectedLedgerId) totalExpense += t.amount;

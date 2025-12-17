@@ -12,6 +12,8 @@ import '../../../home/data/models/ledger.dart';
 import '../../data/models/transaction_model.dart';
 import '../pages/transaction_page.dart';
 import '../providers/transaction_provider.dart';
+import '../widgets/reimburse_dialog.dart';
+import '../../../assets/presentation/providers/asset_provider.dart';
 
 class TransactionDetailsDialog extends ConsumerStatefulWidget {
   final TransactionModel transaction;
@@ -54,267 +56,360 @@ class _TransactionDetailsDialogState
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       backgroundColor: themeColors.surface, // Cream color
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Top Row: Icon, Name, Amount
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: DynamicIcon(
-                    codePoint: widget.category.iconCodePoint,
-                    fontFamily: widget.category.iconFontFamily,
-                    fontPackage: widget.category.iconFontPackage,
-                    color: color,
-                    size: 28,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    widget.category.name,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: themeColors.text,
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Top Row: Icon, Name, Amount
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: DynamicIcon(
+                      codePoint: widget.category.iconCodePoint,
+                      fontFamily: widget.category.iconFontFamily,
+                      fontPackage: widget.category.iconFontPackage,
+                      color: color,
+                      size: 28,
                     ),
                   ),
-                ),
-                Text(
-                  '${isExpense ? '-' : ''}${CurrencyFormatter.format(_currentTransaction.amount, symbol: widget.currencySymbol)}',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: isExpense ? AppColors.expense : themeColors.text,
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Text(
+                      widget.category.name,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: themeColors.text,
+                      ),
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            // Details
-            _buildDetailRow(
-              'Date',
-              DateFormat('MMM dd yyyy').format(_currentTransaction.date),
-            ),
-            const SizedBox(height: 12),
-            _buildDetailRow(
-              'Time',
-              DateFormat('HH:mm').format(_currentTransaction.date),
-            ),
-            const SizedBox(height: 12),
-            _buildDetailRow('Asset', widget.asset.name),
-            const SizedBox(height: 12),
-            _buildDetailRow('Ledger', widget.ledger.name),
-
-            const SizedBox(height: 24),
-
-            // Remark
-            Text(
-              (_currentTransaction.remarks != null &&
-                      _currentTransaction.remarks!.isNotEmpty)
-                  ? _currentTransaction.remarks!
-                  : 'No remark',
-              style: const TextStyle(
-                color: Colors.grey,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
+                  if (_currentTransaction.reimbursedAmount != null &&
+                      _currentTransaction.reimbursedAmount! > 0)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          '${isExpense ? '-' : ''}${CurrencyFormatter.format(_currentTransaction.amount, symbol: widget.currencySymbol)}',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.lineThrough,
+                            decorationColor: AppColors.expense,
+                            color: AppColors.expense,
+                          ),
+                        ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              String.fromCharCode(Icons.replay.codePoint),
+                              style: TextStyle(
+                                inherit: false,
+                                color: themeColors.text,
+                                fontSize: 22,
+                                fontWeight: FontWeight.w900,
+                                fontFamily: Icons.replay.fontFamily,
+                                package: Icons.replay.fontPackage,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              CurrencyFormatter.format(
+                                _currentTransaction.reimbursedAmount ?? 0,
+                                symbol: widget.currencySymbol,
+                              ),
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: themeColors.text,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    )
+                  else
+                    Text(
+                      '${isExpense ? '-' : ''}${CurrencyFormatter.format(_currentTransaction.amount, symbol: widget.currencySymbol)}',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: isExpense ? AppColors.expense : themeColors.text,
+                      ),
+                    ),
+                ],
               ),
-            ),
+              const SizedBox(height: 24),
 
-            const SizedBox(height: 24),
+              // Refunded Row (if applicable)
+              if (_currentTransaction.reimbursedAmount != null &&
+                  _currentTransaction.reimbursedAssetId != null) ...[
+                _buildReimbursementRow(themeColors),
+                const SizedBox(height: 12),
+              ],
 
-            // Actions
-            Row(
-              children: [
-                // Edit
-                _buildOptionBtn(
-                  icon: Icons.edit,
-                  color: themeColors.text,
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            TransactionPage(transaction: _currentTransaction),
-                      ),
-                    );
-                  },
+              // Details
+              _buildDetailRow(
+                'Date',
+                DateFormat('MMM dd yyyy').format(_currentTransaction.date),
+              ),
+              const SizedBox(height: 12),
+              _buildDetailRow(
+                'Time',
+                DateFormat('HH:mm').format(_currentTransaction.date),
+              ),
+              const SizedBox(height: 12),
+              _buildDetailRow('Asset', widget.asset.name),
+              const SizedBox(height: 12),
+              _buildDetailRow('Ledger', widget.ledger.name),
+
+              const SizedBox(height: 24),
+
+              // Remark
+              Text(
+                (_currentTransaction.remarks != null &&
+                        _currentTransaction.remarks!.isNotEmpty)
+                    ? _currentTransaction.remarks!
+                    : 'No remark',
+                style: const TextStyle(
+                  color: Colors.grey,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
                 ),
-                const SizedBox(width: 8),
-                // Delete
-                _buildOptionBtn(
-                  icon: Icons.delete,
-                  color: themeColors.text,
-                  onTap: () async {
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (ctx) => Dialog(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(32),
-                        ),
-                        backgroundColor: themeColors.surface, // Cream
-                        insetPadding: const EdgeInsets.all(24),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 32,
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                _currentTransaction.isReimbursement
-                                    ? 'Are you sure you want to delete this reimbursement?'
-                                    : 'Are you sure you want to delete this record?',
-                                textAlign: TextAlign.left,
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: themeColors.text,
-                                  height: 1.2,
-                                ),
-                              ),
-                              const SizedBox(height: 32),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: SizedBox(
-                                      height: 56,
-                                      child: ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: themeColors
-                                              .inputBackground, // Beige
-                                          foregroundColor: themeColors.text,
-                                          elevation: 0,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              16,
-                                            ),
-                                          ),
-                                        ),
-                                        onPressed: () =>
-                                            Navigator.pop(ctx, false),
-                                        child: const Text(
-                                          'Cancel',
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xFF2C3E50),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: SizedBox(
-                                      height: 56,
-                                      child: ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor:
-                                              AppColors.destructiveRed, // Red
-                                          foregroundColor: Colors.white,
-                                          elevation: 0,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              16,
-                                            ),
-                                          ),
-                                        ),
-                                        onPressed: () =>
-                                            Navigator.pop(ctx, true),
-                                        child: const Text(
-                                          'Delete',
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
+              ),
 
-                    if (confirm == true) {
-                      await ref
-                          .read(transactionProvider.notifier)
-                          .deleteTransaction(_currentTransaction);
-                      if (context.mounted) Navigator.pop(context);
-                    }
-                  },
-                ),
-                const SizedBox(width: 8),
-                // Bookmark
-                _buildOptionBtn(
-                  icon: _currentTransaction.isBookmarked
-                      ? Icons.star
-                      : Icons.star_border,
-                  color: _currentTransaction.isBookmarked
-                      ? Colors.amber
-                      : themeColors.text,
-                  onTap: () {
-                    final oldTx = _currentTransaction;
-                    setState(() {
-                      _currentTransaction = oldTx.copyWith(
-                        isBookmarked: !oldTx.isBookmarked,
-                      );
-                    });
-                    ref
-                        .read(transactionProvider.notifier)
-                        .toggleBookmark(oldTx);
-                  },
-                ),
+              const SizedBox(height: 24),
 
-                const Spacer(),
-
-                // Reimburse Button
-                if (_currentTransaction.isReimbursement)
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.destructiveRed, // Redish
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                    ),
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Reimbursement processed (Placeholder)',
-                          ),
+              // Actions
+              Row(
+                children: [
+                  // Edit
+                  _buildOptionBtn(
+                    icon: Icons.edit,
+                    color: themeColors.text,
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              TransactionPage(transaction: _currentTransaction),
                         ),
                       );
                     },
-                    child: const Text(
-                      'Reimburse',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
                   ),
-              ],
-            ),
-          ],
+                  const SizedBox(width: 8),
+                  // Delete
+                  _buildOptionBtn(
+                    icon: Icons.delete,
+                    color: themeColors.text,
+                    onTap: () async {
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (ctx) => Dialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(32),
+                          ),
+                          backgroundColor: themeColors.surface, // Cream
+                          insetPadding: const EdgeInsets.all(24),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 32,
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  _currentTransaction.isReimbursement
+                                      ? 'Are you sure you want to delete this reimbursement?'
+                                      : 'Are you sure you want to delete this record?',
+                                  textAlign: TextAlign.left,
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: themeColors.text,
+                                    height: 1.2,
+                                  ),
+                                ),
+                                const SizedBox(height: 32),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: SizedBox(
+                                        height: 56,
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: themeColors
+                                                .inputBackground, // Beige
+                                            foregroundColor: themeColors.text,
+                                            elevation: 0,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                            ),
+                                          ),
+                                          onPressed: () =>
+                                              Navigator.pop(ctx, false),
+                                          child: const Text(
+                                            'Cancel',
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: Color(0xFF2C3E50),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: SizedBox(
+                                        height: 56,
+                                        child: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor:
+                                                AppColors.destructiveRed, // Red
+                                            foregroundColor: Colors.white,
+                                            elevation: 0,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                            ),
+                                          ),
+                                          onPressed: () =>
+                                              Navigator.pop(ctx, true),
+                                          child: const Text(
+                                            'Delete',
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+
+                      if (confirm == true) {
+                        await ref
+                            .read(transactionProvider.notifier)
+                            .deleteTransaction(_currentTransaction);
+                        if (context.mounted) Navigator.pop(context);
+                      }
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  // Bookmark
+                  _buildOptionBtn(
+                    icon: _currentTransaction.isBookmarked
+                        ? Icons.star
+                        : Icons.star_border,
+                    color: _currentTransaction.isBookmarked
+                        ? Colors.amber
+                        : themeColors.text,
+                    onTap: () {
+                      final oldTx = _currentTransaction;
+                      setState(() {
+                        _currentTransaction = oldTx.copyWith(
+                          isBookmarked: !oldTx.isBookmarked,
+                        );
+                      });
+                      ref
+                          .read(transactionProvider.notifier)
+                          .toggleBookmark(oldTx);
+                    },
+                  ),
+
+                  const Spacer(),
+
+                  // Reimburse Button
+                  if (_currentTransaction.isReimbursement)
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.destructiveRed, // Redish
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                      ),
+                      onPressed: () async {
+                        final assets = ref.read(assetProvider).value ?? [];
+                        if (assets.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('No assets available'),
+                            ),
+                          );
+                          return;
+                        }
+
+                        final result = await showDialog<Map<String, dynamic>>(
+                          context: context,
+                          builder: (ctx) => ReimburseDialog(
+                            assets: assets,
+                            initialAmount: _currentTransaction.reimbursedAmount,
+                            initialAssetId:
+                                _currentTransaction.reimbursedAssetId,
+                            isEditing:
+                                _currentTransaction.reimbursedAmount != null,
+                            onDelete: () =>
+                                Navigator.pop(ctx, {'delete': true}),
+                          ),
+                        );
+
+                        if (result != null) {
+                          if (result['delete'] == true) {
+                            // Undo Reimbursement
+                            final newTx = _currentTransaction.copyWith(
+                              clearReimbursement: true,
+                            );
+                            await ref
+                                .read(transactionProvider.notifier)
+                                .updateTransaction(_currentTransaction, newTx);
+                            setState(() => _currentTransaction = newTx);
+                          } else if (result['amount'] != null &&
+                              result['assetId'] != null) {
+                            // Apply/Update Reimbursement
+                            final newTx = _currentTransaction.copyWith(
+                              reimbursedAmount: result['amount'] as double,
+                              reimbursedAssetId: result['assetId'] as String,
+                            );
+                            await ref
+                                .read(transactionProvider.notifier)
+                                .updateTransaction(_currentTransaction, newTx);
+                            setState(() => _currentTransaction = newTx);
+                          }
+                        }
+                      },
+                      child: const Text(
+                        'Reimburse',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -362,6 +457,57 @@ class _TransactionDetailsDialogState
         ),
         child: Icon(icon, color: color, size: 24),
       ),
+    );
+  }
+
+  Widget _buildReimbursementRow(AppThemeColors themeColors) {
+    // Resolve asset
+    final assets = ref.read(assetProvider).value ?? [];
+    final asset = assets
+        .where((a) => a.id == _currentTransaction.reimbursedAssetId)
+        .firstOrNull;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          'Refunded',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+            color: themeColors.text,
+          ),
+        ),
+        Row(
+          children: [
+            if (asset != null) ...[
+              const Icon(
+                Icons.arrow_right_rounded,
+                size: 24,
+                color: Colors.grey,
+              ),
+              const SizedBox(width: 4),
+              DynamicIcon(
+                codePoint: asset.iconCodePoint,
+                fontFamily: asset.iconFontFamily,
+                fontPackage: asset.iconFontPackage,
+                color: themeColors.text,
+                size: 20,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                asset.name,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: themeColors.text,
+                ),
+              ),
+            ] else
+              const Text('Unknown Asset'),
+          ],
+        ),
+      ],
     );
   }
 }

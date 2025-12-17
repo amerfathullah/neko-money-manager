@@ -21,6 +21,8 @@ class TransactionModel {
   final String? destinationAssetName; // Denormalized
   final String? remarks;
   final bool isReimbursement;
+  final double? reimbursedAmount;
+  final String? reimbursedAssetId;
 
   const TransactionModel({
     required this.id,
@@ -41,6 +43,8 @@ class TransactionModel {
     this.destinationAssetName,
     this.remarks,
     this.isReimbursement = false,
+    this.reimbursedAmount,
+    this.reimbursedAssetId,
   });
 
   factory TransactionModel.fromJson(Map<String, dynamic> json) {
@@ -63,6 +67,8 @@ class TransactionModel {
       destinationAssetName: json['destinationAssetName'] as String?,
       remarks: json['remarks'] as String?,
       isReimbursement: json['isReimbursement'] as bool? ?? false,
+      reimbursedAmount: (json['reimbursedAmount'] as num?)?.toDouble(),
+      reimbursedAssetId: json['reimbursedAssetId'] as String?,
     );
   }
 
@@ -86,6 +92,8 @@ class TransactionModel {
       'destinationAssetName': destinationAssetName,
       'remarks': remarks,
       'isReimbursement': isReimbursement,
+      'reimbursedAmount': reimbursedAmount,
+      'reimbursedAssetId': reimbursedAssetId,
     };
   }
 
@@ -108,6 +116,9 @@ class TransactionModel {
     String? destinationAssetName,
     String? remarks,
     bool? isReimbursement,
+    double? reimbursedAmount,
+    String? reimbursedAssetId,
+    bool clearReimbursement = false,
   }) {
     return TransactionModel(
       id: id ?? this.id,
@@ -129,6 +140,12 @@ class TransactionModel {
       destinationAssetName: destinationAssetName ?? this.destinationAssetName,
       remarks: remarks ?? this.remarks,
       isReimbursement: isReimbursement ?? this.isReimbursement,
+      reimbursedAmount: clearReimbursement
+          ? null
+          : (reimbursedAmount ?? this.reimbursedAmount),
+      reimbursedAssetId: clearReimbursement
+          ? null
+          : (reimbursedAssetId ?? this.reimbursedAssetId),
     );
   }
 }

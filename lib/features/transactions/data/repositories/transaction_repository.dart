@@ -144,6 +144,12 @@ class TransactionRepository {
           newTransaction.destinationAssetId != null) {
         assetIds.add(newTransaction.destinationAssetId!);
       }
+      if (oldTransaction.reimbursedAssetId != null) {
+        assetIds.add(oldTransaction.reimbursedAssetId!);
+      }
+      if (newTransaction.reimbursedAssetId != null) {
+        assetIds.add(newTransaction.reimbursedAssetId!);
+      }
 
       final assetSnapshots = await _getAssetSnapshots(
         transaction,
@@ -181,22 +187,7 @@ class TransactionRepository {
         final newBal = current + change;
         tempBalances[assetId] = newBal; // Update temp for next op
 
-        // We can queue multiple updates to the same doc in a transaction?
-        // Yes, but only the last one sticks usually if it's a 'set' or 'update'.
-        // BUT wait, if we queue two updates:
-        // 1. update(bal=100)
-        // 2. update(bal=110)
-        // Firestore might complain or last wins.
-        // Safer means: Calculate NET change or Final Balance and write ONCE per asset.
-        // However, we also need to write History entries. One per operation usually preferred.
-
-        // Let's write the history entry immediately.
-        // But the asset update we should ideally do once?
-        // Actually, let's just do the writes. Firestore SDK merges updates locally in the batch?
-        // No, "Transactions require all reads before all writes".
-        // Once we start writing, we can't read. We aren't reading anymore.
-        // So we can do multiple writes.
-
+        // We can queue multiple writes.
         final assetRef = userDoc.collection('assets').doc(assetId);
         transaction.update(assetRef, {'balance': newBal});
 
@@ -222,16 +213,26 @@ class TransactionRepository {
           'transaction_update_revert',
           newTransaction.id,
         );
+      }
 
-        if (oldTransaction.type == TransactionType.transfer &&
-            oldTransaction.destinationAssetId != null) {
-          queueUpdate(
-            oldTransaction.destinationAssetId!,
-            -oldTransaction.amount,
-            'transaction_update_revert_transfer',
-            newTransaction.id,
-          );
-        }
+      if (oldTransaction.type == TransactionType.transfer &&
+          oldTransaction.destinationAssetId != null) {
+        queueUpdate(
+          oldTransaction.destinationAssetId!,
+          -oldTransaction.amount,
+          'transaction_update_revert_transfer',
+          newTransaction.id,
+        );
+      }
+
+      if (oldTransaction.reimbursedAssetId != null &&
+          oldTransaction.reimbursedAmount != null) {
+        queueUpdate(
+          oldTransaction.reimbursedAssetId!,
+          -oldTransaction.reimbursedAmount!,
+          'reimbursement_revert',
+          newTransaction.id,
+        );
       }
 
       // 3. WRITE PHASE - Execute Apply New
@@ -244,16 +245,26 @@ class TransactionRepository {
           'transaction_update_apply',
           newTransaction.id,
         );
+      }
 
-        if (newTransaction.type == TransactionType.transfer &&
-            newTransaction.destinationAssetId != null) {
-          queueUpdate(
-            newTransaction.destinationAssetId!,
-            newTransaction.amount,
-            'transaction_update_apply_transfer',
-            newTransaction.id,
-          );
-        }
+      if (newTransaction.type == TransactionType.transfer &&
+          newTransaction.destinationAssetId != null) {
+        queueUpdate(
+          newTransaction.destinationAssetId!,
+          newTransaction.amount,
+          'transaction_update_apply_transfer',
+          newTransaction.id,
+        );
+      }
+
+      if (newTransaction.reimbursedAssetId != null &&
+          newTransaction.reimbursedAmount != null) {
+        queueUpdate(
+          newTransaction.reimbursedAssetId!,
+          newTransaction.reimbursedAmount!,
+          'reimbursement_apply',
+          newTransaction.id,
+        );
       }
 
       // Update Transaction Doc
