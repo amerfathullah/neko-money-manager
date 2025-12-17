@@ -12,6 +12,9 @@ import '../providers/ledger_provider.dart';
 import '../widgets/ledger_selector.dart';
 
 import '../../../transactions/presentation/widgets/transaction_timeline.dart';
+import '../../../../features/settings/presentation/pages/ledgers_page.dart';
+import '../../../../features/categories/presentation/pages/categories_page.dart';
+import '../../../transactions/presentation/pages/filtered_transactions_page.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -261,31 +264,74 @@ class _HomePageState extends ConsumerState<HomePage>
                                         MainAxisAlignment.spaceBetween,
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
-                                    children: const [
+                                    children: [
                                       _QuickAction(
                                         icon: Icons.book,
                                         label: 'Ledger',
                                         color: AppColors.pastelOrange,
+                                        onTap: () {
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const LedgersPage(),
+                                            ),
+                                          );
+                                        },
                                       ),
                                       _QuickAction(
                                         icon: Icons.calendar_today,
                                         label: 'Recurring',
                                         color: AppColors.pastelBlue,
+                                        onTap: () {
+                                          // TODO: Implement Recurring page
+                                        },
                                       ),
                                       _QuickAction(
                                         icon: Icons.lunch_dining,
                                         label: 'Category',
                                         color: AppColors.pastelRed,
+                                        onTap: () {
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const CategoriesPage(),
+                                            ),
+                                          );
+                                        },
                                       ),
                                       _QuickAction(
                                         icon: Icons.work,
                                         label: 'Reimburse',
                                         color: AppColors.pastelPurple,
+                                        onTap: () {
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  FilteredTransactionsPage(
+                                                    title: 'Reimbursement',
+                                                    filter: (t) =>
+                                                        t.isReimbursement,
+                                                  ),
+                                            ),
+                                          );
+                                        },
                                       ),
                                       _QuickAction(
                                         icon: Icons.bookmark,
                                         label: 'Bookmarks',
                                         color: AppColors.pastelBlue,
+                                        onTap: () {
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  FilteredTransactionsPage(
+                                                    title: 'Bookmarks',
+                                                    filter: (t) =>
+                                                        t.isBookmarked,
+                                                  ),
+                                            ),
+                                          );
+                                        },
                                       ),
                                     ],
                                   ),
@@ -471,40 +517,45 @@ class _QuickAction extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color color;
+  final VoidCallback? onTap;
 
   const _QuickAction({
     required this.icon,
     required this.label,
     required this.color,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final themeColors = Theme.of(context).extension<AppThemeColors>()!;
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.2),
-            shape: BoxShape.circle,
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 24),
           ),
-          child: Icon(icon, color: color, size: 24),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: themeColors.text.withValues(alpha: 0.8),
-            fontWeight: FontWeight.bold,
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: themeColors.text.withValues(alpha: 0.8),
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-          textAlign: TextAlign.center,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
