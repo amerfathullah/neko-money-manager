@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:flutter/foundation.dart';
 import 'core/theme/app_theme.dart';
 import 'core/services/database_service.dart';
 import 'features/onboarding/presentation/pages/splash_screen.dart';
@@ -14,9 +12,6 @@ void main() async {
   await DatabaseService.database;
   // Seed default data on first launch
   await DefaultDataService.ensureDefaults();
-  if (!kIsWeb) {
-    await MobileAds.instance.initialize();
-  }
 
   runApp(const ProviderScope(child: NekoApp()));
 }

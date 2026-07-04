@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
 import '../../../categories/presentation/pages/categories_page.dart';
 
 import '../providers/settings_provider.dart';
-import 'premium_page.dart';
 import 'appearance_page.dart';
 import 'ledgers_page.dart';
 import '../../../transactions/presentation/pages/reimbursements_page.dart';
@@ -63,30 +61,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
             children: [
               // SECTION: CUSTOM
               _buildSectionHeader('Custom', color: primaryColor),
-
-              // Membership
-              _buildModernSettingItem(
-                context,
-                icon: Icons.card_giftcard,
-                iconColor: AppColors.pastelOrange,
-                title: 'Membership',
-                subtitle: 'Unlock all features',
-                trailing: Text(
-                  '20% off',
-                  style: TextStyle(
-                    color: primaryColor,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const PremiumPage(),
-                    ),
-                  );
-                },
-              ),
 
               // Dark Theme
               _buildModernSettingItem(

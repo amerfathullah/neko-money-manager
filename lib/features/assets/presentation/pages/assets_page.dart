@@ -5,7 +5,6 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/currency_formatter.dart';
 import '../../data/models/asset.dart';
 import '../providers/asset_provider.dart';
-import '../../../../core/widgets/banner_ad_widget.dart';
 import '../widgets/asset_graph_section.dart';
 
 import '../../../transactions/presentation/pages/transaction_page.dart';
@@ -241,8 +240,6 @@ class _AssetsPageState extends ConsumerState<AssetsPage>
                                         currencySymbol: currencySymbol,
                                         useComma: useComma,
                                       ),
-                                      const SizedBox(height: 32),
-                                      const BannerAdWidget(),
                                       const SizedBox(height: 120), // Fab space
                                     ],
                                   ),

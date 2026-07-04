@@ -10,7 +10,6 @@ import '../../../categories/presentation/providers/category_provider.dart';
 import '../../../home/presentation/providers/ledger_provider.dart';
 import '../../data/models/transaction_model.dart';
 import '../providers/transaction_provider.dart';
-import '../../../../core/widgets/banner_ad_widget.dart';
 import '../../../assets/presentation/providers/asset_provider.dart';
 import '../../../assets/data/models/asset.dart';
 import '../widgets/transaction_options_panel.dart';
@@ -878,7 +877,6 @@ class _TransactionPageState extends ConsumerState<TransactionPage> {
                 ],
               ),
             ),
-            const BannerAdWidget(), // Restore Banner Ad
           ],
         ),
       ),
