@@ -1,55 +1,54 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:sqflite/sqflite.dart';
+import '../../../../core/services/database_service.dart';
 
 class SettingsRepository {
-  final FirebaseFirestore _firestore;
-
-  SettingsRepository({FirebaseFirestore? firestore})
-    : _firestore = firestore ?? FirebaseFirestore.instance;
-
-  Future<String?> getCurrency(String userId) async {
-    try {
-      final doc = await _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('settings')
-          .doc('global')
-          .get();
-
-      if (doc.exists && doc.data() != null) {
-        return doc.data()!['currency'] as String?;
-      }
-      return null;
-    } catch (e) {
-      // Return null on error, provider will fallback
-      return null;
+  Future<String?> getCurrency() async {
+    final db = await DatabaseService.database;
+    final maps = await db.query('settings', where: 'key = ?', whereArgs: ['currency']);
+    if (maps.isNotEmpty) {
+      return maps.first['value'] as String?;
     }
+    return null;
   }
 
-  Future<void> setCurrency(String userId, String symbol) async {
-    await _firestore
-        .collection('users')
-        .doc(userId)
-        .collection('settings')
-        .doc('global')
-        .set({'currency': symbol}, SetOptions(merge: true));
+  Future<void> setCurrency(String symbol) async {
+    final db = await DatabaseService.database;
+    await db.insert(
+      'settings',
+      {'key': 'currency', 'value': symbol},
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
   }
 
-  Stream<Map<String, dynamic>> getSettingsStream(String userId) {
-    return _firestore
-        .collection('users')
-        .doc(userId)
-        .collection('settings')
-        .doc('preferences')
-        .snapshots()
-        .map((doc) => doc.data() ?? {});
+  Future<Map<String, dynamic>> getSettings() async {
+    final db = await DatabaseService.database;
+    final maps = await db.query('settings');
+    final result = <String, dynamic>{};
+    for (final row in maps) {
+      final key = row['key'] as String;
+      final value = row['value'] as String;
+      // Parse known settings
+      if (key == 'monthlyStartDate' || key == 'firstDayOfWeek') {
+        result[key] = int.tryParse(value);
+      } else if (key == 'useCommaSeparator') {
+        result[key] = value == 'true';
+      } else {
+        result[key] = value;
+      }
+    }
+    return result;
   }
 
-  Future<void> updateSettings(String userId, Map<String, dynamic> data) async {
-    await _firestore
-        .collection('users')
-        .doc(userId)
-        .collection('settings')
-        .doc('preferences')
-        .set(data, SetOptions(merge: true));
+  Future<void> updateSettings(Map<String, dynamic> data) async {
+    final db = await DatabaseService.database;
+    final batch = db.batch();
+    for (final entry in data.entries) {
+      batch.insert(
+        'settings',
+        {'key': entry.key, 'value': entry.value.toString()},
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+    await batch.commit(noResult: true);
   }
 }

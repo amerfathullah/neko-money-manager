@@ -7,7 +7,6 @@ import 'package:neko_money_manager/features/categories/presentation/providers/ca
 import 'package:neko_money_manager/features/categories/data/models/category.dart';
 import 'package:neko_money_manager/features/home/presentation/providers/ledger_provider.dart';
 import 'package:neko_money_manager/features/home/data/models/ledger.dart';
-import 'package:neko_money_manager/features/auth/presentation/providers/auth_provider.dart';
 import 'package:neko_money_manager/features/transactions/presentation/providers/transaction_provider.dart';
 
 import 'package:neko_money_manager/features/transactions/data/models/transaction_model.dart';
@@ -21,8 +20,8 @@ import 'package:neko_money_manager/features/settings/presentation/providers/sett
 // Mocks
 class MockCategoryNotifier extends CategoryNotifier {
   @override
-  Stream<List<Category>> build() {
-    return Stream.value([
+  Future<List<Category>> build() async {
+    return [
       const Category(
         id: '1',
         name: 'Food',
@@ -39,36 +38,36 @@ class MockCategoryNotifier extends CategoryNotifier {
         colorValue: 0xFF00FF00,
         type: CategoryType.income,
       ),
-    ]);
+    ];
   }
 }
 
 class MockLedgerNotifier extends LedgerNotifier {
   @override
-  Stream<List<Ledger>> build() {
-    return Stream.value([
+  Future<List<Ledger>> build() async {
+    return [
       const Ledger(
         id: '1',
         name: 'Test Ledger',
         colorValue: 0xFF000000,
         isDefault: true,
       ),
-    ]);
+    ];
   }
 }
 
 class MockAssetNotifier extends AssetNotifier {
   @override
-  Stream<List<Asset>> build() {
-    return Stream.value([]);
+  Future<List<Asset>> build() async {
+    return [];
   }
 }
 
 class MockTransactionNotifier extends TransactionNotifier {
   @override
-  Stream<List<TransactionModel>> build() {
+  Future<List<TransactionModel>> build() async {
     final now = DateTime.now();
-    return Stream.value([
+    return [
       TransactionModel(
         id: '1',
         amount: 50.0,
@@ -87,7 +86,7 @@ class MockTransactionNotifier extends TransactionNotifier {
         categoryName: 'Salary',
         categoryId: '2',
       ),
-    ]);
+    ];
   }
 
   @override
@@ -96,8 +95,8 @@ class MockTransactionNotifier extends TransactionNotifier {
 
 class MockProNotifier extends ProNotifier {
   @override
-  Stream<bool> build() {
-    return Stream.value(true);
+  Future<bool> build() async {
+    return true;
   }
 }
 
@@ -110,8 +109,8 @@ class MockCurrencyNotifier extends CurrencyNotifier {
 
 class MockSettingsNotifier extends SettingsNotifier {
   @override
-  Stream<SettingsState> build() {
-    return Stream.value(const SettingsState());
+  Future<SettingsState> build() async {
+    return const SettingsState();
   }
 }
 
@@ -120,24 +119,18 @@ void main() {
     // Build our app and trigger a frame.
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          authStateProvider.overrideWith(
-            (ref) => Stream.value(null),
-          ), // Mock logged out
-        ],
         child: const NekoApp(),
       ),
     );
 
-    // Verify that our app starts and demonstrates the home page.
-    // Note: This matches the AppBar title in SplashScreen or LoginPage
+    // Verify that our app starts and demonstrates the splash screen.
     expect(find.text('Neko Money Manager'), findsOneWidget);
 
     // Wait for Splash Screen delay (2 seconds) and navigation
     await tester.pumpAndSettle(const Duration(seconds: 3));
 
-    // After splash, it goes to Login Page
-    expect(find.text('Login'), findsWidgets);
+    // After splash, it goes directly to MainScaffold
+    expect(find.text('Record'), findsOneWidget);
   });
 
   /*
@@ -170,13 +163,12 @@ void main() {
         overrides: [
           categoryProvider.overrideWith(MockCategoryNotifier.new),
           ledgerProvider.overrideWith(MockLedgerNotifier.new),
-          userIdProvider.overrideWithValue('test_user_id'),
           proProvider.overrideWith(MockProNotifier.new),
           transactionProvider.overrideWith(MockTransactionNotifier.new),
           assetProvider.overrideWith(MockAssetNotifier.new),
-          assetHistoryProvider.overrideWith((ref) => Stream.value([])),
+          assetHistoryProvider.overrideWith((ref) async => []),
           ledgerTransactionsProvider.overrideWith(
-            (ref, id) => Stream.value([]),
+            (ref, id) async => [],
           ),
           currencyProvider.overrideWith(MockCurrencyNotifier.new),
           settingsProvider.overrideWith(MockSettingsNotifier.new),

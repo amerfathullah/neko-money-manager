@@ -1,17 +1,19 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../core/services/database_service.dart';
 import '../../home/data/models/ledger.dart';
-import '../../common/data/default_categories_data.dart'; // We will define this next
+import '../../common/data/default_categories_data.dart';
 
 class DefaultDataService {
-  final FirebaseFirestore _firestore;
+  /// Ensures default data exists on first launch.
+  static Future<void> ensureDefaults() async {
+    final db = await DatabaseService.database;
 
-  DefaultDataService(this._firestore);
+    // Check if we already have data
+    final ledgers = await db.query('ledgers', limit: 1);
+    if (ledgers.isNotEmpty) return; // Already initialized
 
-  Future<void> createDefaultData(String userId) async {
-    final batch = _firestore.batch();
-    final userDoc = _firestore.collection('users').doc(userId);
+    final batch = db.batch();
 
-    // 1. Create Default Ledger (Wallet)
+    // 1. Create Default Ledger
     final mainWalletId = DateTime.now().millisecondsSinceEpoch.toString();
     final mainWallet = Ledger(
       id: mainWalletId,
@@ -19,19 +21,14 @@ class DefaultDataService {
       colorValue: 0xFF42A5F5, // Blue
       isDefault: true,
     );
-    final ledgerRef = userDoc.collection('ledgers').doc(mainWalletId);
-    batch.set(ledgerRef, mainWallet.toJson());
+    batch.insert('ledgers', mainWallet.toJson());
 
     // 2. Create Default Categories
-    // We will define a list of default categories
-    // For now, let's hardcode a few essentials or use the separate file approach
     final defaultCategories = DefaultCategoriesData.defaults;
-
     for (final category in defaultCategories) {
-      final catRef = userDoc.collection('categories').doc(category.id);
-      batch.set(catRef, category.toJson());
+      batch.insert('categories', category.toJson());
     }
 
-    await batch.commit();
+    await batch.commit(noResult: true);
   }
 }

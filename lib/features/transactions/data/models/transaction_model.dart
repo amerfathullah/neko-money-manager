@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 enum TransactionType { expense, income, transfer }
 
 class TransactionModel {
@@ -55,18 +53,18 @@ class TransactionModel {
       categoryName: json['categoryName'] as String?,
       ledgerName: json['ledgerName'] as String?,
       amount: (json['amount'] as num).toDouble(),
-      date: (json['date'] as Timestamp).toDate(),
+      date: DateTime.fromMillisecondsSinceEpoch(json['date'] as int),
       note: json['note'] as String?,
       type: TransactionType.values.byName(json['type'] as String),
       destinationLedgerId: json['destinationLedgerId'] as String?,
       destinationLedgerName: json['destinationLedgerName'] as String?,
-      isBookmarked: json['isBookmarked'] as bool? ?? false,
+      isBookmarked: json['isBookmarked'] == true || json['isBookmarked'] == 1,
       assetId: json['assetId'] as String?,
       assetName: json['assetName'] as String?,
       destinationAssetId: json['destinationAssetId'] as String?,
       destinationAssetName: json['destinationAssetName'] as String?,
       remarks: json['remarks'] as String?,
-      isReimbursement: json['isReimbursement'] as bool? ?? false,
+      isReimbursement: json['isReimbursement'] == true || json['isReimbursement'] == 1,
       reimbursedAmount: (json['reimbursedAmount'] as num?)?.toDouble(),
       reimbursedAssetId: json['reimbursedAssetId'] as String?,
     );
@@ -80,18 +78,18 @@ class TransactionModel {
       'categoryName': categoryName,
       'ledgerName': ledgerName,
       'amount': amount,
-      'date': Timestamp.fromDate(date),
+      'date': date.millisecondsSinceEpoch,
       'note': note,
       'type': type.name,
       'destinationLedgerId': destinationLedgerId,
       'destinationLedgerName': destinationLedgerName,
-      'isBookmarked': isBookmarked,
+      'isBookmarked': isBookmarked ? 1 : 0,
       'assetId': assetId,
       'assetName': assetName,
       'destinationAssetId': destinationAssetId,
       'destinationAssetName': destinationAssetName,
       'remarks': remarks,
-      'isReimbursement': isReimbursement,
+      'isReimbursement': isReimbursement ? 1 : 0,
       'reimbursedAmount': reimbursedAmount,
       'reimbursedAssetId': reimbursedAssetId,
     };

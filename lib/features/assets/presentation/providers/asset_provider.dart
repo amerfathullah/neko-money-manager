@@ -3,54 +3,40 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/asset.dart';
 import '../../data/models/asset_history_model.dart';
 import '../../data/repositories/asset_repository.dart';
-import '../../../auth/presentation/providers/auth_provider.dart'; // For userIdProvider
 
 final assetRepositoryProvider = Provider((ref) => AssetRepository());
 
-final assetProvider = StreamNotifierProvider<AssetNotifier, List<Asset>>(
+final assetProvider = AsyncNotifierProvider<AssetNotifier, List<Asset>>(
   AssetNotifier.new,
 );
 
-class AssetNotifier extends StreamNotifier<List<Asset>> {
+class AssetNotifier extends AsyncNotifier<List<Asset>> {
   @override
-  Stream<List<Asset>> build() {
-    final userId = ref.watch(
-      userIdProvider,
-    ); // Use same userId provider as ledgers
-    if (userId == null) {
-      return Stream.value([]);
-    }
+  Future<List<Asset>> build() async {
     final repository = ref.read(assetRepositoryProvider);
-    return repository.getAssets(userId);
+    return repository.getAssets();
   }
 
   Future<void> addAsset(Asset asset) async {
-    final userId = ref.read(userIdProvider);
-    if (userId == null) return;
     final repository = ref.read(assetRepositoryProvider);
-    await repository.addAsset(userId, asset);
+    await repository.addAsset(asset);
+    ref.invalidateSelf();
   }
 
   Future<void> updateAsset(Asset asset) async {
-    final userId = ref.read(userIdProvider);
-    if (userId == null) return;
     final repository = ref.read(assetRepositoryProvider);
-    await repository.updateAsset(userId, asset);
+    await repository.updateAsset(asset);
+    ref.invalidateSelf();
   }
 
   Future<void> deleteAsset(String assetId) async {
-    final userId = ref.read(userIdProvider);
-    if (userId == null) return;
     final repository = ref.read(assetRepositoryProvider);
-    await repository.deleteAsset(userId, assetId);
+    await repository.deleteAsset(assetId);
+    ref.invalidateSelf();
   }
 }
 
-final assetHistoryProvider = StreamProvider<List<AssetHistoryModel>>((ref) {
-  final userId = ref.watch(userIdProvider);
-  if (userId == null) {
-    return Stream.value([]);
-  }
+final assetHistoryProvider = FutureProvider<List<AssetHistoryModel>>((ref) {
   final repository = ref.watch(assetRepositoryProvider);
-  return repository.getAssetHistoryStream(userId);
+  return repository.getAssetHistory();
 });

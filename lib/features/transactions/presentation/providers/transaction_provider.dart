@@ -1,48 +1,36 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/transaction_model.dart';
 import '../../data/repositories/transaction_repository.dart';
-import '../../../auth/presentation/providers/auth_provider.dart';
 
 final transactionRepositoryProvider = Provider(
   (ref) => TransactionRepository(),
 );
 
-class TransactionNotifier extends StreamNotifier<List<TransactionModel>> {
+class TransactionNotifier extends AsyncNotifier<List<TransactionModel>> {
   @override
-  Stream<List<TransactionModel>> build() {
-    final userId = ref.watch(userIdProvider);
-    if (userId == null) {
-      return Stream.value([]);
-    }
+  Future<List<TransactionModel>> build() async {
     final repository = ref.read(transactionRepositoryProvider);
-    return repository.getRecentTransactions(userId);
+    return repository.getRecentTransactions();
   }
 
   Future<void> addTransaction(TransactionModel transaction) async {
-    final userId = ref.read(userIdProvider);
-    if (userId == null) return;
-    await ref
-        .read(transactionRepositoryProvider)
-        .addTransaction(userId, transaction);
+    await ref.read(transactionRepositoryProvider).addTransaction(transaction);
+    ref.invalidateSelf();
   }
 
   Future<void> deleteTransaction(TransactionModel transaction) async {
-    final userId = ref.read(userIdProvider);
-    if (userId == null) return;
-    await ref
-        .read(transactionRepositoryProvider)
-        .deleteTransaction(userId, transaction);
+    await ref.read(transactionRepositoryProvider).deleteTransaction(transaction);
+    ref.invalidateSelf();
   }
 
   Future<void> updateTransaction(
     TransactionModel oldTransaction,
     TransactionModel newTransaction,
   ) async {
-    final userId = ref.read(userIdProvider);
-    if (userId == null) return;
     await ref
         .read(transactionRepositoryProvider)
-        .updateTransaction(userId, oldTransaction, newTransaction);
+        .updateTransaction(oldTransaction, newTransaction);
+    ref.invalidateSelf();
   }
 
   Future<void> toggleBookmark(TransactionModel transaction) async {
@@ -54,23 +42,17 @@ class TransactionNotifier extends StreamNotifier<List<TransactionModel>> {
 }
 
 final transactionProvider =
-    StreamNotifierProvider<TransactionNotifier, List<TransactionModel>>(
+    AsyncNotifierProvider<TransactionNotifier, List<TransactionModel>>(
       TransactionNotifier.new,
     );
 
 final ledgerTransactionsProvider =
-    StreamProvider.family<List<TransactionModel>, String>((ref, ledgerId) {
-      final userId = ref.watch(userIdProvider);
-      if (userId == null) return Stream.value([]);
-
+    FutureProvider.family<List<TransactionModel>, String>((ref, ledgerId) {
       final repository = ref.watch(transactionRepositoryProvider);
-      return repository.getTransactionsByLedger(userId, ledgerId);
+      return repository.getTransactionsByLedger(ledgerId);
     });
 
-final allTransactionsProvider = StreamProvider<List<TransactionModel>>((ref) {
-  final userId = ref.watch(userIdProvider);
-  if (userId == null) return Stream.value([]);
-
+final allTransactionsProvider = FutureProvider<List<TransactionModel>>((ref) {
   final repository = ref.watch(transactionRepositoryProvider);
-  return repository.getAllTransactionsStream(userId);
+  return repository.getAllTransactions();
 });

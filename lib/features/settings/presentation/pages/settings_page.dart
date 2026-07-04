@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/theme/app_theme_colors.dart';
-import '../../../../core/services/auth_service.dart';
 import '../../../categories/presentation/pages/categories_page.dart';
 
 import '../providers/settings_provider.dart';
@@ -13,8 +12,6 @@ import '../../../transactions/presentation/pages/reimbursements_page.dart';
 import '../../../transactions/presentation/pages/bookmarks_page.dart';
 
 import '../providers/currency_provider.dart';
-
-import '../../../auth/presentation/providers/auth_provider.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
@@ -176,29 +173,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                 },
               ),
 
-              // Fingerprint
-              _buildModernSettingItem(
-                context,
-                icon: Icons.fingerprint,
-                iconColor: themeColors.text,
-                title: 'Fingerprint lock',
-                subtitle: 'Need to enter fingerprint when open app',
-                trailing: Switch(
-                  value: settings.isBiometricEnabled,
-                  onChanged: (val) async {
-                    await _handleBiometricToggle(context, ref, val);
-                  },
-                  activeTrackColor: primaryColor,
-                ),
-                onTap: () async {
-                  await _handleBiometricToggle(
-                    context,
-                    ref,
-                    !settings.isBiometricEnabled,
-                  );
-                },
-              ),
-
               const SizedBox(height: 24),
 
               // SECTION: MANAGEMENT
@@ -314,16 +288,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
                 title: 'About',
                 subtitle: 'Version 1.0.0',
                 onTap: () {},
-              ),
-              _buildModernSettingItem(
-                context,
-                icon: Icons.logout,
-                iconColor: themeColors.text,
-                title: 'Logout',
-                subtitle: 'Sign out from current account',
-                onTap: () async {
-                  await ref.read(authRepositoryProvider).signOut();
-                },
               ),
 
               const SizedBox(height: 24),
@@ -456,39 +420,6 @@ class _SettingsPageState extends ConsumerState<SettingsPage>
     // day is 1-7
     if (day < 1 || day > 7) return 'Sunday';
     return days[day - 1];
-  }
-
-  Future<void> _handleBiometricToggle(
-    BuildContext context,
-    WidgetRef ref,
-    bool value,
-  ) async {
-    final notifier = ref.read(settingsProvider.notifier);
-    if (value) {
-      // Trying to enable
-      final authService = ref.read(authServiceProvider);
-      final canCheck = await authService.isBiometricAvailable();
-      if (!canCheck) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Biometric authentication is not available on this device.',
-              ),
-            ),
-          );
-        }
-        return;
-      }
-
-      final authenticated = await authService.authenticate();
-      if (authenticated) {
-        await notifier.setBiometricEnabled(true);
-      }
-    } else {
-      // Disable
-      await notifier.setBiometricEnabled(false);
-    }
   }
 
   // --- Dialogs ---

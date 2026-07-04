@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../categories/presentation/providers/category_provider.dart';
 import '../../../home/presentation/providers/ledger_provider.dart';
 import '../../../transactions/presentation/providers/transaction_provider.dart';
@@ -20,15 +19,12 @@ class _BackupPageState extends ConsumerState<BackupPage> {
   Future<void> _exportData() async {
     setState(() => _isLoading = true);
     try {
-      final userId = ref.read(userIdProvider);
-      if (userId == null) throw Exception('User not logged in');
-
       // 1. Fetch Data
       final ledgers = await ref.read(ledgerProvider.future);
       final categories = await ref.read(categoryProvider.future);
       final transactions = await ref
           .read(transactionRepositoryProvider)
-          .getAllTransactions(userId);
+          .getAllTransactions();
 
       // 2. Prepare JSON-safe Map
       final backupData = {

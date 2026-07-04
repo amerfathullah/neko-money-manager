@@ -89,11 +89,11 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.neko.manager" "\0"
+            VALUE "CompanyName", "com.amerfathullah" "\0"
             VALUE "FileDescription", "neko_money_manager" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "neko_money_manager" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2025 com.neko.manager. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 com.amerfathullah. All rights reserved." "\0"
             VALUE "OriginalFilename", "neko_money_manager.exe" "\0"
             VALUE "ProductName", "neko_money_manager" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"

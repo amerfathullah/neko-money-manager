@@ -1,41 +1,33 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/ledger.dart';
 import '../../data/repositories/ledger_repository.dart';
-import '../../../auth/presentation/providers/auth_provider.dart';
 
 final ledgerRepositoryProvider = Provider((ref) => LedgerRepository());
 
-class LedgerNotifier extends StreamNotifier<List<Ledger>> {
+class LedgerNotifier extends AsyncNotifier<List<Ledger>> {
   @override
-  Stream<List<Ledger>> build() {
-    final userId = ref.watch(userIdProvider);
-    if (userId == null) {
-      return Stream.value([]);
-    }
+  Future<List<Ledger>> build() async {
     final repository = ref.read(ledgerRepositoryProvider);
-    return repository.getLedgers(userId);
+    return repository.getLedgers();
   }
 
   Future<void> addLedger(Ledger ledger) async {
-    final userId = ref.read(userIdProvider);
-    if (userId == null) return;
-    await ref.read(ledgerRepositoryProvider).addLedger(userId, ledger);
+    await ref.read(ledgerRepositoryProvider).addLedger(ledger);
+    ref.invalidateSelf();
   }
 
   Future<void> updateLedger(Ledger ledger) async {
-    final userId = ref.read(userIdProvider);
-    if (userId == null) return;
-    await ref.read(ledgerRepositoryProvider).updateLedger(userId, ledger);
+    await ref.read(ledgerRepositoryProvider).updateLedger(ledger);
+    ref.invalidateSelf();
   }
 
   Future<void> deleteLedger(String id) async {
-    final userId = ref.read(userIdProvider);
-    if (userId == null) return;
-    await ref.read(ledgerRepositoryProvider).deleteLedger(userId, id);
+    await ref.read(ledgerRepositoryProvider).deleteLedger(id);
+    ref.invalidateSelf();
   }
 }
 
-final ledgerProvider = StreamNotifierProvider<LedgerNotifier, List<Ledger>>(
+final ledgerProvider = AsyncNotifierProvider<LedgerNotifier, List<Ledger>>(
   LedgerNotifier.new,
 );
 

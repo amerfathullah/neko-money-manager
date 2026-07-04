@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class AssetHistoryModel {
   final String id;
   final String assetId;
@@ -22,7 +20,7 @@ class AssetHistoryModel {
       id: json['id'] as String,
       assetId: json['assetId'] as String,
       balance: (json['balance'] as num?)?.toDouble() ?? 0.0,
-      date: (json['date'] as Timestamp).toDate(),
+      date: DateTime.fromMillisecondsSinceEpoch(json['date'] as int),
       reason: json['reason'] as String? ?? 'unknown',
       relatedTransactionId: json['relatedTransactionId'] as String?,
     );
@@ -33,7 +31,7 @@ class AssetHistoryModel {
       'id': id,
       'assetId': assetId,
       'balance': balance,
-      'date': Timestamp.fromDate(date),
+      'date': date.millisecondsSinceEpoch,
       'reason': reason,
       'relatedTransactionId': relatedTransactionId,
     };

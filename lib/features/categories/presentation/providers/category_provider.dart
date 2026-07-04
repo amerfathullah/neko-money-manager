@@ -1,43 +1,33 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/category.dart';
 import '../../data/repositories/category_repository.dart';
-import '../../../auth/presentation/providers/auth_provider.dart';
 
 final categoryRepositoryProvider = Provider((ref) => CategoryRepository());
 
-class CategoryNotifier extends StreamNotifier<List<Category>> {
+class CategoryNotifier extends AsyncNotifier<List<Category>> {
   @override
-  Stream<List<Category>> build() {
-    final userId = ref.watch(userIdProvider);
-    if (userId == null) {
-      return Stream.value([]);
-    }
+  Future<List<Category>> build() async {
     final repository = ref.read(categoryRepositoryProvider);
-    return repository.getCategories(userId);
+    return repository.getCategories();
   }
 
   Future<void> addCategory(Category category) async {
-    final userId = ref.read(userIdProvider);
-    if (userId == null) return;
-    await ref.read(categoryRepositoryProvider).addCategory(userId, category);
+    await ref.read(categoryRepositoryProvider).addCategory(category);
+    ref.invalidateSelf();
   }
 
   Future<void> removeCategory(String id) async {
-    final userId = ref.read(userIdProvider);
-    if (userId == null) return;
-    await ref.read(categoryRepositoryProvider).deleteCategory(userId, id);
+    await ref.read(categoryRepositoryProvider).deleteCategory(id);
+    ref.invalidateSelf();
   }
 
   Future<void> updateCategoriesOrder(List<Category> categories) async {
-    final userId = ref.read(userIdProvider);
-    if (userId == null) return;
-    await ref
-        .read(categoryRepositoryProvider)
-        .updateCategoriesOrder(userId, categories);
+    await ref.read(categoryRepositoryProvider).updateCategoriesOrder(categories);
+    ref.invalidateSelf();
   }
 }
 
 final categoryProvider =
-    StreamNotifierProvider<CategoryNotifier, List<Category>>(
+    AsyncNotifierProvider<CategoryNotifier, List<Category>>(
       CategoryNotifier.new,
     );

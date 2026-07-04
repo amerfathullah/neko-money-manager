@@ -1,97 +1,60 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../../../core/services/database_service.dart';
 import '../models/asset.dart';
 import '../models/asset_history_model.dart';
 
 class AssetRepository {
-  final FirebaseFirestore _firestore;
-
-  AssetRepository({FirebaseFirestore? firestore})
-    : _firestore = firestore ?? FirebaseFirestore.instance;
-
-  CollectionReference<Asset> _assetsRef(String userId) {
-    return _firestore
-        .collection('users')
-        .doc(userId)
-        .collection('assets')
-        .withConverter<Asset>(
-          fromFirestore: (snapshot, _) => Asset.fromJson(snapshot.data()!),
-          toFirestore: (asset, _) => asset.toJson(),
-        );
+  Future<List<Asset>> getAssets() async {
+    final db = await DatabaseService.database;
+    final maps = await db.query('assets');
+    return maps.map((m) => Asset.fromJson(m)).toList();
   }
 
-  Stream<List<Asset>> getAssets(String userId) {
-    return _assetsRef(userId).snapshots().map((snapshot) {
-      return snapshot.docs.map((doc) => doc.data()).toList();
-    });
-  }
+  Future<void> addAsset(Asset asset) async {
+    final db = await DatabaseService.database;
+    final batch = db.batch();
 
-  Future<void> addAsset(String userId, Asset asset) async {
-    final batch = _firestore.batch();
+    batch.insert('assets', asset.toJson());
 
-    // 1. Add Asset
-    batch.set(_assetsRef(userId).doc(asset.id), asset);
-
-    // 2. Add History (Initial)
-    final historyRef = _firestore
-        .collection('users')
-        .doc(userId)
-        .collection('asset_history')
-        .doc();
-
+    final historyId = DateTime.now().millisecondsSinceEpoch.toString();
     final history = AssetHistoryModel(
-      id: historyRef.id,
+      id: historyId,
       assetId: asset.id,
       balance: asset.balance,
       date: DateTime.now(),
       reason: 'initial_creation',
     );
+    batch.insert('asset_history', history.toJson());
 
-    batch.set(historyRef, history.toJson());
-
-    await batch.commit();
+    await batch.commit(noResult: true);
   }
 
-  Future<void> updateAsset(String userId, Asset asset) async {
-    final batch = _firestore.batch();
+  Future<void> updateAsset(Asset asset) async {
+    final db = await DatabaseService.database;
+    final batch = db.batch();
 
-    // 1. Update Asset
-    batch.set(_assetsRef(userId).doc(asset.id), asset);
+    batch.update('assets', asset.toJson(), where: 'id = ?', whereArgs: [asset.id]);
 
-    // 2. Add History (Manual Update)
-    final historyRef = _firestore
-        .collection('users')
-        .doc(userId)
-        .collection('asset_history')
-        .doc();
-
+    final historyId = DateTime.now().millisecondsSinceEpoch.toString();
     final history = AssetHistoryModel(
-      id: historyRef.id,
+      id: historyId,
       assetId: asset.id,
       balance: asset.balance,
       date: DateTime.now(),
       reason: 'manual_edit',
     );
+    batch.insert('asset_history', history.toJson());
 
-    batch.set(historyRef, history.toJson());
-
-    await batch.commit();
+    await batch.commit(noResult: true);
   }
 
-  Stream<List<AssetHistoryModel>> getAssetHistoryStream(String userId) {
-    return _firestore
-        .collection('users')
-        .doc(userId)
-        .collection('asset_history')
-        .orderBy('date', descending: true)
-        .snapshots()
-        .map((snapshot) {
-          return snapshot.docs
-              .map((doc) => AssetHistoryModel.fromJson(doc.data()))
-              .toList();
-        });
+  Future<List<AssetHistoryModel>> getAssetHistory() async {
+    final db = await DatabaseService.database;
+    final maps = await db.query('asset_history', orderBy: 'date DESC');
+    return maps.map((m) => AssetHistoryModel.fromJson(m)).toList();
   }
 
-  Future<void> deleteAsset(String userId, String assetId) async {
-    await _assetsRef(userId).doc(assetId).delete();
+  Future<void> deleteAsset(String assetId) async {
+    final db = await DatabaseService.database;
+    await db.delete('assets', where: 'id = ?', whereArgs: [assetId]);
   }
 }

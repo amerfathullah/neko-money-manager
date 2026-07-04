@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:flutter/foundation.dart';
 import 'core/theme/app_theme.dart';
+import 'core/services/database_service.dart';
 import 'features/onboarding/presentation/pages/splash_screen.dart';
 import 'features/settings/presentation/providers/theme_provider.dart';
-import 'firebase_options.dart';
-import 'features/settings/presentation/pages/lock_screen.dart';
-import 'features/settings/presentation/providers/settings_provider.dart';
+import 'features/common/data/default_data_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // Initialize local database
+  await DatabaseService.database;
+  // Seed default data on first launch
+  await DefaultDataService.ensureDefaults();
   if (!kIsWeb) {
     await MobileAds.instance.initialize();
   }
@@ -56,11 +57,6 @@ class AppLifecycleManager extends ConsumerStatefulWidget {
 
 class _AppLifecycleManagerState extends ConsumerState<AppLifecycleManager>
     with WidgetsBindingObserver {
-  bool _isLocked = false;
-  // Track if we have already checked initial lock state to avoid locking on first launch if undesired,
-  // though usually we want to lock on launch if enabled.
-  bool _initialized = false;
-
   @override
   void initState() {
     super.initState();
@@ -74,53 +70,7 @@ class _AppLifecycleManagerState extends ConsumerState<AppLifecycleManager>
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused) {
-      // App went to background
-      final settingsAsync = ref.read(settingsProvider);
-      if (settingsAsync.value?.isBiometricEnabled ?? false) {
-        setState(() {
-          _isLocked = true;
-        });
-      }
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final settingsAsync = ref.watch(settingsProvider);
-
-    // Initial check when settings are loaded
-    settingsAsync.whenData((settings) {
-      if (!_initialized) {
-        if (settings.isBiometricEnabled) {
-          // Lock on startup if enabled
-          Future.microtask(() {
-            if (mounted && !_initialized) {
-              setState(() {
-                _isLocked = true;
-                _initialized = true;
-              });
-            }
-          });
-        } else {
-          _initialized = true;
-        }
-      }
-    });
-
-    return Stack(
-      children: [
-        widget.child,
-        if (_isLocked)
-          LockScreen(
-            onUnlock: () {
-              setState(() {
-                _isLocked = false;
-              });
-            },
-          ),
-      ],
-    );
+    return widget.child;
   }
 }

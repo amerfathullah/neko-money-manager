@@ -14,7 +14,6 @@ import '../../../settings/presentation/pages/add_edit_ledger_page.dart';
 import '../../../home/presentation/providers/ledger_provider.dart';
 import '../../../categories/presentation/providers/category_provider.dart';
 import '../../../categories/data/models/category.dart';
-import '../../../../features/auth/presentation/providers/auth_provider.dart';
 // Import for TransactionTimeRange if accessible, otherwise define local or move enum to core
 import '../../../transactions/presentation/widgets/transactions_list_widgets.dart';
 import '../../../transactions/presentation/widgets/transaction_timeline.dart';
@@ -595,9 +594,6 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
   }
 
   Future<void> _confirmDelete() async {
-    final userId = ref.read(userIdProvider);
-    if (userId == null) return;
-
     await showDialog(
       context: context,
       builder: (ctx) {
@@ -635,7 +631,7 @@ class _LedgerDetailsPageState extends ConsumerState<LedgerDetailsPage> {
                       // Note: Optimally we should have a getTransactionsByLedgerFuture without limit
                       final allTxs = await ref
                           .read(transactionRepositoryProvider)
-                          .getAllTransactions(userId);
+                          .getAllTransactions();
 
                       final txsToDelete = allTxs
                           .where((t) => t.ledgerId == widget.ledger.id)
